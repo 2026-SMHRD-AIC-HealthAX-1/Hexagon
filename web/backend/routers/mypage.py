@@ -18,6 +18,14 @@ async def post_game_result(request: GameResultRequest, user_id: int = Depends(ge
     return {"ok": True}
 
 
+@router.post("/api/blink-alert")
+async def post_blink_alert(user_id: int = Depends(get_current_user_id)):
+    # home.js의 showBlinkAlert()가 눈 깜빡임 경고를 띄우는 매 순간 호출한다 -
+    # 원본 깜빡임 데이터가 아니라 "경고가 발생한 시각"만 기록한다.
+    db.log_blink_alert(user_id)
+    return {"ok": True}
+
+
 def _serialize_game_record(record):
     return {"score": record["score"], "played_at": record["played_at"]} if record else None
 

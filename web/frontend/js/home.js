@@ -110,6 +110,12 @@ function showBlinkAlert() {
   if ("Notification" in window && Notification.permission === "granted") {
     new Notification(BLINK_ALERT_TITLE, { body: BLINK_ALERT_BODY, tag: "blink-alert" });
   }
+
+  // 나중에 마이페이지에서 "위험한 습관이 있는지" 스스로 판단할 수 있도록,
+  // 경고가 뜬 시각을 서버에 기록한다. index.html은 비로그인 상태에서도 접근
+  // 가능해서(로그인 필수 페이지가 아님) 비로그인 사용자는 401을 받는데, 이건
+  // 정상이라 조용히 무시한다.
+  fetch("/api/blink-alert", { method: "POST" }).catch(() => {});
 }
 
 function hideBlinkAlert() {

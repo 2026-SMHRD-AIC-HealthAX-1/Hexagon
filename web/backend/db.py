@@ -105,6 +105,17 @@ def init_db():
                 updated_at TEXT NOT NULL
             )
         """)
+        # 눈 깜빡임 원본 데이터 전체가 아니라, "1분간 깜빡임이 너무 적어 경고가
+        # 뜬 순간"만 기록한다 - 사용자가 나중에 "얼마나 자주 경고를 받았는지"로
+        # 위험한 습관 여부를 스스로 판단할 수 있게 하는 게 목적이라 그 판단에
+        # 필요한 최소 데이터(발생 시각)만 남기면 충분하다.
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS blink_alerts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                triggered_at TEXT NOT NULL
+            )
+        """)
         conn.commit()
     finally:
         conn.close()
@@ -237,5 +248,17 @@ def get_calibration_samples(user_id):
             "SELECT data FROM calibration_data WHERE user_id = ?", (user_id,)
         ).fetchone()
         return json.loads(row["data"])["samples"] if row else None
+    finally:
+        conn.close()
+
+
+def log_blink_alert(user_id):
+    conn = _connect()
+    try:
+        conn.execute(
+            "INSERT INTO blink_alerts (user_id, triggered_at) VALUES (?, ?)",
+            (user_id, _now_iso()),
+        )
+        conn.commit()
     finally:
         conn.close()
