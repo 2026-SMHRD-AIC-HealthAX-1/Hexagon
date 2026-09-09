@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Eye God - 마이페이지</title>
+
+
+    <style>
+
+        /* =========================================
+           기본
+        ========================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family:
+                "Pretendard",
+                "Noto Sans KR",
+                Arial,
+                sans-serif;
+
+            color: #252b33;
+
+            background: #ffffff;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+
+        /* =========================================
+           전체
+        ========================================= */
+
+        .page {
+            min-height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        /* =========================================
+           Header
+        ========================================= */
+
+        header {
+            height: 76px;
+
+            border-bottom: 1px solid #eeeeee;
+
+            display: flex;
+            align-items: center;
+        }
+
+        .header-inner {
+            width: 900px;
+            max-width: calc(100% - 48px);
+
+            margin: 0 auto;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+        /* 로고 */
+
+        .logo {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 24px;
+            font-weight: 700;
+
+            color: #5f9fe9;
+
+            text-decoration: none;
+        }
+
+        .logo-eye {
+            width: 32px;
+            height: 20px;
+
+            background: #9fc8f5;
+
+            border-radius: 50%;
+
+            position: relative;
+        }
+
+        .logo-eye::after {
+            content: "";
+
+            position: absolute;
+
+            width: 9px;
+            height: 9px;
+
+            background: white;
+
+            border-radius: 50%;
+
+            left: 12px;
+            top: 5px;
+        }
+
+
+        /* 헤더 오른쪽 */
+
+        .header-right {
+            display: flex;
+
+            align-items: center;
+
+            gap: 28px;
+        }
+
+        .record {
+            color: #59636f;
+
+            font-size: 15px;
+
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            border: none;
+
+            background: #8ebaf0;
+            color: white;
+
+            padding: 11px 22px;
+
+            border-radius: 12px;
+
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+
+        /* =========================================
+           Main
+        ========================================= */
+
+        main {
+            flex: 1;
+
+            padding: 42px 0 60px;
+        }
+
+        .container {
+            width: 900px;
+            max-width: calc(100% - 48px);
+
+            margin: 0 auto;
+        }
+
+
+        /* =========================================
+           페이지 제목
+        ========================================= */
+
+        .page-title {
+            margin: 0 0 8px;
+
+            font-size: 28px;
+
+            letter-spacing: -0.8px;
+        }
+
+        .page-description {
+            margin: 0 0 36px;
+
+            color: #737d88;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================
+           섹션
+        ========================================= */
+
+        .section {
+            margin-bottom: 42px;
+        }
+
+        .section-title {
+            margin: 0 0 17px;
+
+            font-size: 20px;
+
+            letter-spacing: -0.4px;
+        }
+
+
+        /* =========================================
+           최근 건강 상태
+        ========================================= */
+
+        .health-grid {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 14px;
+        }
+
+        .health-item {
+            padding: 24px;
+
+            border: 1px solid #e1e7ed;
+
+            border-radius: 18px;
+
+            background: #ffffff;
+        }
+
+        .health-name {
+            margin: 0 0 14px;
+
+            color: #737d88;
+
+            font-size: 14px;
+        }
+
+        .health-value {
+            margin: 0 0 10px;
+
+            font-size: 27px;
+
+            font-weight: 700;
+
+            color: #609de7;
+        }
+
+        .health-date {
+            margin: 0;
+
+            color: #9aa2ab;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================
+           추이 그래프
+        ========================================= */
+
+        .chart-box {
+            padding: 25px;
+
+            border: 1px solid #e1e7ed;
+
+            border-radius: 18px;
+
+            background: #ffffff;
+        }
+
+        .chart-description {
+            margin: 0 0 22px;
+
+            color: #7b858f;
+
+            font-size: 13px;
+        }
+
+        .chart {
+            width: 100%;
+
+            height: 190px;
+
+            position: relative;
+
+            border-bottom: 1px solid #dfe5eb;
+            border-left: 1px solid #dfe5eb;
+
+            background:
+                linear-gradient(
+                    to bottom,
+                    transparent 24%,
+                    #f1f4f7 25%,
+                    transparent 26%,
+                    transparent 49%,
+                    #f1f4f7 50%,
+                    transparent 51%,
+                    transparent 74%,
+                    #f1f4f7 75%,
+                    transparent 76%
+                );
+        }
+
+
+        /* 그래프 선 */
+
+        .chart-line {
+            position: absolute;
+
+            left: 7%;
+            right: 5%;
+
+            top: 50%;
+
+            height: 3px;
+
+            background: #9fc8f5;
+
+            transform:
+                rotate(-3deg);
+        }
+
+        .chart-line::before {
+            content: "";
+
+            position: absolute;
+
+            width: 100%;
+            height: 100%;
+
+            left: 0;
+            top: 15px;
+
+            background: #d4e6f9;
+
+            transform:
+                rotate(5deg);
+        }
+
+
+        /* 그래프 점 */
+
+        .chart-point {
+            position: absolute;
+
+            width: 11px;
+            height: 11px;
+
+            border-radius: 50%;
+
+            background: #609de7;
+
+            border: 3px solid white;
+
+            box-shadow:
+                0 0 0 1px #609de7;
+
+            z-index: 2;
+        }
+
+        .point-1 {
+            left: 8%;
+            top: 57%;
+        }
+
+        .point-2 {
+            left: 29%;
+            top: 52%;
+        }
+
+        .point-3 {
+            left: 50%;
+            top: 55%;
+        }
+
+        .point-4 {
+            left: 71%;
+            top: 44%;
+        }
+
+        .point-5 {
+            left: 91%;
+            top: 47%;
+        }
+
+
+        /* 날짜 */
+
+        .chart-dates {
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-top: 10px;
+
+            color: #a0a7ae;
+
+            font-size: 11px;
+        }
+
+
+        /* =========================================
+           AI 리포트
+        ========================================= */
+
+        .report {
+            padding: 25px;
+
+            border-radius: 18px;
+
+            background: #f4f8fd;
+
+            border: 1px solid #dce9f8;
+        }
+
+        .report-title {
+            margin: 0 0 13px;
+
+            font-size: 17px;
+
+            font-weight: 700;
+        }
+
+        .report-text {
+            margin: 0;
+
+            color: #5f6974;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+
+        /* 관리 권고 */
+
+        .recommendation {
+            margin-top: 20px;
+
+            padding-top: 18px;
+
+            border-top: 1px solid #dce6f1;
+        }
+
+        .recommendation-title {
+            margin: 0 0 8px;
+
+            color: #4f8ed7;
+
+            font-size: 14px;
+
+            font-weight: 700;
+        }
+
+        .recommendation-text {
+            margin: 0;
+
+            color: #68727d;
+
+            font-size: 13px;
+
+            line-height: 1.7;
+        }
+
+
+        /* =========================================
+           활동 기록
+        ========================================= */
+
+        .history {
+            border-top: 1px solid #e1e6eb;
+        }
+
+        .history-item {
+            padding: 17px 5px;
+
+            border-bottom: 1px solid #e8ecf0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+        .history-left {
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+        .history-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 12px;
+
+            background: #eaf3fd;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 18px;
+        }
+
+        .history-name {
+            margin: 0 0 4px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+        }
+
+        .history-date {
+            margin: 0;
+
+            color: #9aa2ab;
+
+            font-size: 11px;
+        }
+
+        .history-result {
+            color: #68727d;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================================
+           하단 관리
+        ========================================= */
+
+        .account-actions {
+            padding-top: 5px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+        .delete-btn {
+            border: none;
+
+            background: transparent;
+
+            padding: 0;
+
+            color: #9aa1a9;
+
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            color: #6f7881;
+        }
+
+        .logout-large {
+            border: none;
+
+            background: #8ebaf0;
+
+            color: white;
+
+            padding: 12px 24px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+        }
+
+
+        /* =========================================
+           Footer
+        ========================================= */
+
+        footer {
+            border-top: 1px solid #eeeeee;
+
+            padding: 18px 20px;
+
+            text-align: center;
+
+            color: #9aa1aa;
+
+            font-size: 12px;
+
+            line-height: 1.6;
+        }
+
+
+        /* =========================================
+           삭제 확인 팝업
+        ========================================= */
+
+        .modal {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(30, 40, 50, 0.25);
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 100;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 360px;
+            max-width: calc(100% - 40px);
+
+            padding: 28px;
+
+            background: white;
+
+            border-radius: 18px;
+
+            text-align: center;
+
+            box-shadow:
+                0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .modal-title {
+            margin: 0 0 10px;
+
+            font-size: 18px;
+        }
+
+        .modal-text {
+            margin: 0 0 23px;
+
+            color: #737d88;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+
+            gap: 8px;
+        }
+
+        .modal-cancel,
+        .modal-delete {
+            flex: 1;
+
+            padding: 11px;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+        }
+
+        .modal-cancel {
+            border: 1px solid #dce2e8;
+
+            background: white;
+
+            color: #68727d;
+        }
+
+        .modal-delete {
+            border: none;
+
+            background: #8ebaf0;
+
+            color: white;
+        }
+
+
+        /* =========================================
+           반응형
+        ========================================= */
+
+        @media (max-width: 700px) {
+
+            .container,
+            .header-inner {
+                max-width: calc(100% - 32px);
+            }
+
+            .header-right {
+                gap: 10px;
+            }
+
+            .record {
+                display: none;
+            }
+
+            .health-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .history-result {
+                text-align: right;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="page">
+
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
+    <header>
+
+        <div class="header-inner">
+
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+
+                <div class="logo-eye"></div>
+
+                Eye God
+
+            </a>
+
+
+            <div class="header-right">
+
+                <a
+                    href="ex6_마이페이지.html"
+                    class="record"
+                >
+                    📖 내 기록
+                </a>
+
+
+                <button
+                    class="logout-btn"
+                    onclick="logout()"
+                >
+                    로그아웃
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================
+         MAIN
+    ====================================== -->
+
+    <main>
+
+        <div class="container">
+
+
+            <!-- 제목 -->
+
+            <h1 class="page-title">
+                마이페이지
+            </h1>
+
+            <p class="page-description">
+                내 눈 건강 기록을 한눈에 확인해보세요.
+            </p>
+
+
+
+            <!-- =================================
+                 최근 눈 건강
+            ================================== -->
+
+            <section class="section">
+
+                <h2 class="section-title">
+                    최근 눈 건강
+                </h2>
+
+
+                <div class="health-grid">
+
+
+                    <!-- 백내장 -->
+
+                    <div class="health-item">
+
+                        <p class="health-name">
+                            백내장 위험도
+                        </p>
+
+                        <p class="health-value">
+                            낮음
+                        </p>
+
+                        <p class="health-date">
+                            최근 검사 · 2026.08.31
+                        </p>
+
+                    </div>
+
+
+                    <!-- 충혈 -->
+
+                    <div class="health-item">
+
+                        <p class="health-name">
+                            안구 충혈도
+                        </p>
+
+                        <p class="health-value">
+                            양호
+                        </p>
+
+                        <p class="health-date">
+                            최근 검사 · 2026.08.31
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================
+                 건강 추이
+            ================================== -->
+
+            <section class="section">
+
+                <h2 class="section-title">
+                    눈 건강 추이
+                </h2>
+
+
+                <div class="chart-box">
+
+                    <p class="chart-description">
+                        최근 측정 기록을 바탕으로 한 눈 건강 변화예요.
+                    </p>
+
+
+                    <div class="chart">
+
+                        <div class="chart-line"></div>
+
+                        <div class="chart-point point-1"></div>
+
+                        <div class="chart-point point-2"></div>
+
+                        <div class="chart-point point-3"></div>
+
+                        <div class="chart-point point-4"></div>
+
+                        <div class="chart-point point-5"></div>
+
+                    </div>
+
+
+                    <div class="chart-dates">
+
+                        <span>
+                            08.01
+                        </span>
+
+                        <span>
+                            08.08
+                        </span>
+
+                        <span>
+                            08.15
+                        </span>
+
+                        <span>
+                            08.22
+                        </span>
+
+                        <span>
+                            08.31
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================
+                 AI 리포트
+            ================================== -->
+
+            <section class="section">
+
+                <h2 class="section-title">
+                    AI 눈 건강 리포트
+                </h2>
+
+
+                <div class="report">
+
+
+                    <p class="report-title">
+                        최근 기록을 바탕으로 확인해봤어요.
+                    </p>
+
+
+                    <p class="report-text">
+
+                        최근 측정 결과에서 눈 건강 상태가
+                        비교적 안정적으로 유지되고 있어요.
+                        정기적으로 눈 상태를 확인하고,
+                        눈이 피로할 때는 충분히 쉬어주세요.
+
+                    </p>
+
+
+                    <div class="recommendation">
+
+                        <p class="recommendation-title">
+                            💡 관리 권고
+                        </p>
+
+
+                        <p class="recommendation-text">
+
+                            장시간 화면을 사용할 경우
+                            중간중간 먼 곳을 바라보며
+                            눈을 쉬게 해주세요.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================
+                 활동 기록
+            ================================== -->
+
+            <section class="section">
+
+                <h2 class="section-title">
+                    활동 기록
+                </h2>
+
+
+                <div class="history">
+
+
+                    <!-- 기록 1 -->
+
+                    <div class="history-item">
+
+                        <div class="history-left">
+
+                            <div class="history-icon">
+                                👁
+                            </div>
+
+
+                            <div>
+
+                                <p class="history-name">
+                                    사진 기반 안구 분석
+                                </p>
+
+                                <p class="history-date">
+                                    2026.08.31
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="history-result">
+                            위험도 낮음 · 충혈 양호
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- 기록 2 -->
+
+                    <div class="history-item">
+
+                        <div class="history-left">
+
+                            <div class="history-icon">
+                                🎯
+                            </div>
+
+
+                            <div>
+
+                                <p class="history-name">
+                                    시선추적 미니게임
+                                </p>
+
+                                <p class="history-date">
+                                    2026.08.30
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="history-result">
+                            130점 · 정확도 76%
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- 기록 3 -->
+
+                    <div class="history-item">
+
+                        <div class="history-left">
+
+                            <div class="history-icon">
+                                👁
+                            </div>
+
+
+                            <div>
+
+                                <p class="history-name">
+                                    사진 기반 안구 분석
+                                </p>
+
+                                <p class="history-date">
+                                    2026.08.25
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="history-result">
+                            충혈도 양호
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================
+                 계정 관리
+            ================================== -->
+
+            <div class="account-actions">
+
+
+                <button
+                    class="delete-btn"
+                    onclick="openDeleteModal()"
+                >
+                    데이터 삭제
+                </button>
+
+
+                <button
+                    class="logout-large"
+                    onclick="logout()"
+                >
+                    로그아웃
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =====================================
+         FOOTER
+    ====================================== -->
+
+    <footer>
+
+        본 서비스는 정식 의료 서비스가 아니며 참고용이므로
+        정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.
+
+    </footer>
+
+
+
+    <!-- =====================================
+         데이터 삭제 팝업
+    ====================================== -->
+
+    <div
+        class="modal"
+        id="deleteModal"
+    >
+
+        <div class="modal-box">
+
+
+            <h3 class="modal-title">
+                데이터를 삭제할까요?
+            </h3>
+
+
+            <p class="modal-text">
+
+                저장된 눈 건강 검사와
+                미니게임 기록이 모두 삭제됩니다.
+                삭제한 데이터는 복구할 수 없습니다.
+
+            </p>
+
+
+            <div class="modal-buttons">
+
+                <button
+                    class="modal-cancel"
+                    onclick="closeDeleteModal()"
+                >
+                    취소
+                </button>
+
+
+                <button
+                    class="modal-delete"
+                    onclick="deleteData()"
+                >
+                    삭제하기
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+    if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
+
+
+
+    /* =========================================
+       데이터 삭제 팝업
+    ========================================= */
+
+    function openDeleteModal() {
+
+        document
+            .getElementById("deleteModal")
+            .classList.add("show");
+
+    }
+
+
+    function closeDeleteModal() {
+
+        document
+            .getElementById("deleteModal")
+            .classList.remove("show");
+
+    }
+
+
+    /* =========================================
+       데이터 삭제
+    ========================================= */
+
+    function deleteData() {
+
+        /*
+         * 실제 서비스에서는
+         * 서버의 눈 건강 기록 DB를 삭제.
+         */
+
+        alert(
+            "저장된 눈 건강 기록이 삭제되었습니다."
+        );
+
+        closeDeleteModal();
+
+    }
+
+
+    /* =========================================
+       로그아웃
+    ========================================= */
+
+    function logout() {
+
+        sessionStorage.removeItem(
+            "isLoggedIn"
+        );
+
+        window.location.href =
+            "login.html";
+
+    }
+
+
+    /* =========================================
+       상세 기록 클릭
+    ========================================= */
+
+    document
+        .querySelectorAll(".history-item")
+        .forEach(function(item) {
+
+            item.addEventListener(
+                "click",
+                function() {
+
+                    /*
+                     * 실제 서비스에서는
+                     * 해당 기록의 상세 페이지 또는
+                     * 상세 모달을 표시.
+                     */
+
+                    console.log(
+                        "기록 상세 보기"
+                    );
+
+                }
+            );
+
+        });
+
+</script>
+
+
+</body>
+
+</html>

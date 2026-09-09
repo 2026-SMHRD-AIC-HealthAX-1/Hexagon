@@ -1,0 +1,107 @@
+테스트용 미니게임 (리듬 게임) — 작업 지시 및 구현 요약
+========================================================
+
+* 이 기능은 테스트용이며 CLAUDE.md에는 반영하지 않음 (사용자 명시 지시)
+
+1. 작업 지시 내용 (사용자 원문 규칙)
+------------------------------------
+1. 리듬게임처럼 세로 형태의 세 라인으로 나누어진 구역이 존재한다.
+2. 세 개의 구역에서는 각각 "노트"라고 불리는 물체가 랜덤하게 내려온다.
+3. 사용자는 해당 "노트"가 화면 하단부의 판정 존 근처에 왔을 때 눈을 깜빡여서 캐치한다.
+4. 적절한 타이밍에 캐치하면 점수가 오르고, 너무 빠르거나 느리면 점수를 얻지 못한다.
+5. 시작 시 초점은 가운데 라인. 사용자가 왼쪽/오른쪽을 보면 초점이 그쪽으로 이동한다.
+6. 노트 캐치는 오직 눈 깜빡임으로만 수행한다.
+7. 노트 낙하 속도는 임의 설정하되, 추후 난이도 분리를 위해 조절 가능해야 한다.
+8. 게임 시간은 1분이며, 진행 중 ESC 키로 일시정지할 수 있다.
+9. 일시정지 상태에서 재개 / 다시 시작 / 종료(홈으로) 가능.
+10. 캐치 성공 시 "Perfect", 실패 시 "Miss" 문구를 표시한다.
+11. 캐치 성공 시 해당 노트의 색이 강조/반전되어 성공을 육안으로 알 수 있게 한다.
+12. src/ 폴더의 기존 파이썬 코드는 최대한 건드리지 않는다.
+13. 사용자의 시선 정보는 좌/중/우/눈 깜빡임(캐치) 총 4가지로만 연결된다.
+14. 모호하거나 선택이 필요한 부분은 작업 전 질문할 것.
+
+추가 지시:
+- 구현 완료 후 홈 화면의 "눈 깜빡임 모니터링" 메뉴 위에 "테스트용 미니게임" 메뉴를 만들어 연결.
+- 이 기능은 테스트용이므로 CLAUDE.md에 진행사항을 반영하지 말 것.
+
+2. 구현 전 확인한 선택 사항 (AskUserQuestion 답변)
+------------------------------------------------
+- 좌/중/우 시선 판정 방식: 기존 캘리브레이션 데이터(data/calibration.json) 재사용
+  → 이 게임을 하려면 시선 추적 미니게임에서 캘리브레이션을 먼저 완료해야 함.
+- 노트 낙하 속도/난이도 노출 방식: UI 없이 코드 상수로만 관리 (추후 난이도 화면 연결 대비).
+- 웹캠 동의 처리: 기존 game.html과 동일한 커스텀 동의 모달 재사용.
+
+3. 아키텍처 / 새로 만든 파일
+------------------------------
+- web/backend/sessions/rhythm_game_session.py  (신규) — 게임 로직 전체
+- web/backend/routers/rhythm_game_ws.py        (신규) — /ws/rhythm-game WebSocket 라우터
+- web/frontend/rhythm_game.html                (신규) — 동의 모달 / 캔버스 / 일시정지 모달 / 결과 화면
+- web/frontend/js/rhythm_game.js               (신규) — 프론트엔드 렌더링 및 입력 처리
+- web/backend/app.py                           (수정) — 새 라우터 등록 1줄 추가
+- web/frontend/index.html                      (수정) — "테스트용 미니게임" 메뉴 카드 추가 (블링크 모니터링 위)
+- web/frontend/css/style.css                   (수정) — 메뉴 카드용 .standalone-card 클래스 추가
+
+src/ 폴더는 전혀 수정하지 않음. 기존 Calibration, gaze.compute_gaze/GazeSmoother,
+BlinkMonitor, gaze_region_classifier(load_calibration_samples 등)를 그대로 재사용.
+
+4. 핵심 동작 방식
+------------------
+- 좌/중/우 판정: gaze_region_classifier가 만드는 1~9 지역 중 열(column) 성분만 추출
+  (1,4,7=좌 / 2,5,8=중 / 3,6,9=우)하여 각 라인의 평균 gaze_x를 기준점으로 삼고,
+  실시간 gaze_x와 가장 가까운 라인을 포커스로 판정.
+- 캐치 감지: BlinkMonitor.update()가 매 프레임 주는 is_blinking의 "닫히는 순간"
+  (False→True 전이)을 캐치 시도 이벤트로 사용 (blink_count 증가를 기다리지 않아 반응 지연이 적음).
+- 타이밍 판정: 노트의 목표 시각(target_time_ms) 기준
+  - 오차 ±PERFECT_WINDOW_MS 이내 → Perfect (+SCORE_PER_PERFECT점)
+  - 오차 ±CATCH_WINDOW_MS 이내(그러나 Perfect 범위 밖) → Miss
+  - 그 범위를 벗어나면 캐치 시도가 무시됨(해당 없음)
+  - 포커스가 아닌 라인의 노트가 판정선을 지나가면 자동 Miss 처리
+- 노트 생성 간격: 세 라인 통합 단일 타이머 방식 (수정 반영됨) — 하나의 공용
+  next_spawn_at_ms 값이 지나면 세 라인 중 하나를 랜덤으로 골라 노트 1개 생성.
+  즉 화면에는 항상 최대 1개의 판정 대기 노트만 존재.
+- 서버 시간 기준: time.time() 기반 경과 시간으로 노트 위치/판정을 계산
+  (카메라 프레임 도착 속도와 무관, 기존 Calibration의 wall-clock 방식과 동일 패턴).
+- 일시정지: 클라이언트가 ESC를 누르면 WebSocket으로 {"type":"pause"/"resume"}
+  텍스트 메시지를 전송, 서버가 경과 시간 누적을 멈췄다 재개함(파일 자체 프로토콜 확장).
+- 시각 피드백: Perfect/Miss 판정 시 노트 색이 강조/반전되고, 화면 중앙에
+  "Perfect"/"Miss" 텍스트가 약 0.5초간 표시됨.
+- 노트 모양: 초기 원형 → 이후 요청에 따라 각 라인 폭에 맞춘 가느다란
+  가로 직사각형(높이 16px)으로 변경.
+
+5. 하드코딩 상수 (rhythm_game_session.py 상단, 추후 난이도 분리 시 조정)
+-----------------------------------------------------------------------
+- GAME_DURATION_SEC = 30           (게임 시간, 초 단위)
+- NOTE_FALL_DURATION_MS = 3000     (노트가 상단→판정선까지 내려오는 시간)
+- NOTE_SPAWN_MIN/MAX_INTERVAL_MS = 1600 / 3000  (다음 노트 생성까지 간격, 라인 통합 기준)
+- PERFECT_WINDOW_MS = 150          (Perfect 판정 허용 오차)
+- CATCH_WINDOW_MS = 400            (캐치 시도가 유효하게 인식되는 범위)
+- JUDGMENT_FLASH_MS = 350          (판정 후 노트가 강조색으로 남아있는 시간)
+- SCORE_PER_PERFECT = 100
+
+6. 부수적으로 발견 및 수정한 버그
+----------------------------------
+테스트 중 WebSocket 라우터들이 공통으로 쓰는 패턴에서 실제 버그를 발견함:
+raw websocket.receive()는 연결 종료(disconnect) 메시지를 예외 없이 그냥 반환하는데,
+이를 무시하고 루프를 계속 돌면 다음 receive() 호출에서
+"RuntimeError: Cannot call receive once a disconnect message has been received."
+가 발생함 (기존 except WebSocketDisconnect로는 잡히지 않음).
+
+수정: 각 라우터의 receive 루프 최상단에 아래 체크를 추가.
+    if message["type"] == "websocket.disconnect":
+        return
+
+적용된 파일 (4곳 모두):
+- web/backend/routers/rhythm_game_ws.py (신규 작성 시점에 바로 적용)
+- web/backend/routers/game_ws.py       (기존 코드, 동일 버그 확인 후 수정)
+- web/backend/routers/calibration_ws.py (기존 코드, 동일 버그 확인 후 수정)
+- web/backend/routers/blink_ws.py       (기존 코드, 동일 버그 확인 후 수정)
+
+각 세션 클래스(CalibrationSession/GameSession/BlinkSession/RhythmGameSession)의
+알고리즘 로직 자체는 변경하지 않았고, WebSocket 수신 루프의 disconnect 처리만 고침.
+
+7. 실행 방법
+-------------
+source eye/bin/activate
+uvicorn web.backend.app:app --reload
+브라우저에서 http://127.0.0.1:8000 접속 → 홈 화면의 "테스트용 미니게임" 클릭
+(사전 조건: 시선 추적 미니게임에서 캘리브레이션을 최소 1회 완료해 data/calibration.json이 있어야 함)

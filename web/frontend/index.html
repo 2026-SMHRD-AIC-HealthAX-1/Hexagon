@@ -1,0 +1,140 @@
+<title>Eye God</title>
+<link rel="stylesheet" href="css/style.css">
+
+<div class="page page-wide">
+  <header class="top-bar">
+    <a class="logo" href="index.html"><span class="logo-eye"></span>Eye God</a>
+    <form id="header-search-form" class="header-search">
+      <input id="header-search-input" type="text" placeholder="지역명을 검색하세요 (예: 서울특별시 강남구)">
+      <button type="submit" aria-label="검색">⌕</button>
+    </form>
+    <div id="auth-area">
+      <a id="login-link" class="auth-btn hidden" href="login.html">로그인</a>
+      <span id="auth-logged-in" class="hidden">
+        <span id="auth-provider-label" class="auth-label"></span>
+        <button id="logout-btn" class="auth-btn auth-btn-logout">로그아웃</button>
+      </span>
+    </div>
+  </header>
+
+  <div class="top-grid">
+    <section class="health-card">
+      <div class="card-head">
+        <h2 class="card-title">눈 건강 요약</h2>
+        <a class="detail-link" href="mypage.html">마이페이지 보기 ›</a>
+      </div>
+
+      <div id="health-login-prompt" class="health-login-prompt hidden">
+        <strong>로그인 후 눈 건강 기록을 확인할 수 있어요</strong>
+        <a class="auth-btn" href="login.html">로그인하기</a>
+      </div>
+
+      <div id="health-stats" class="health-stats hidden">
+        <div class="health-stat" onclick="location.href='mypage.html'">
+          <small>시선 추적 게임</small>
+          <b id="health-gaze-score">-</b>
+        </div>
+        <div class="health-stat" onclick="location.href='mypage.html'">
+          <small>리듬게임</small>
+          <b id="health-rhythm-score">-</b>
+        </div>
+        <div class="health-stat" onclick="location.href='mypage.html'">
+          <small>백내장 위험도</small>
+          <b id="health-cataract-risk">-</b>
+        </div>
+        <div class="health-stat" onclick="location.href='mypage.html'">
+          <small>안구 충혈도</small>
+          <b id="health-redness">-</b>
+        </div>
+      </div>
+    </section>
+
+    <section class="care-box">
+      <h2 class="section-title">오늘의 눈 관리</h2>
+      <div class="care-list">
+        <div class="care-item">
+          <div class="care-icon">👁</div>
+          <div class="care-info">
+            <div class="care-name">눈 깜빡임 모니터링</div>
+            <div class="care-description">
+              <span id="blink-status-text">꺼짐</span> · 상태 <span id="blink-status">-</span> · <span id="blink-count">0</span>회
+              · 최근 1분 <span id="blink-recent-count">-</span>회
+            </div>
+            <div id="blink-alert" class="blink-alert hidden">⚠ 최근 1분간 깜빡임이 적어요. 눈을 자주 깜빡여 주세요.</div>
+          </div>
+          <input type="checkbox" id="blink-toggle" class="toggle-switch">
+        </div>
+
+        <div class="care-item">
+          <div class="care-icon">💧</div>
+          <div class="care-info">
+            <div class="care-name">안약 알림 타이머</div>
+            <div class="care-description" id="eyedrop-description">꺼짐</div>
+            <div id="eyedrop-settings" class="eyedrop-settings hidden">
+              <input type="number" id="eyedrop-interval" min="1" step="1" value="60">분마다 알림
+              <button id="eyedrop-start-btn" type="button">시작</button>
+            </div>
+            <div id="eyedrop-alert" class="blink-alert hidden">💧 안약 넣을 시간이에요!</div>
+          </div>
+          <input type="checkbox" id="eyedrop-toggle" class="toggle-switch">
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="game-panel">
+    <h2 class="section-title">미니게임</h2>
+    <div class="game-list">
+      <a class="game-item" href="game.html">
+        <div class="game-icon">👀</div>
+        <div>
+          <div class="game-name">시선 추적 미니게임</div>
+          <div class="game-desc">웹캠으로 시선 훈련</div>
+        </div>
+        <div class="game-arrow">›</div>
+      </a>
+      <a class="game-item" href="rhythm_game.html">
+        <div class="game-icon">🎵</div>
+        <div>
+          <div class="game-name">테스트용 미니게임</div>
+          <div class="game-desc">시선 좌/중/우 이동 + 눈 깜빡임 (개발 중)</div>
+        </div>
+        <div class="game-arrow">›</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="map-section">
+    <div class="map-head">
+      <h2 class="section-title" style="margin:0">안과 지도</h2>
+      <a class="detail-link" href="hospitals.html">전체보기 ›</a>
+    </div>
+    <p class="login-desc" id="home-map-desc" style="margin:6px 0 12px">위치 정보에 동의하면 내 주변 안과를 보여드려요.</p>
+
+    <form id="map-search-form" class="hosp-search-row">
+      <input id="map-search-input" type="text" placeholder="지역명을 검색하세요 (예: 서울특별시 강남구)">
+      <button type="submit">검색</button>
+    </form>
+
+    <div id="home-map" class="home-map">
+      <div id="home-map-message" class="map-message">
+        <div id="home-map-message-text">📍 현재 위치를 사용하면 가까운 안과를 찾을 수 있어요.</div>
+        <button id="home-locate-btn" class="auth-btn" type="button" style="margin-top:8px">현재 위치 사용</button>
+      </div>
+    </div>
+
+    <div id="home-clinic-list" class="clinic-list"></div>
+  </section>
+
+  <div class="site-footer">본 서비스는 정식 의료 서비스가 아니며 참고용이므로 정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.</div>
+
+  <div class="quick-fab-wrap">
+    <div id="quick-menu" class="quick-menu">
+      <a class="quick-option" href="analysis.html">📷 사진 선택</a>
+      <a class="quick-option" href="analysis.html?mode=capture">📸 사진 촬영</a>
+    </div>
+    <button id="quick-fab" class="quick-fab" type="button" aria-label="눈 검사 메뉴">👁</button>
+  </div>
+</div>
+
+<script type="module" src="js/home.js"></script>

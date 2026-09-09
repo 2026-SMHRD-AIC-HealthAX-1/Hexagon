@@ -1,0 +1,34 @@
+<title>내 주변 안과 찾기 - Eye God</title>
+<link rel="stylesheet" href="css/style.css">
+
+<div class="page">
+  <a class="back-link" href="index.html">← 홈으로</a>
+
+  <header class="top-bar">
+    <a class="logo" href="index.html"><span class="logo-eye"></span>Eye God</a>
+  </header>
+
+  <h1 style="font-size:22px;margin:0 0 4px">내 주변 안과 찾기</h1>
+  <p class="login-desc" style="margin-bottom:16px">가까운 안과를 찾아 진료 정보를 확인해보세요.</p>
+
+  <form id="region-search-form" class="hosp-search-row">
+    <input id="region-search" placeholder="지역명을 검색하세요 (예: 서울특별시 강남구)">
+    <button id="region-search-btn" type="submit">검색</button>
+  </form>
+
+  <div id="status-banner" class="status-banner">위치 정보를 확인하고 있습니다...</div>
+
+  <div id="map"></div>
+
+  <div id="clinic-list" class="clinic-list"></div>
+
+  <div class="section-title">눈 건강 추천 의약품</div>
+  <div class="medication-grid">
+    <div class="medication-card">추천 의약품 기능은 준비 중입니다</div>
+    <div class="medication-card">추천 의약품 기능은 준비 중입니다</div>
+  </div>
+
+  <div class="site-footer">본 서비스는 정식 의료 서비스가 아니며 참고용이므로 정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.</div>
+</div>
+
+<script type="module" src="js/hospitals.js"></script>

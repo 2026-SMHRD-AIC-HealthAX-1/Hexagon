@@ -1,0 +1,41 @@
+<title>마이페이지 - Eye God</title>
+<link rel="stylesheet" href="css/style.css">
+
+<div class="page">
+  <a class="back-link" href="index.html">← 홈으로</a>
+
+  <header class="top-bar">
+    <a class="logo" href="index.html"><span class="logo-eye"></span>Eye God</a>
+  </header>
+
+  <h1 style="font-size:22px;margin:0 0 20px">마이페이지</h1>
+
+  <div class="mypage-grid">
+    <div class="mypage-card">
+      <div class="mypage-label">최근 접속 날짜</div>
+      <div id="last-visit" class="mypage-value">-</div>
+    </div>
+    <div class="mypage-card">
+      <div class="mypage-label">최근 백내장 위험도</div>
+      <div id="cataract-risk" class="mypage-value muted">측정 기록 없음</div>
+    </div>
+    <div class="mypage-card">
+      <div class="mypage-label">최근 안구 충혈도</div>
+      <div id="redness" class="mypage-value muted">측정 기록 없음</div>
+    </div>
+    <div class="mypage-card">
+      <div class="mypage-label">시선 추적 게임 최근 점수</div>
+      <div id="gaze-game-score" class="mypage-value">-</div>
+    </div>
+    <div class="mypage-card">
+      <div class="mypage-label">리듬게임 최근 점수</div>
+      <div id="rhythm-game-score" class="mypage-value">-</div>
+    </div>
+  </div>
+
+  <button id="logout-btn" class="logout-btn">로그아웃</button>
+
+  <div class="site-footer">본 서비스는 정식 의료 서비스가 아니며 참고용이므로 정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.</div>
+</div>
+
+<script type="module" src="js/mypage.js"></script>

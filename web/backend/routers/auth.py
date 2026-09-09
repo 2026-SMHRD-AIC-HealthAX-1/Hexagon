@@ -1,0 +1,180 @@
+import os
+import secrets
+from urllib.parse import urlencode
+
+import httpx
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import RedirectResponse
+
+import db
+
+router = APIRouter()
+
+GOOGLE_AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_ENDPOINT = "https://openidconnect.googleapis.com/v1/userinfo"
+
+KAKAO_AUTH_ENDPOINT = "https://kauth.kakao.com/oauth/authorize"
+KAKAO_TOKEN_ENDPOINT = "https://kauth.kakao.com/oauth/token"
+KAKAO_USERINFO_ENDPOINT = "https://kapi.kakao.com/v2/user/me"
+
+
+def get_current_user_id(request: Request) -> int:
+    # 세션 쿠키(SessionMiddleware, see app.py)에서 로그인한 사용자를 식별한다.
+    # 프론트가 보낸 값을 신뢰하던 이전 mock 방식과 달리, 이건 서버가 서명한 쿠키라
+    # 클라이언트가 임의로 위조할 수 없다.
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    return user_id
+
+
+@router.post("/api/auth/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return {"ok": True}
+
+
+@router.get("/api/auth/me")
+async def me(request: Request):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return {"logged_in": False}
+
+    user = db.get_user(user_id)
+    if user is None:
+        return {"logged_in": False}
+
+    return {
+        "logged_in": True,
+        "user_id": user_id,
+        "provider": user["provider"],
+        "logged_in_at": user["last_login_at"],
+    }
+
+
+@router.get("/api/auth/google/login")
+async def google_login(request: Request, next: str = "index.html"):
+    # state는 CSRF 방지용 - 콜백에서 세션에 저장된 값과 정확히 일치하는지 확인한다.
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+    request.session["oauth_next"] = next
+
+    params = {
+        "client_id": os.environ["GOOGLE_CLIENT_ID"],
+        "redirect_uri": str(request.url_for("google_callback")),
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+    }
+    return RedirectResponse(f"{GOOGLE_AUTH_ENDPOINT}?{urlencode(params)}")
+
+
+@router.get("/api/auth/google/callback")
+async def google_callback(request: Request, code: str, state: str):
+    expected_state = request.session.pop("oauth_state", None)
+    if not expected_state or state != expected_state:
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다 (state mismatch).")
+
+    redirect_uri = str(request.url_for("google_callback"))
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        token_response = await client.post(
+            GOOGLE_TOKEN_ENDPOINT,
+            data={
+                "code": code,
+                "client_id": os.environ["GOOGLE_CLIENT_ID"],
+                "client_secret": os.environ["GOOGLE_CLIENT_SECRET"],
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+            },
+        )
+        token_response.raise_for_status()
+        access_token = token_response.json()["access_token"]
+
+        userinfo_response = await client.get(
+            GOOGLE_USERINFO_ENDPOINT,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        userinfo_response.raise_for_status()
+        userinfo = userinfo_response.json()
+
+    google_sub = userinfo["sub"]
+    email = userinfo.get("email")
+
+    user = db.get_user_by_google_sub(google_sub)
+    if user is None:
+        user_id = db.create_user("google", google_sub=google_sub, email=email)
+    else:
+        user_id = user["id"]
+        db.touch_user_login(user_id, "google", email=email)
+
+    request.session["user_id"] = user_id
+    next_path = request.session.pop("oauth_next", "index.html")
+
+    return RedirectResponse(f"/{next_path}")
+
+
+@router.get("/api/auth/kakao/login")
+async def kakao_login(request: Request, next: str = "index.html"):
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+    request.session["oauth_next"] = next
+
+    params = {
+        "client_id": os.environ["KAKAO_CLIENT_ID"],
+        "redirect_uri": str(request.url_for("kakao_callback")),
+        "response_type": "code",
+        "state": state,
+    }
+    return RedirectResponse(f"{KAKAO_AUTH_ENDPOINT}?{urlencode(params)}")
+
+
+@router.get("/api/auth/kakao/callback")
+async def kakao_callback(request: Request, code: str, state: str):
+    expected_state = request.session.pop("oauth_state", None)
+    if not expected_state or state != expected_state:
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다 (state mismatch).")
+
+    redirect_uri = str(request.url_for("kakao_callback"))
+
+    token_data = {
+        "grant_type": "authorization_code",
+        "client_id": os.environ["KAKAO_CLIENT_ID"],
+        "redirect_uri": redirect_uri,
+        "code": code,
+    }
+    # Client Secret은 카카오 콘솔에서 활성화했을 때만 필요하다 - 비활성 상태에서
+    # 보내면 오히려 invalid_client 오류가 나므로 설정된 경우에만 포함시킨다.
+    kakao_client_secret = os.environ.get("KAKAO_CLIENT_SECRET")
+    if kakao_client_secret:
+        token_data["client_secret"] = kakao_client_secret
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        token_response = await client.post(KAKAO_TOKEN_ENDPOINT, data=token_data)
+        token_response.raise_for_status()
+        access_token = token_response.json()["access_token"]
+
+        userinfo_response = await client.get(
+            KAKAO_USERINFO_ENDPOINT,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        userinfo_response.raise_for_status()
+        userinfo = userinfo_response.json()
+
+    # id는 항상 존재하지만, 이메일은 앱에서 이메일 동의항목을 활성화하고(+ 필요시
+    # 비즈 앱 전환) 사용자가 동의한 경우에만 kakao_account 안에 존재한다.
+    kakao_id = str(userinfo["id"])
+    email = userinfo.get("kakao_account", {}).get("email")
+
+    user = db.get_user_by_kakao_id(kakao_id)
+    if user is None:
+        user_id = db.create_user("kakao", kakao_id=kakao_id, email=email)
+    else:
+        user_id = user["id"]
+        db.touch_user_login(user_id, "kakao", email=email)
+
+    request.session["user_id"] = user_id
+    next_path = request.session.pop("oauth_next", "index.html")
+
+    return RedirectResponse(f"/{next_path}")

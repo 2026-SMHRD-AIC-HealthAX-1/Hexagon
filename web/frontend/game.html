@@ -1,0 +1,31 @@
+<title>시선 추적 미니게임 - Eye God</title>
+<link rel="stylesheet" href="css/style.css">
+
+<div id="consent-modal" class="modal">
+  <div class="modal-box">
+    <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
+    <p>시선 추적을 위해 카메라 접근 권한이 필요합니다.</p>
+    <div class="modal-actions">
+      <button id="consent-cancel">취소</button>
+      <button id="consent-confirm" class="primary">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="play-screen" class="hidden">
+  <canvas id="display"></canvas>
+</div>
+
+<div id="result-screen" class="hidden">
+  <h2>게임 결과</h2>
+  <div class="score-card">
+    <div class="label">점수</div>
+    <div id="result-score" class="value">0</div>
+  </div>
+  <div class="actions">
+    <button id="retry-btn" class="primary">다시하기</button>
+    <button id="home-btn">홈으로</button>
+  </div>
+</div>
+
+<script type="module" src="js/game.js"></script>

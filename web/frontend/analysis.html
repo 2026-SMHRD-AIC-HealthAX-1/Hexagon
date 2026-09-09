@@ -1,0 +1,42 @@
+<title>사진으로 눈 상태 측정 - Eye God</title>
+<link rel="stylesheet" href="css/style.css">
+
+<div class="page">
+  <a class="back-link" href="index.html">← 홈으로</a>
+
+  <header class="top-bar">
+    <a class="logo" href="index.html"><span class="logo-eye"></span>Eye God</a>
+  </header>
+
+  <h1 style="font-size:22px;margin:0 0 4px">사진으로 눈 상태 측정</h1>
+  <p class="login-desc">안구 사진을 업로드하면 눈 상태를 참고용으로 분석해드려요.</p>
+
+  <div class="analysis-guide">
+    <div>💡 플래시를 켜주세요</div>
+    <div>📏 적당한 거리를 유지해주세요</div>
+    <div>👀 정면을 바라봐주세요</div>
+  </div>
+
+  <div class="analysis-upload">
+    <div style="font-size:40px">📷</div>
+    <p>스마트폰으로 촬영한 안구 이미지를 선택해주세요.</p>
+    <label class="auth-btn" style="display:inline-block">
+      <span id="photo-input-label-text">사진 선택</span>
+      <input id="photo-input" type="file" accept="image/*" hidden>
+    </label>
+    <img id="preview">
+  </div>
+
+  <div id="loading" class="status-banner hidden" style="margin-top:16px">이미지를 확인하고 있어요...</div>
+
+  <div id="result" class="hidden" style="margin-top:16px">
+    <div class="mypage-card">
+      <div class="mypage-label">분석 결과</div>
+      <div class="mypage-value muted">AI 분석 기능은 준비 중입니다. 모델 학습 완료 후 제공될 예정입니다.</div>
+    </div>
+  </div>
+
+  <div class="site-footer">본 서비스는 정식 의료 서비스가 아니며 참고용이므로 정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.</div>
+</div>
+
+<script type="module" src="js/analysis.js"></script>

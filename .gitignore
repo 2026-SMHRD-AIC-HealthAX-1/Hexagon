@@ -1,0 +1,20 @@
+# virtualenv (517MB, recreate locally with: python -m venv eye)
+eye/
+
+# secrets - never commit, see .env.example for the expected keys
+.env
+
+# runtime data - regenerated locally, not source
+data/eyegod.db
+data/calibration.json
+
+# python
+__pycache__/
+*.pyc
+
+# OS / editor junk
+.DS_Store
+.ipynb_checkpoints/
+
+# stale local build artifact - redundant now that the repo itself is the source of truth
+EyeGod_source.zip

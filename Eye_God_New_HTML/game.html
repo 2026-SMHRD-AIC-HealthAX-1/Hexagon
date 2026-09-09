@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eye God - 눈 운동</title>
+
+    <style>
+        /* =========================
+           기본
+        ========================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family:
+                "Pretendard",
+                "Noto Sans KR",
+                Arial,
+                sans-serif;
+
+            color: #252b33;
+            background: #ffffff;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+
+        /* =========================
+           전체
+        ========================= */
+
+        .page {
+            min-height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        /* =========================
+           Header
+        ========================= */
+
+        header {
+            height: 76px;
+
+            border-bottom: 1px solid #eeeeee;
+
+            display: flex;
+            align-items: center;
+        }
+
+        .header-inner {
+            width: 900px;
+            max-width: calc(100% - 48px);
+
+            margin: 0 auto;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+        /* 로고 */
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            font-size: 24px;
+            font-weight: 700;
+
+            color: #5f9fe9;
+        }
+
+        .logo-eye {
+            width: 32px;
+            height: 20px;
+
+            background: #9fc8f5;
+
+            border-radius: 50%;
+
+            position: relative;
+        }
+
+        .logo-eye::after {
+            content: "";
+
+            position: absolute;
+
+            width: 9px;
+            height: 9px;
+
+            background: #ffffff;
+
+            border-radius: 50%;
+
+            left: 12px;
+            top: 5px;
+        }
+
+
+        /* 헤더 */
+
+        .header-right {
+            display: flex;
+            align-items: center;
+
+            gap: 28px;
+        }
+
+        .record {
+            font-size: 15px;
+
+            color: #59636f;
+        }
+
+        .logout-btn {
+            border: none;
+
+            background: #8ebaf0;
+            color: white;
+
+            padding: 11px 22px;
+
+            border-radius: 12px;
+
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+
+        /* =========================
+           Main
+        ========================= */
+
+        main {
+            flex: 1;
+
+            padding: 45px 0 65px;
+        }
+
+        .container {
+            width: 900px;
+            max-width: calc(100% - 48px);
+
+            margin: 0 auto;
+        }
+
+
+        /* =========================
+           게임 시작 안내
+        ========================= */
+
+        .intro-screen {
+            text-align: center;
+
+            padding-top: 35px;
+        }
+
+        .game-icon {
+            width: 90px;
+            height: 90px;
+
+            margin: 0 auto 22px;
+
+            background: #e5f0fd;
+
+            border-radius: 28px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 45px;
+        }
+
+        .intro-title {
+            margin: 0 0 10px;
+
+            font-size: 30px;
+            letter-spacing: -1px;
+        }
+
+        .intro-description {
+            margin: 0 auto 30px;
+
+            color: #737d88;
+
+            font-size: 15px;
+
+            line-height: 1.7;
+        }
+
+
+        /* 게임 안내 */
+
+        .game-guide {
+            width: 620px;
+            max-width: 100%;
+
+            margin: 0 auto 30px;
+
+            background: #f4f8fd;
+
+            border: 1px solid #dce9f8;
+
+            border-radius: 20px;
+
+            padding: 25px 30px;
+
+            text-align: left;
+        }
+
+        .game-guide-title {
+            margin: 0 0 15px;
+
+            font-size: 17px;
+        }
+
+        .game-guide-list {
+            margin: 0;
+            padding: 0;
+
+            list-style: none;
+        }
+
+        .game-guide-list li {
+            margin-bottom: 9px;
+
+            color: #59636f;
+
+            font-size: 14px;
+        }
+
+        .game-guide-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .game-guide-list span {
+            margin-right: 7px;
+        }
+
+
+        /* 카메라 시작 버튼 */
+
+        .start-btn {
+            border: none;
+
+            background: #8ebaf0;
+            color: white;
+
+            padding: 14px 30px;
+
+            border-radius: 13px;
+
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .start-btn:hover {
+            background: #79abe7;
+        }
+
+
+        /* =========================
+           카메라 권한 안내
+        ========================= */
+
+        .camera-screen {
+            display: none;
+
+            text-align: center;
+
+            padding-top: 45px;
+        }
+
+        .camera-screen.show {
+            display: block;
+        }
+
+        .camera-icon {
+            width: 70px;
+            height: 70px;
+
+            margin: 0 auto 20px;
+
+            border-radius: 22px;
+
+            background: #e5f0fd;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 32px;
+        }
+
+        .camera-title {
+            margin: 0 0 10px;
+
+            font-size: 23px;
+        }
+
+        .camera-description {
+            margin: 0 0 25px;
+
+            color: #737d88;
+
+            font-size: 14px;
+        }
+
+        .camera-status {
+            margin-top: 15px;
+
+            font-size: 13px;
+
+            color: #858e98;
+        }
+
+
+        /* =========================
+           게임 화면
+        ========================= */
+
+        .game-screen {
+            display: none;
+        }
+
+        .game-screen.show {
+            display: block;
+        }
+
+
+        /* 게임 상단 */
+
+        .game-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            margin: 0;
+
+            font-size: 23px;
+        }
+
+        .game-stats {
+            display: flex;
+
+            gap: 12px;
+        }
+
+        .stat {
+            min-width: 100px;
+
+            padding: 10px 15px;
+
+            border-radius: 12px;
+
+            background: #f4f8fd;
+
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+
+            margin-bottom: 3px;
+
+            color: #7a838e;
+
+            font-size: 11px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+
+            color: #609de7;
+        }
+
+
+        /* =========================
+           게임 영역
+        ========================= */
+
+        .game-board {
+            width: 100vw;
+            height: min(65vh, 620px);
+
+            margin-left: calc(50% - 50vw);
+
+            position: relative;
+            overflow: hidden;
+
+            background: #fafcff;
+
+            border-top: 1px solid #e0e6ed;
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+
+        /* 카메라 미리보기 */
+
+        .camera-preview {
+            position: absolute;
+
+            top: 18px;
+            right: 18px;
+
+            width: 145px;
+            height: 105px;
+
+            border-radius: 14px;
+
+            object-fit: cover;
+
+            background: #e9edf2;
+
+            border: 2px solid white;
+
+            box-shadow:
+                0 3px 12px rgba(0, 0, 0, 0.08);
+
+            transform: scaleX(-1);
+        }
+
+
+        /* 게임 설명 */
+
+        .game-message {
+            position: absolute;
+
+            top: 22px;
+            left: 25px;
+
+            color: #7a838e;
+
+            font-size: 13px;
+        }
+
+
+        /* 목표 */
+
+        .target {
+            position: absolute;
+
+            width: 58px;
+            height: 58px;
+
+            border-radius: 50%;
+
+            background: #9fc8f5;
+
+            position: absolute;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition:
+                left 0.25s ease,
+                top 0.25s ease;
+
+            box-shadow:
+                0 5px 15px rgba(142, 186, 240, 0.25);
+        }
+
+        .target.show {
+            display: flex;
+        }
+
+        .target-inner {
+            width: 28px;
+            height: 28px;
+
+            background: white;
+
+            border-radius: 50%;
+        }
+
+
+        /* 적중 표시 */
+
+        .hit-effect {
+            position: absolute;
+
+            width: 80px;
+            height: 80px;
+
+            border-radius: 50%;
+
+            border: 4px solid #8ebaf0;
+
+            pointer-events: none;
+
+            display: none;
+
+            animation: hitAnimation 0.45s ease-out;
+        }
+
+        .hit-effect.show {
+            display: block;
+        }
+
+        @keyframes hitAnimation {
+
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+
+        }
+
+
+        /* =========================
+           결과 화면
+        ========================= */
+
+        .result-screen {
+            display: none;
+
+            text-align: center;
+
+            padding-top: 35px;
+        }
+
+        .result-screen.show {
+            display: block;
+        }
+
+        .result-icon {
+            width: 80px;
+            height: 80px;
+
+            margin: 0 auto 20px;
+
+            background: #e5f0fd;
+
+            border-radius: 25px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 38px;
+        }
+
+        .result-title {
+            margin: 0 0 8px;
+
+            font-size: 28px;
+        }
+
+        .result-description {
+            margin: 0 0 30px;
+
+            color: #737d88;
+
+            font-size: 14px;
+        }
+
+
+        /* 결과 카드 */
+
+        .result-box {
+            width: 620px;
+            max-width: 100%;
+
+            margin: 0 auto 25px;
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 15px;
+        }
+
+        .result-card {
+            padding: 25px;
+
+            border: 1px solid #e0e6ed;
+
+            border-radius: 20px;
+
+            background: white;
+        }
+
+        .result-label {
+            margin: 0 0 8px;
+
+            color: #737d88;
+
+            font-size: 14px;
+        }
+
+        .result-number {
+            margin: 0;
+
+            font-size: 31px;
+            font-weight: 700;
+
+            color: #609de7;
+        }
+
+        .final-score {
+            text-align: center;
+            margin: 0 auto 30px;
+        }
+
+        .final-score .result-label {
+            margin-bottom: 5px;
+        }
+
+        .final-score-number {
+            margin: 0;
+
+            font-size: 48px;
+            font-weight: 700;
+
+            color: #609de7;
+        }
+
+
+        /* 저장 */
+
+        .save-message {
+            width: 620px;
+            max-width: 100%;
+
+            margin: 0 auto 25px;
+
+            padding: 17px 20px;
+
+            border-radius: 15px;
+
+            background: #f4f8fd;
+
+            color: #59636f;
+
+            font-size: 13px;
+        }
+
+
+        /* 결과 버튼 */
+
+        .result-buttons {
+            display: flex;
+
+            justify-content: center;
+
+            gap: 10px;
+        }
+
+        .again-btn {
+            border: none;
+
+            background: #8ebaf0;
+            color: white;
+
+            padding: 12px 25px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .home-btn {
+            border: 1px solid #d8dee6;
+
+            background: white;
+            color: #59636f;
+
+            padding: 12px 25px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           Footer
+        ========================= */
+
+        footer {
+            border-top: 1px solid #eeeeee;
+
+            padding: 18px 20px;
+
+            text-align: center;
+
+            color: #9aa1aa;
+
+            font-size: 12px;
+
+            line-height: 1.6;
+        }
+
+
+        /* =========================
+           반응형
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .container,
+            .header-inner {
+                max-width: calc(100% - 32px);
+            }
+
+            .game-header {
+                align-items: flex-start;
+
+                flex-direction: column;
+
+                gap: 15px;
+            }
+
+            .game-board {
+                height: 420px;
+            }
+
+            .camera-preview {
+                width: 110px;
+                height: 80px;
+            }
+
+            .result-box {
+                grid-template-columns: 1fr;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="page">
+
+
+        <!-- =========================
+         HEADER
+    ========================= -->
+
+        <header>
+
+            <div class="header-inner">
+
+                <a href="index.html" class="logo">
+
+                    <div class="logo-eye"></div>
+
+                    Eye God
+
+                </a>
+
+
+                <div class="header-right">
+
+                    <a href="ex6_마이페이지.html" class="record">
+                        📖 내 기록
+                    </a>
+
+                    <button class="logout-btn" onclick="logout()">
+                        로그아웃
+                    </button>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =========================
+         MAIN
+    ========================= -->
+
+        <main>
+
+            <div class="container">
+
+
+                <!-- =========================
+                 게임 시작 화면
+            ========================= -->
+
+                <section class="intro-screen" id="introScreen">
+
+                    <div class="game-icon">
+                        👀
+                    </div>
+
+                    <h1 class="intro-title">
+                        눈 운동
+                    </h1>
+
+                    <p class="intro-description">
+                        파란 점을 눈으로 따라가며 가볍게 눈을 움직여보세요.<br>
+                        짧은 게임을 통해 시선 움직임을 확인해볼 수 있어요.
+                    </p>
+
+
+                    <div class="game-guide">
+
+                        <h2 class="game-guide-title">
+                            게임 방법
+                        </h2>
+
+                        <ul class="game-guide-list">
+
+                            <li>
+                                <span>👁</span>
+                                화면의 목표를 눈으로 바라봐주세요.
+                            </li>
+
+                            <li>
+                                <span>🎯</span>
+                                목표를 정확하게 바라보면 점수를 얻어요.
+                            </li>
+
+                            <li>
+                                <span>⏱</span>
+                                제한 시간은 30초입니다.
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+
+                    <button class="start-btn" onclick="requestCamera()">
+                        게임 시작하기
+                    </button>
+
+                </section>
+
+
+
+                <!-- =========================
+                 카메라 권한
+            ========================= -->
+
+                <section class="camera-screen" id="cameraScreen">
+
+                    <div class="camera-icon">
+                        📷
+                    </div>
+
+                    <h2 class="camera-title">
+                        카메라를 준비하고 있어요
+                    </h2>
+
+                    <p class="camera-description">
+                        시선 추적을 위해 카메라 사용 권한이 필요합니다.
+                    </p>
+
+                    <button class="start-btn" onclick="enableCamera()">
+                        카메라 사용 허용
+                    </button>
+
+                    <p class="camera-status" id="cameraStatus">
+                        카메라 권한을 허용해주세요.
+                    </p>
+
+                </section>
+
+
+
+                <!-- =========================
+                 게임 화면
+            ========================= -->
+
+                <section class="game-screen" id="gameScreen">
+
+                    <div class="game-header">
+
+                        <h1 class="game-title">
+                            목표를 눈으로 따라가세요
+                        </h1>
+
+
+                        <div class="game-stats">
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    점수
+                                </span>
+
+                                <span class="stat-value" id="score">
+                                    0
+                                </span>
+
+                            </div>
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    남은 시간
+                                </span>
+
+                                <span class="stat-value" id="timer">
+                                    30
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- 게임판 -->
+
+                    <div class="game-board" id="gameBoard">
+
+                        <div class="game-message">
+                            파란 목표를 바라봐주세요
+                        </div>
+
+
+                        <!-- 카메라 -->
+
+                        <video class="camera-preview" id="cameraPreview" autoplay playsinline muted></video>
+
+
+                        <!-- 목표 -->
+
+                        <div class="target" id="target">
+
+                            <div class="target-inner"></div>
+
+                        </div>
+
+
+                        <!-- 적중 효과 -->
+
+                        <div class="hit-effect" id="hitEffect"></div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =========================
+                 결과 화면
+            ========================= -->
+
+                <section class="result-screen" id="resultScreen">
+
+                    <div class="result-icon">
+                        🎉
+                    </div>
+
+                    <h1 class="result-title">
+                        게임이 끝났어요!
+                    </h1>
+
+                    <p class="result-description">
+                        눈 운동 결과를 확인해보세요.
+                    </p>
+
+
+                    <!-- 최종 점수 -->
+                    <div class="final-score">
+
+                        <p class="result-label">
+                            최종 점수
+                        </p>
+
+                        <p class="final-score-number" id="finalScore">
+                            0점
+                        </p>
+
+                    </div>
+                    
+                    <div class="result-box">
+
+                        <!-- 상세 결과 -->
+                        <div class="result-box">
+
+                            <!-- 시선 정확도 -->
+                            <div class="result-card">
+
+                                <p class="result-label">
+                                    시선 정확도
+                                </p>
+
+                                <p class="result-number" id="accuracy">
+                                    0%
+                                </p>
+
+                            </div>
+
+
+                            <!-- 반응속도 -->
+                            <div class="result-card">
+
+                                <p class="result-label">
+                                    반응속도
+                                </p>
+
+                                <p class="result-number" id="reactionTime">
+                                    0.0초
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="save-message">
+
+                        ✓ 게임 결과가 내 눈 건강 기록에 저장되었어요.
+
+                    </div>
+
+
+                    <div class="result-buttons">
+
+                        <button class="again-btn" onclick="restartGame()">
+                            다시하기
+                        </button>
+
+                        <button class="home-btn" onclick="goHome()">
+                            홈으로
+                        </button>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+
+
+        <!-- =========================
+         의료 면책
+    ========================= -->
+
+        <footer>
+
+            본 서비스는 정식 의료 서비스가 아니며 참고용이므로
+            정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.
+
+        </footer>
+
+    </div>
+
+
+
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
+
+
+        /* =====================================================
+           기본 설정
+           ===================================================== */
+
+        const GAME_TIME = 30;
+
+        let score = 0;
+        let timeLeft = GAME_TIME;
+
+        let hitCount = 0;
+        let totalTargets = 0;
+
+        let timerInterval = null;
+        let targetInterval = null;
+        let cameraStream = null;
+
+        let reactionTimes = [];
+        let targetStartTime = 0;
+
+
+
+        /* =====================================================
+           화면 요소
+           ===================================================== */
+
+        const introScreen =
+            document.getElementById("introScreen");
+
+        const cameraScreen =
+            document.getElementById("cameraScreen");
+
+        const gameScreen =
+            document.getElementById("gameScreen");
+
+        const resultScreen =
+            document.getElementById("resultScreen");
+
+        const target =
+            document.getElementById("target");
+
+        const gameBoard =
+            document.getElementById("gameBoard");
+
+        const cameraPreview =
+            document.getElementById("cameraPreview");
+
+
+
+        /* =====================================================
+           카메라 권한 화면
+           ===================================================== */
+
+        function requestCamera() {
+
+            introScreen.style.display = "none";
+
+            cameraScreen.classList.add("show");
+
+        }
+
+
+
+        /* =====================================================
+           카메라 사용
+           ===================================================== */
+
+        async function enableCamera() {
+
+            const status =
+                document.getElementById("cameraStatus");
+
+
+            try {
+
+                /*
+                 * 실제 브라우저 카메라 권한 요청
+                 */
+
+                cameraStream =
+                    await navigator.mediaDevices.getUserMedia({
+
+                        video: {
+                            facingMode: "user"
+                        },
+
+                        audio: false
+
+                    });
+
+
+                /*
+                 * 카메라 영상을 화면에 연결
+                 */
+
+                cameraPreview.srcObject =
+                    cameraStream;
+
+
+                status.textContent =
+                    "카메라가 준비되었어요.";
+
+
+                setTimeout(function () {
+
+                    startGame();
+
+                }, 700);
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                status.textContent =
+                    "카메라 권한이 필요합니다. 브라우저 설정에서 카메라 사용을 허용해주세요.";
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           게임 시작
+           ===================================================== */
+
+        function startGame() {
+
+            cameraScreen.classList.remove("show");
+
+            gameScreen.classList.add("show");
+
+
+            score = 0;
+
+            timeLeft = GAME_TIME;
+
+            hitCount = 0;
+
+            totalTargets = 0;
+
+            // ★ 반응속도 기록 초기화
+            reactionTimes = [];
+
+            updateScore();
+            updateTimer();
+
+
+            /*
+             * 첫 번째 목표
+             */
+
+            moveTarget();
+
+
+            /*
+             * 일정 시간마다 목표 이동
+             */
+
+            targetInterval =
+                setInterval(function () {
+
+                    /*
+                     * 실제 시선 추적 구현에서는
+                     * 목표가 이동할 때마다
+                     * 시선 좌표와 목표 영역을 비교함.
+                     */
+
+                    simulateEyeTracking();
+
+                    moveTarget();
+
+                }, 1800);
+
+
+            /*
+             * 타이머
+             */
+
+            timerInterval =
+                setInterval(function () {
+
+                    timeLeft--;
+
+                    updateTimer();
+
+
+                    if (timeLeft <= 0) {
+
+                        endGame();
+
+                    }
+
+                }, 1000);
+
+        }
+
+
+
+        /* =====================================================
+           목표 위치 변경
+           ===================================================== */
+
+        function moveTarget() {
+
+            const boardWidth =
+                gameBoard.clientWidth;
+
+            const boardHeight =
+                gameBoard.clientHeight;
+
+            const targetSize = 58;
+
+            const minX = 30;
+            const minY = 80;
+
+            const maxX =
+                boardWidth - targetSize - 30;
+
+            const maxY =
+                boardHeight - targetSize - 30;
+
+            const x =
+                Math.random() *
+                (maxX - minX)
+                + minX;
+
+            const y =
+                Math.random() *
+                (maxY - minY)
+                + minY;
+
+            target.style.left = x + "px";
+            target.style.top = y + "px";
+
+            target.classList.add("show");
+
+            totalTargets++;
+
+            // ★ 목표가 나타난 시간
+            targetStartTime = Date.now();
+        }
+
+
+
+        /* =====================================================
+           시선 추적 시뮬레이션
+           ===================================================== */
+
+        function simulateEyeTracking() {
+
+            /*
+             * 현재는 실제 AI 시선 추적 엔진 대신
+             * 테스트를 위해 일정 확률로 적중 처리.
+             *
+             * 실제 구현 시 이 부분을
+             *
+             * webcam frame
+             *      ↓
+             * 얼굴/눈 검출
+             *      ↓
+             * 시선 좌표 계산
+             *      ↓
+             * 목표 영역과 비교
+             *
+             * 과정으로 교체.
+             */
+
+
+            const isHit =
+                Math.random() > 0.25;
+
+
+            if (isHit) {
+
+                registerHit();
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           적중
+           ===================================================== */
+
+        function registerHit() {
+
+            score += 10;
+            hitCount++;
+
+            updateScore();
+
+            const effect =
+                document.getElementById("hitEffect");
+
+            const targetRect =
+                target.getBoundingClientRect();
+
+            const boardRect =
+                gameBoard.getBoundingClientRect();
+
+            const reactionTime =
+                (Date.now() - targetStartTime) / 1000;
+
+            reactionTimes.push(reactionTime);
+
+            effect.style.left =
+                (
+                    targetRect.left -
+                    boardRect.left -
+                    5
+                ) + "px";
+
+            effect.style.top =
+                (
+                    targetRect.top -
+                    boardRect.top -
+                    5
+                ) + "px";
+
+
+            // 기존 효과 제거
+            effect.classList.remove("show");
+
+            // 애니메이션 재실행
+            void effect.offsetWidth;
+
+            effect.classList.add("show");
+
+
+            // ★ 0.45초 후 효과 삭제
+            setTimeout(function () {
+
+                effect.classList.remove("show");
+
+            }, 450);
+
+        }
+
+
+
+        /* =====================================================
+           점수 표시
+           ===================================================== */
+
+        function updateScore() {
+
+            document
+                .getElementById("score")
+                .textContent = score;
+
+        }
+
+
+
+        /* =====================================================
+           타이머 표시
+           ===================================================== */
+
+        function updateTimer() {
+
+            document
+                .getElementById("timer")
+                .textContent = timeLeft;
+
+        }
+
+
+
+        /* =====================================================
+           게임 종료
+           ===================================================== */
+
+        function endGame() {
+
+            clearInterval(timerInterval);
+
+            clearInterval(targetInterval);
+
+
+            target.classList.remove("show");
+
+
+            /*
+             * 정확도 계산
+             */
+
+            let accuracyValue = 0;
+
+
+            if (totalTargets > 0) {
+
+                accuracyValue =
+                    Math.round(
+                        (hitCount / totalTargets) * 100
+                    );
+
+            }
+
+            let averageReactionTime = 0;
+
+            if (reactionTimes.length > 0) {
+
+                const totalReactionTime =
+                    reactionTimes.reduce(
+                        (sum, time) => sum + time,
+                        0
+                    );
+
+                averageReactionTime =
+                    totalReactionTime /
+                    reactionTimes.length;
+            }
+
+
+            /*
+             * 결과 출력
+             */
+
+            document
+                .getElementById("finalScore")
+                .textContent =
+                score + "점";
+
+
+            document
+                .getElementById("accuracy")
+                .textContent =
+                accuracyValue + "%";
+
+            document
+                .getElementById("reactionTime")
+                .textContent =
+                averageReactionTime.toFixed(1) + "초";
+
+
+            /*
+             * 결과 자동 저장
+             */
+
+            saveGameResult(
+                score,
+                accuracyValue
+            );
+
+
+            gameScreen.classList.remove("show");
+
+            resultScreen.classList.add("show");
+
+
+            /*
+             * 카메라 종료
+             */
+
+            stopCamera();
+
+        }
+
+
+
+        /* =====================================================
+           결과 저장
+           ===================================================== */
+
+        function saveGameResult(
+            finalScore,
+            finalAccuracy
+        ) {
+
+            /*
+             * 실제 서비스에서는
+             * 여기서 서버 DB로 전송.
+             *
+             * 현재는 테스트용 localStorage.
+             */
+
+            const gameResult = {
+
+                score: finalScore,
+
+                accuracy: finalAccuracy,
+
+                date: new Date().toISOString()
+
+            };
+
+
+            localStorage.setItem(
+                "latestEyeGameResult",
+                JSON.stringify(gameResult)
+            );
+
+        }
+
+
+
+        /* =====================================================
+           다시하기
+           ===================================================== */
+
+        function restartGame() {
+
+            resultScreen.classList.remove("show");
+
+            introScreen.style.display = "block";
+
+        }
+
+
+
+        /* =====================================================
+           홈으로
+           ===================================================== */
+
+        function goHome() {
+
+            stopCamera();
+
+            window.location.href =
+                "index.html";
+
+        }
+
+
+
+        /* =====================================================
+           카메라 종료
+           ===================================================== */
+
+        function stopCamera() {
+
+            if (!cameraStream) {
+                return;
+            }
+
+
+            cameraStream
+                .getTracks()
+                .forEach(function (track) {
+
+                    track.stop();
+
+                });
+
+
+            cameraStream = null;
+
+            cameraPreview.srcObject = null;
+
+        }
+
+
+
+        /* =====================================================
+           로그아웃
+           ===================================================== */
+
+        function logout() {
+
+            sessionStorage.removeItem(
+                "isLoggedIn"
+            );
+
+
+            window.location.href =
+                "login.html";
+
+        }
+
+
+
+        /* =====================================================
+           페이지 종료 시 카메라 정리
+           ===================================================== */
+
+        window.addEventListener(
+            "beforeunload",
+            function () {
+
+                stopCamera();
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
