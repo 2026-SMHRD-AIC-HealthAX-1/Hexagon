@@ -71,8 +71,6 @@ There is no test suite, linter, or build step configured in this repo.
 
 **Screen sizing** ([screen.py](src/screen.py)): OS-specific — uses `AppKit.NSScreen` (with `backingScaleFactor` for Retina) on macOS, `screeninfo` on Windows, and raises on anything else. **This queries the server machine's physical screen** and is only meaningful for the CLI/desktop path. The web path cannot use it — calibration/game screen dimensions there come from the browser's reported viewport size instead (see below).
 
-**memo.py** at the repo root is a self-contained, unrelated scratch script (legacy `mp.solutions.face_mesh` API, not the Tasks API used elsewhere) implementing blink-triggered "shooting" at a target using eye-aspect-ratio blink detection. It doesn't import from or get imported by `src/`.
-
 ### Known quirks in `src/` (don't "fix" without discussion — behavior-preserving is the priority)
 
 - `src/` modules use flat imports (`from calibration import Calibration`, etc.) — there's no package structure. Any code importing from `src/` externally (e.g. `web/backend`) must add `src/` to `sys.path` first.
