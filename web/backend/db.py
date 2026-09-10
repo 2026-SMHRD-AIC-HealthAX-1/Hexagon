@@ -51,7 +51,7 @@ def init_db():
             """)
             cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS game_records (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    game_record_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                     user_id BIGINT NOT NULL,
                     game_type VARCHAR(20) NOT NULL DEFAULT '{GAME_TYPE_GAZE}' CHECK (game_type IN ('gaze', 'rhythm')),
                     score INT NOT NULL,
@@ -63,7 +63,7 @@ def init_db():
             # 나중에 AI 모델이 붙을 때 바로 쓸 수 있도록 스키마만 미리 만들어둔다.
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS analysis_results (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    analysis_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                     user_id BIGINT NOT NULL,
                     cataract_risk VARCHAR(20),
                     redness VARCHAR(20),
@@ -93,7 +93,7 @@ def init_db():
             # 필요한 최소 데이터(발생 시각)만 남기면 충분하다.
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS blink_alerts (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    blink_record_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                     user_id BIGINT NOT NULL,
                     triggered_at VARCHAR(64) NOT NULL,
                     FOREIGN KEY (user_id) REFERENCES users(id)
