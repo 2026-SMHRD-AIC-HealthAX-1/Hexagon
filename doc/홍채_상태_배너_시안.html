@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>홍채 상태 배너 시안</title>
+<!--
+  홈 화면(index.html) "눈 건강 요약" 카드를 대체할 디자인 시안 (보류 중, 미적용).
+  독립 실행 가능한 정적 파일입니다 - 브라우저로 그냥 열어서 확인할 수 있습니다
+  (프로젝트 서버 실행 불필요, 실제 index.html/style.css와 무관).
+
+  적용 보류 이유 (2026-09-10 기준):
+  1) "양호/주의/위험" 3단계를 나누는 기준이 아직 정해지지 않음
+     (예: 최근 며칠간 blink_alerts 발생 횟수 기준 등 - 논의만 되고 확정 안 됨).
+  2) analysis_results(백내장 위험도/충혈도)를 채워줄 S-03 실제 분석 로직이
+     아직 미구현 - 지금 시점엔 반영할 실데이터가 없음.
+
+  위 두 가지가 정해지면, 이 파일의 마크업/CSS/JS를 web/frontend/index.html의
+  .health-card 자리에 옮기고, home.js에서 GET /api/mypage 응답에 상태 분류
+  결과(예: overall_status: "good"|"caution"|"risk")를 추가로 받아
+  banner.dataset.status를 그 값으로 설정해주면 됨 - 지금 하드코딩된 예시
+  버튼(.pill) 클릭 로직을 실제 서버 응답 기반 설정으로 바꾸기만 하면 되는 구조.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #16232b;
+    --page: #eeece4;
+    --paper: #fbf8f1;
+    --muted: #83898a;
+    --line: #dcd6c6;
+    --good: #2e9e86;
+    --caution: #d69a34;
+    --risk: #c85a46;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Noto Sans KR", "Pretendard", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  .stage-head {
+    margin-bottom: 34px;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+    margin-bottom: 16px;
+  }
+
+  .stage-head h1 {
+    margin: 0 0 10px;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .stage-desc {
+    margin: 0;
+    max-width: 60ch;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  /* ===== banner ===== */
+  .banner {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 30px 34px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.35;
+  }
+
+  .banner-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    gap: 10px 30px;
+    min-height: 210px;
+  }
+
+  .corner {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0;
+  }
+
+  .corner-tl { grid-column: 1; grid-row: 1; text-align: left; }
+  .corner-tr { grid-column: 3; grid-row: 1; text-align: right; align-items: flex-end; }
+  .corner-bl { grid-column: 1; grid-row: 2; text-align: left; }
+  .corner-br { grid-column: 3; grid-row: 2; text-align: right; align-items: flex-end; }
+
+  .corner-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .corner-value {
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+
+  .corner-value small {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+
+  .corner-value.muted {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 500;
+    font-family: "Noto Sans KR", sans-serif;
+  }
+
+  .corner-caption {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ===== eye ===== */
+  .eye-wrap {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .eye-svg {
+    width: 220px;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sclera { fill: var(--paper); }
+
+  .eye-outline {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 4;
+    stroke-linejoin: round;
+  }
+
+  .lash { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+
+  .iris {
+    fill: var(--good);
+    transition: fill 0.5s ease;
+  }
+
+  .banner[data-status="caution"] .iris { fill: var(--caution); }
+  .banner[data-status="risk"] .iris { fill: var(--risk); }
+
+  .iris-spoke {
+    stroke: rgba(0, 0, 0, 0.22);
+    stroke-width: 1.4;
+  }
+
+  .iris-ring {
+    fill: none;
+    stroke: rgba(0, 0, 0, 0.28);
+    stroke-width: 2;
+  }
+
+  .pupil {
+    fill: var(--ink);
+    r: 22px;
+    transition: r 0.5s ease;
+  }
+
+  .banner[data-status="caution"] .pupil { r: 29px; }
+  .banner[data-status="risk"] .pupil { r: 36px; }
+
+  .glint { fill: #fff; opacity: 0.85; }
+
+  .eyelid {
+    fill: var(--paper);
+    transform: translateY(0);
+    animation: blink 6.5s ease-in-out infinite;
+  }
+
+  .banner[data-status="caution"] .eyelid { animation-duration: 4s; }
+  .banner[data-status="risk"] .eyelid { animation-duration: 2.4s; }
+
+  @keyframes blink {
+    0%, 88%, 100% { transform: translateY(0); }
+    91% { transform: translateY(240px); }
+    94% { transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .eyelid { animation: none; }
+  }
+
+  .eye-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--good);
+    transition: background 0.5s ease;
+  }
+
+  .banner[data-status="caution"] .status-dot { background: var(--caution); }
+  .banner[data-status="risk"] .status-dot { background: var(--risk); }
+
+  /* ===== controls ===== */
+  .controls {
+    margin-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .controls-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .pill.active {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .stage-foot {
+    margin-top: 28px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .banner-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .eye-wrap { grid-column: 1 / 3; grid-row: 1; }
+    .corner-tl { grid-column: 1; grid-row: 2; }
+    .corner-tr { grid-column: 2; grid-row: 2; }
+    .corner-bl { grid-column: 1; grid-row: 3; }
+    .corner-br { grid-column: 2; grid-row: 3; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <header class="stage-head">
+    <span class="eyebrow">메인화면 재구성 시안 · 아이디어 ① (보류 중, 미적용)</span>
+    <h1>숫자 카드 대신, 홍채로 보여주는 눈 건강 요약</h1>
+    <p class="stage-desc">
+      기존 index.html의 2x2 통계 카드를 눈 모양 배너로 바꾼 시안입니다. 상태 분류 기준과
+      S-03 분석 기능이 아직 없어서 실제 프로젝트에는 적용하지 않고 이 파일로만 보관 중입니다.
+      아래 알약 버튼을 눌러보면 종합 상태에 따라 홍채 색·동공 크기·깜빡이는 속도가 함께
+      바뀌는 걸 확인할 수 있어요.
+    </p>
+  </header>
+
+  <section class="banner" data-status="good">
+    <div class="banner-grid">
+      <div class="corner corner-tl">
+        <span class="corner-label">GAZE SCORE</span>
+        <span class="corner-value">320<small>점</small></span>
+        <span class="corner-caption">시선 추적 게임 · 최근 기록</span>
+      </div>
+
+      <div class="corner corner-tr">
+        <span class="corner-label">RHYTHM SCORE</span>
+        <span class="corner-value">1,180<small>점</small></span>
+        <span class="corner-caption">리듬게임 · 최근 기록</span>
+      </div>
+
+      <div class="eye-wrap">
+        <svg class="eye-svg" viewBox="0 0 400 240">
+          <defs>
+            <clipPath id="eyeClip">
+              <path d="M20,120 C80,20 320,20 380,120 C320,220 80,220 20,120 Z"/>
+            </clipPath>
+          </defs>
+
+          <g clip-path="url(#eyeClip)">
+            <rect class="sclera" x="0" y="0" width="400" height="240"/>
+
+            <circle class="iris" cx="200" cy="120" r="56"/>
+            <circle class="iris-ring" cx="200" cy="120" r="56"/>
+            <circle class="iris-ring" cx="200" cy="120" r="40"/>
+
+            <g class="iris-spoke">
+              <line x1="200" y1="66" x2="200" y2="86"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(30 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(60 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(90 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(120 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(150 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(180 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(210 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(240 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(270 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(300 200 120)"/>
+              <line x1="200" y1="66" x2="200" y2="86" transform="rotate(330 200 120)"/>
+            </g>
+
+            <circle class="pupil" cx="200" cy="120" r="22"/>
+            <ellipse class="glint" cx="186" cy="104" rx="8" ry="5"/>
+
+            <rect class="eyelid" x="0" y="-240" width="400" height="240"/>
+          </g>
+
+          <path class="eye-outline" d="M20,120 C80,20 320,20 380,120 C320,220 80,220 20,120 Z"/>
+
+          <g class="lash">
+            <line x1="70" y1="52" x2="58" y2="34"/>
+            <line x1="110" y1="34" x2="102" y2="14"/>
+            <line x1="160" y1="24" x2="156" y2="4"/>
+            <line x1="290" y1="34" x2="298" y2="14"/>
+            <line x1="330" y1="52" x2="342" y2="34"/>
+          </g>
+        </svg>
+
+        <span class="eye-status">
+          <span class="status-dot"></span>
+          <span class="status-text">종합 상태 · 양호</span>
+        </span>
+      </div>
+
+      <div class="corner corner-bl">
+        <span class="corner-label">CATARACT RISK</span>
+        <span class="corner-value muted">측정 미완료</span>
+        <span class="corner-caption">백내장 위험도 · S-03 준비 중</span>
+      </div>
+
+      <div class="corner corner-br">
+        <span class="corner-label">REDNESS</span>
+        <span class="corner-value muted">측정 미완료</span>
+        <span class="corner-caption">안구 충혈도 · S-03 준비 중</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <span class="controls-label">미리보기 조작 — 실제 서비스에서는 최근 눈 깜빡임 경고 빈도로 자동 결정될 값입니다</span>
+    <div class="pills">
+      <button class="pill active" data-set="good" data-label="양호">경고 적음 · 양호</button>
+      <button class="pill" data-set="caution" data-label="주의">경고 보통 · 주의</button>
+      <button class="pill" data-set="risk" data-label="위험">경고 잦음 · 위험</button>
+    </div>
+  </div>
+
+  <p class="stage-foot">
+    미니게임 패널·안과 지도 등 나머지 홈 화면 구성은 기존 레이아웃 그대로 이어지고,
+    이 배너는 지금의 "눈 건강 요약" 카드 자리를 대체하는 형태로 검토 중입니다.
+  </p>
+</div>
+
+<script>
+  const banner = document.querySelector(".banner");
+  const statusText = document.querySelector(".status-text");
+  const pills = document.querySelectorAll(".pill");
+
+  pills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const status = pill.dataset.set;
+      banner.dataset.status = status;
+      statusText.textContent = "종합 상태 · " + pill.dataset.label;
+      pills.forEach((p) => p.classList.toggle("active", p === pill));
+    });
+  });
+</script>
+</body>
+</html>

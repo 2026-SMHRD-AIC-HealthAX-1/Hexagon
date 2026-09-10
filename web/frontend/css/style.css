@@ -928,4 +928,24 @@ button.primary:hover {
   .game-list {
     grid-template-columns: 1fr;
   }
+
+  /* 모바일에서는 줄바꿈이 화면 폭에 따라 들쭉날쭉해지는 대신
+     로고+로그인 한 줄, 검색창 한 줄로 순서를 고정 */
+  header.top-bar {
+    row-gap: 12px;
+  }
+
+  .logo {
+    order: 1;
+  }
+
+  #auth-area {
+    order: 2;
+  }
+
+  .header-search {
+    order: 3;
+    flex: 1 1 100%;
+    max-width: none;
+  }
 }

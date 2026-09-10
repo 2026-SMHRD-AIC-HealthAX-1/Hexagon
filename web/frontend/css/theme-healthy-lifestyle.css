@@ -1,0 +1,114 @@
+/* 테스트용 테마 - "Healthy Lifestyle" Figma 목업 참고 (보라 계열, 화이트 카드 + 그림자)
+   style.css는 건드리지 않고, 이 파일을 style.css 뒤에 추가로 링크해서 위에 덮어씌우는 방식.
+   빼고 싶으면 index.html에서 이 파일의 <link>만 지우면 원래 테마로 즉시 복구됨. */
+
+:root {
+  --blue: #6c5ce7;
+  --blue-dark: #4c3fd9;
+  --blue-light: #ece9fb;
+  --blue-pale: #f4f2fc;
+  --text: #241f3d;
+  --gray: #8a86a3;
+  --line: #e8e5f5;
+  --warning: #d64545;
+}
+
+body {
+  background: #f5f5f8;
+}
+
+/* 카드형 요소는 전부 테두리선 대신 은은한 그림자 + 더 둥근 모서리로 */
+.health-card,
+.care-box,
+.game-panel,
+.map-section,
+.mypage-card,
+.toggle-row,
+.menu-card,
+.clinic-item,
+.status-banner,
+.game-item,
+.score-card,
+.modal-box {
+  border-color: transparent;
+  border-radius: 22px;
+  box-shadow: 0 10px 26px rgba(76, 63, 217, 0.1);
+}
+
+header.top-bar .logo {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.health-card {
+  background: #fff;
+}
+
+.health-card .card-title {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* 2x2 통계 그리드를 레퍼런스처럼 각각 독립된 흰 카드로 */
+.health-stats {
+  border-top: none;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.health-stat {
+  background: #fbfaff;
+  border-radius: 16px;
+  padding: 16px 10px;
+  border: none !important;
+}
+
+.health-stat b {
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* 첫 번째 카드(시선 추적 게임)만 레퍼런스의 "Heart" 그라디언트 카드처럼 강조 */
+.health-stats .health-stat:first-child {
+  background: linear-gradient(160deg, #6c5ce7, #4c3fd9);
+  color: #fff;
+}
+
+.health-stats .health-stat:first-child small {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.care-icon,
+.game-icon {
+  background: var(--blue-light);
+  border-radius: 14px;
+}
+
+input.toggle-switch:checked {
+  background: var(--blue);
+}
+
+.quick-fab {
+  background: linear-gradient(160deg, #6c5ce7, #4c3fd9);
+  box-shadow: 0 10px 22px rgba(76, 63, 217, 0.35);
+}
+
+.quick-fab:hover {
+  background: linear-gradient(160deg, #7a6bf0, #5747e8);
+}
+
+.auth-btn,
+button.primary {
+  background: var(--blue);
+  border-radius: 14px;
+}
+
+.auth-btn:hover,
+button.primary:hover {
+  background: var(--blue-dark);
+}
+
+.score-card .value {
+  color: var(--blue-dark);
+}

@@ -1,10 +1,14 @@
 Eye God - Windows 환경 테스트 가이드
-(작성일: 2026-09-09, GitHub 저장소 기준으로 재작성)
+(작성일: 2026-09-09, GitHub 저장소 + MySQL 전환 반영 최신본)
 
 이 프로젝트는 이제 git 저장소로 관리됩니다 (https://github.com/StarBlossom99/Eye-God,
 private repo). 압축파일을 따로 주고받지 않고, 아래 순서대로 git으로 직접 받아서
 테스트하면 됩니다. 나중에 코드가 업데이트되면 압축파일을 다시 받을 필요 없이
 git pull 한 번이면 최신 상태로 맞출 수 있습니다.
+
+DB는 SQLite에서 MySQL로 전환되었습니다 - 이제 웹 모드를 실행하려면 로컬에
+MySQL 서버가 떠 있어야 합니다 (아래 6번 참고). CLI/데스크톱 모드는 DB를 전혀
+쓰지 않으므로 이 요구사항과 무관합니다.
 
 ===========================================
 0. 저장소에 들어있는 것 / 안 들어있는 것
@@ -16,10 +20,13 @@ git에 포함되어 관리되는 것:
 
 git에서 의도적으로 제외되는 것 (.gitignore, 직접 준비해야 함):
 - 파이썬 가상환경(eye/) - macOS 전용 패키지가 섞여있어서 공유 대상이 아님.
-  Windows에서 새로 만들어야 함 (아래 3번 참고).
+  Windows에서 새로 만들어야 함 (아래 4번 참고).
 - .env - 비밀키가 들어있는 파일. .env.example을 복사해서 새로 만들어야 함
-  (아래 5번 참고).
-- data/ 안의 calibration.json, eyegod.db - 실행하면 자동 생성됨.
+  (아래 7번 참고).
+- data/calibration.json - CLI 모드를 실행하면 자동 생성됨 (웹 모드는 이제
+  이 파일을 쓰지 않고 MySQL에 사용자별로 저장함 - 아래 6번 참고).
+- MySQL 서버/데이터베이스 자체 - 저장소에 포함되지 않으며 각자 로컬에
+  직접 설치해야 함 (아래 6번 참고).
 
 ===========================================
 1. 저장소 접근 권한
@@ -37,6 +44,12 @@ git clone이 됩니다. 초대 안 됐다면 저장소 관리자(StarBlossom99)�
   (설치 옵션은 기본값 그대로 진행하면 됨)
 - Python 3.12.x 설치 (python.org에서 다운로드). 설치 중 "Add python.exe to PATH"
   체크박스 꼭 체크할 것.
+- MySQL 설치: MySQL Installer for Windows
+  (https://dev.mysql.com/downloads/installer/) 에서 "MySQL Server"가
+  포함된 구성으로 설치. 설치 중 root 비밀번호를 설정하게 되는데, 이 비밀번호는
+  기억해두었다가 아래 6번 단계(DB/사용자 생성)에서만 한 번 사용하고 이후에는
+  안 씀. MySQL Workbench(GUI 클라이언트)도 같이 설치하면 DB를 눈으로 보면서
+  다루기 편함 - 필수는 아니지만 권장.
 
 ===========================================
 3. 프로젝트 받기 (git clone)
@@ -90,10 +103,39 @@ PowerShell에서 "이 시스템에서 스크립트를 실행할 수 없습니다
 
 requirements.txt는 sys_platform 조건이 걸려있어서 Windows에서는 자동으로
 screeninfo만 설치되고 macOS 전용 pyobjc 패키지들은 건너뜁니다 - 별도로 손댈 것
-없음.
+없음. MySQL과 통신하는 pymysql도 여기 포함되어 자동 설치됨.
 
 ===========================================
-6. .env 파일 만들기
+6. MySQL 데이터베이스 준비
+===========================================
+
+2번 단계에서 설치한 MySQL 서버가 실행 중인지 확인 (설치 중 기본적으로
+Windows 서비스로 등록되어 자동 실행됨 - 서비스 목록에서 "MySQL80" 등의
+이름으로 확인 가능).
+
+명령 프롬프트에서 root로 접속 (설치 중 설정한 root 비밀번호 입력):
+
+    mysql -u root -p
+
+접속되면 프롬프트에서 다음 SQL을 그대로 실행해 이 프로젝트 전용 DB와
+사용자를 만듭니다 (비밀번호는 원하는 값으로 직접 정해서 <password> 자리에
+넣을 것 - 이 값을 7번 단계에서 .env의 DB_PASSWORD에 그대로 사용):
+
+    CREATE DATABASE eyegod CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER 'eyegod_app'@'localhost' IDENTIFIED BY '<password>';
+    GRANT ALL PRIVILEGES ON eyegod.* TO 'eyegod_app'@'localhost';
+    EXIT;
+
+테이블 자체(users, game_records 등)는 직접 만들 필요 없음 - 서버를 처음
+실행할 때(8번 단계) 앱이 알아서 필요한 테이블을 자동 생성함
+(web/backend/db.py의 init_db()).
+
+MySQL Workbench를 설치했다면 GUI로 동일한 작업(스키마 생성, 사용자 생성,
+권한 부여)을 해도 무방함 - 최종 결과(DB/사용자/비밀번호)만 같으면 방법은
+상관없음.
+
+===========================================
+7. .env 파일 만들기
 ===========================================
 
     copy .env.example .env
@@ -106,7 +148,16 @@ screeninfo만 설치되고 macOS 전용 pyobjc 패키지들은 건너뜁니다 -
 
 로 나온 값을 SESSION_SECRET_KEY=에 붙여넣기.
 
-(2) GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET, KAKAO_CLIENT_ID / KAKAO_CLIENT_SECRET
+(2) DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME - 필수, 없으면
+    서버 자체가 안 뜸. 6번 단계에서 만든 값 기준으로 채우면 됨:
+
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_USER=eyegod_app
+    DB_PASSWORD=<6번에서 정한 비밀번호>
+    DB_NAME=eyegod
+
+(3) GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET, KAKAO_CLIENT_ID / KAKAO_CLIENT_SECRET
     - 로그인 기능(및 로그인 뒤에 있는 게임/마이페이지/병원찾기/사진분석 전부)을
     테스트하려면 필요합니다. 카카오도 이제 실제 OAuth라 예전처럼 키 없이
     테스트할 수 있는 mock 로그인이 없습니다.
@@ -119,7 +170,7 @@ screeninfo만 설치되고 macOS 전용 pyobjc 패키지들은 건너뜁니다 -
       만약 로그인이 막히면 관리자에게 알려주세요 (카카오 개발자 콘솔의
       "팀 관리"에 멤버로 추가가 필요할 수 있습니다).
 
-(3) 나머지 키(NAVER_MAP_CLIENT_ID/SECRET, HIRA_API_KEY)는 없어도 서버는
+(4) 나머지 키(NAVER_MAP_CLIENT_ID/SECRET, HIRA_API_KEY)는 없어도 서버는
     정상적으로 뜹니다 - 해당 기능만 비활성화되거나 mock 데이터로 동작합니다:
     - HIRA_API_KEY 없음 -> 안과 목록이 가짜(mock) 데이터로 표시됨
     - NAVER_MAP_CLIENT_ID 없음 -> 지도가 안 뜨고 목록만 표시됨
@@ -127,11 +178,11 @@ screeninfo만 설치되고 macOS 전용 pyobjc 패키지들은 건너뜁니다 -
       기능은 정상)
 
 ===========================================
-7. 실행 - CLI/데스크톱 모드
+8. 실행 - CLI/데스크톱 모드
 ===========================================
 
 반드시 프로젝트 루트(clone한 폴더)에서 실행할 것 (models/, data/ 경로가
-실행 위치 기준 상대경로임):
+실행 위치 기준 상대경로임). MySQL/.env와 무관하게 항상 실행 가능:
 
     (가상환경 활성화된 상태에서)
 
@@ -149,8 +200,11 @@ Windows에서 처음 웹캠에 접근하면 "카메라 접근을 허용하시겠
 시스템 권한 팝업이 뜰 수 있음 - 허용 필요.
 
 ===========================================
-8. 실행 - 웹 모드 (브라우저)
+9. 실행 - 웹 모드 (브라우저)
 ===========================================
+
+MySQL 서버가 떠 있고 .env의 DB_* 값이 채워져 있어야 서버가 정상적으로
+뜹니다 (6, 7번 단계 선행 필요).
 
     uvicorn web.backend.app:app --reload
 
@@ -164,22 +218,23 @@ Windows에서 처음 웹캠에 접근하면 "카메라 접근을 허용하시겠
 기능 자체는 동작함.
 
 ===========================================
-9. 정상 작동해야 하는 기능 / 안 돼도 문제없는 기능
+10. 정상 작동해야 하는 기능 / 안 돼도 문제없는 기능
 ===========================================
 
-(SESSION_SECRET_KEY + Google/Kakao 키를 채운 상태 기준. Google/Kakao 키를
-하나도 채우지 않으면 로그인 자체가 안 되어 아래 "로그인 필요" 기능 전부
-테스트 불가능합니다.)
+(SESSION_SECRET_KEY + DB_* 값 + Google/Kakao 키를 채운 상태 기준. DB_*
+값이 비어있거나 MySQL 서버가 안 떠 있으면 웹 서버 자체가 시작되지
+않습니다. Google/Kakao 키를 하나도 채우지 않으면 로그인 자체가 안 되어
+아래 "로그인 필요" 기능 전부 테스트 불가능합니다.)
 
 정상 작동해야 하는 기능:
-- CLI 모드 전체 (캘리브레이션/게임/blink) - 웹캠만 있으면 됨, API 키 무관
-- 웹 서버 구동 (uvicorn) - SESSION_SECRET_KEY만 있으면 뜸
+- CLI 모드 전체 (캘리브레이션/게임/blink) - 웹캠만 있으면 됨, API 키/DB 무관
+- 웹 서버 구동 (uvicorn) - SESSION_SECRET_KEY + DB_* 값 + MySQL 서버가 있으면 뜸
 - Google 로그인 / Kakao 로그인 / 로그아웃 (둘 중 하나라도 키가 채워져 있으면 됨)
 - 로그인 게이트 통과 (game/hospitals/mypage/analysis 접근)
-- 시선추적 미니게임 (캘리브레이션→게임→결과, 로그인 계정별 DB 저장까지)
+- 시선추적 미니게임 (캘리브레이션→게임→결과, 로그인 계정별 MySQL 저장까지)
 - 리듬게임
 - 눈 깜빡임 모니터링 (홈 화면 토글, Worker 기반 캡처, 최근 1분 카운트,
-  1분에 5회 이하일 때 배너+알림 팝업)
+  1분에 5회 이하일 때 배너+알림 팝업, 경고 발생 시각 MySQL 기록)
 - 안약 알림 타이머 (시작/중지 버튼, 지정한 주기마다 배너+알림 팝업)
 - 마이페이지 (최근 로그인/게임 점수 표시)
 - 홈 화면 건강 요약 2x2 카드
@@ -190,7 +245,7 @@ Windows에서 처음 웹캠에 접근하면 "카메라 접근을 허용하시겠
 작동 안 해도 문제없는 기능 (API 키가 없어서 나타나는 정상적인 결과 - 버그 아님):
 - Google 또는 Kakao 로그인 버튼 (해당 provider 키가 비어있는 경우) - 눌러도
   에러. 다른 provider로 로그인하면 됨. 둘 다 비어있으면 로그인 자체가
-  전부 안 됨 (설계상 정상 - 6번 항목 참고)
+  전부 안 됨 (설계상 정상 - 7번 항목 참고)
 - 안과 지도 렌더링 - NAVER_MAP_CLIENT_ID 없음 -> 지도는 안 뜨고 목록만 표시
 - 실제 병원 데이터 - HIRA_API_KEY 없음 -> mock 데이터로 대체 표시
 - 지역명 검색 (홈 헤더/지도/hospitals.html 3곳 전부) - NAVER_MAP_CLIENT_SECRET
@@ -202,7 +257,7 @@ Windows에서 처음 웹캠에 접근하면 "카메라 접근을 허용하시겠
   권한을 "허용"으로 바꾸면 해결됨
 
 ===========================================
-10. Windows 관련 참고사항
+11. Windows 관련 참고사항
 ===========================================
 
 - src/screen.py는 OS별로 화면 크기를 다르게 가져옵니다 - macOS는 AppKit,
@@ -215,6 +270,9 @@ Windows에서 처음 웹캠에 접근하면 "카메라 접근을 허용하시겠
 - 웹캠이 여러 대(내장+외장 등)면 OpenCV가 기본으로 잡는 카메라(index 0)가
   원하는 카메라가 아닐 수 있음 - 그 경우 src/main.py의 cv2.VideoCapture(0)
   호출부의 0을 1, 2 등으로 바꿔서 테스트.
+- MySQL 설치 중 3306 포트가 이미 다른 프로그램에 쓰이고 있다는 오류가 뜨면,
+  이미 다른 MySQL 인스턴스가 떠 있다는 뜻일 수 있음 - 새로 설치하지 말고
+  기존 서버에 6번 단계의 DB/사용자만 새로 만들면 됨.
 
 ===========================================
 문제가 생기면
@@ -223,7 +281,12 @@ Windows에서 처음 웹캠에 접근하면 "카메라 접근을 허용하시겠
 - "ModuleNotFoundError" -> 가상환경이 활성화된 상태인지 확인 (프롬프트 앞에
   (eye) 표시가 있어야 함), pip install -r requirements.txt 다시 실행.
 - 서버가 "SESSION_SECRET_KEY" 관련 에러로 안 뜸 -> .env 파일에 그 값이 비어있는
-  것. 6번 단계 다시 확인.
+  것. 7번 단계 다시 확인.
+- 서버가 "DB_USER"/"DB_PASSWORD"/"DB_NAME" KeyError로 안 뜸 -> .env에 해당
+  값이 비어있는 것. 6, 7번 단계 다시 확인.
+- 서버가 MySQL 연결 오류(OperationalError 등)로 안 뜸 -> MySQL 서비스가
+  실행 중인지, .env의 DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME이 6번
+  단계에서 만든 값과 정확히 일치하는지 확인.
 - 로그인 버튼을 눌러도 아무 반응이 없거나 에러 -> .env에 해당 provider의
   키가 비어있지 않은지, http://localhost:8000 으로 접속했는지(127.0.0.1 아님)
   확인.
