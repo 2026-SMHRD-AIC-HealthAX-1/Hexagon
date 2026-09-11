@@ -1,10 +1,15 @@
 AI 모델 학습 - 사용법
 (작성일: 2026-09-11)
 
-S-03(사진 기반 백내장 위험도/충혈도 분석)에 쓸 두 개의 YOLO26-cls 분류 모델을
-학습하기 위한 기초 코드입니다. 실제 학습은 Google Colab에서 진행할 예정이고,
-이미지 리사이즈/분할은 이 프로젝트의 eye/ 가상환경에서 로컬로 미리 해둘 수
-있습니다 (Pillow만 필요, ultralytics 불필요).
+S-03(사진 기반 백내장 위험도/충혈도 분석)에 쓸 모델들을 학습하기 위한 기초
+코드입니다. 실제 학습은 Google Colab에서 진행할 예정이고, 이미지 준비(리사이즈/
+분할/형식 변환)는 이 프로젝트의 eye/ 가상환경에서 로컬로 미리 해둘 수 있습니다
+(Pillow만 필요, ultralytics 불필요).
+
+- cataract: YOLO26-cls 분류 모델 (정상/백내장 2진 분류)
+- redness: 아직 최종 방식 미정 - AI/Redness_AI.txt 참고. 유력한 방식은
+  "공막 영역 검출 후 그 안의 붉은 픽셀 비율 계산"이고, 그 첫 단계로 쓸
+  공막/홍채+동공 세그멘테이션 모델(YOLO26-seg) 기초 코드도 준비됨 (4번 섹션).
 
 ===========================================
 0. 폴더 구조
@@ -17,17 +22,22 @@ AI/
     dataset/              prepare_dataset.py가 자동 생성 (git에 안 올라감)
       train/{normal,cataract}/
       val/{normal,cataract}/
-  redness/                충혈도 모델용 (정상/주의/심각 3단계 분류)
+  redness/                충혈도 모델용 (정상/주의/심각 3단계 분류, 방식 검토 중)
     normal/
     caution/
     severe/
     dataset/              prepare_dataset.py가 자동 생성 (git에 안 올라감)
       train/{normal,caution,severe}/
       val/{normal,caution,severe}/
+    sclera_seg/            공막/홍채+동공 세그멘테이션용 (redness 파이프라인 전처리)
+      raw/                 <- labelme 라벨링 결과(이미지+json)를 여기에
+      dataset/             prepare_segmentation.py가 자동 생성 (git에 안 올라감)
   scripts/
-    prepare_dataset.py    리사이즈 + train/val 분할 (로컬 실행, Pillow만 필요)
-    train_cataract.py     cataract 모델 학습 (Colab 실행, ultralytics 필요)
-    train_redness.py      redness 모델 학습 (Colab 실행, ultralytics 필요)
+    prepare_dataset.py       리사이즈 + train/val 분할 (로컬 실행, Pillow만 필요)
+    train_cataract.py        cataract 모델 학습 (Colab 실행, ultralytics 필요)
+    train_redness.py         redness 분류 모델 학습 (Colab 실행, ultralytics 필요)
+    prepare_segmentation.py  labelme 라벨 -> YOLO-seg 형식 변환 (로컬 실행, Pillow만 필요)
+    train_sclera_seg.py      공막/홍채+동공 세그멘테이션 모델 학습 (Colab, ultralytics 필요)
   runs/                   학습 결과(가중치 등) 저장 위치 (git에 안 올라감)
 
 AI/cataract/, AI/redness/, AI/runs/ 는 전부 .gitignore 처리되어 있습니다 -
@@ -87,14 +97,46 @@ train 80% / val 20%(기본값)로 무작위 분할해 AI/<task>/dataset/ 에 저
 AI/runs/redness/weights/best.pt)에 저장됩니다.
 
 ===========================================
-4. 참고
+4. 공막/홍채+동공 세그멘테이션 모델 (redness 파이프라인 전처리용)
 ===========================================
 
-- MODEL_NAME 상수가 "yolo26n-cls.pt"(nano, 가장 가볍고 빠름)로 되어 있습니다.
-  정확도를 더 올리고 싶으면 train_*.py 상단의 MODEL_NAME을
-  "yolo26s-cls.pt"/"yolo26m-cls.pt" 등으로 바꾸면 됩니다. ultralytics 버전에
-  따라 정확한 모델 태그명이 다를 수 있으니 처음 실행할 때 가중치가 정상
-  다운로드되는지 확인할 것.
+색상 임계값만으로 홍채/동공과 공막을 구분하려 했으나, 백내장으로 동공이
+뿌옇게 보이는 사진이나 반사광(glare) 때문에 불안정하다고 판단해 작은
+세그멘테이션 모델을 따로 학습하기로 함 (배경은 AI/Redness_AI.txt 참고).
+
+1) 라벨링 (로컬, labelme 설치 필요: pip install labelme):
+   AI/redness/sclera_seg/raw/ 에 30장 내외(눈동자 색/반사광/백내장 유무 등
+   다양하게 섞어서) 이미지를 넣고, labelme로 사진마다 폴리곤 2개를 그림:
+     - 공막(흰자) 영역 -> label을 정확히 "sclera"로
+     - 홍채+동공 영역 -> label을 정확히 "iris_pupil"로
+   저장하면 img001.jpg 옆에 img001.json이 생성됨.
+
+2) YOLO-seg 형식으로 변환 (로컬):
+       source eye/bin/activate
+       python AI/scripts/prepare_segmentation.py
+   라벨명이 sclera/iris_pupil이 아니면 자동으로 건너뛰고 알려줍니다. 결과는
+   AI/redness/sclera_seg/dataset/ (images/, labels/, data.yaml)에 저장됩니다.
+
+3) Colab에서 학습:
+       !pip install ultralytics -q
+       !python train_sclera_seg.py
+   (AI/cataract, AI/redness 분류 모델과 같은 방식 - 3번 섹션 참고, DATA_YAML
+   경로만 Colab 환경에 맞게 필요시 수정)
+
+결과물은 AI/runs/sclera_seg/weights/best.pt에 저장됩니다. 이 모델로 공막
+영역을 뽑아낸 뒤 "공막 내 붉은 픽셀 비율 계산" 로직을 붙이는 건 아직
+구현 전입니다 (AI/Redness_AI.txt의 할 일 목록 참고).
+
+===========================================
+5. 참고
+===========================================
+
+- MODEL_NAME 상수가 분류 모델은 "yolo26n-cls.pt", 세그멘테이션 모델은
+  "yolo26n-seg.pt"(둘 다 nano, 가장 가볍고 빠름)로 되어 있습니다. 정확도를
+  더 올리고 싶으면 train_*.py 상단의 MODEL_NAME을 "yolo26s-*.pt"/
+  "yolo26m-*.pt" 등으로 바꾸면 됩니다. ultralytics 버전에 따라 정확한 모델
+  태그명이 다를 수 있으니 처음 실행할 때 가중치가 정상 다운로드되는지
+  확인할 것.
 - EPOCHS/IMG_SIZE/BATCH도 전부 스크립트 상단 상수라서 필요하면 바로 수정
   가능합니다.
 - 이 모델들을 실제로 S-03(analysis.html)에 연결하는 작업은 아직 범위 밖입니다
