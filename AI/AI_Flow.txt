@@ -31,7 +31,7 @@ S-03 AI 파이프라인 전체 흐름 (백내장 위험도 + 충혈도)
 - 가중치: models/eye_seg/eye_seg.pt
 - 학습에 쓴 데이터셋: models/eye_seg/dataset/ (images/labels/data.yaml)
 - 학습/추론 스크립트: AI/scripts/prepare_segmentation.py,
-  AI/scripts/train_sclera_seg.py, models/eye_seg/inference.py,
+  AI/scripts/train_eye_seg.py, models/eye_seg/inference.py,
   models/eye_seg/batch_inference.py
 - 자세한 검토 과정(색상 임계값을 버리고 세그멘테이션을 택한 이유, MediaPipe를
   안 쓰기로 한 이유, labelme circle 라벨링 버그 등)은 Redness_AI.txt 참고.

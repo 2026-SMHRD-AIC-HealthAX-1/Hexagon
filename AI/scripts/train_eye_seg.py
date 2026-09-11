@@ -11,13 +11,13 @@ YOLO26-seg로 학습한다. 본격적인 충혈도(redness) 학습 전에, 눈 �
 Google Colab 사용법 - 이 스크립트는 sclera_seg/ 폴더 바로 안에 두는 것을
 전제로 경로가 잡혀있다 (즉 dataset/, runs/와 같은 위치):
     1) sclera_seg/dataset/ (prepare_segmentation.py가 만든 결과물,
-       images/labels/data.yaml 전부 포함)과 이 train_sclera_seg.py 파일을
+       images/labels/data.yaml 전부 포함)과 이 train_eye_seg.py 파일을
        같은 폴더(sclera_seg/) 안에 나란히 업로드하거나 Drive에 올려서 mount.
-       예: /content/drive/MyDrive/sclera_seg/dataset/, .../sclera_seg/train_sclera_seg.py
+       예: /content/drive/MyDrive/sclera_seg/dataset/, .../sclera_seg/train_eye_seg.py
     2) 런타임 > 런타임 유형 변경 > GPU 선택 (필수는 아니지만 훨씬 빠름)
     3) %cd 로 sclera_seg/ 폴더로 이동한 뒤 아래 두 줄을 셀에서 실행:
            !pip install ultralytics -q
-           !python train_sclera_seg.py
+           !python train_eye_seg.py
        (구조가 다르면 아래 DATA_YAML/RUNS_DIR 상수를 직접 수정할 것. data.yaml
        안의 path도 Colab에서의 실제 경로와 일치해야 함.)
 

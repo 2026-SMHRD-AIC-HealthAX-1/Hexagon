@@ -22,7 +22,7 @@ DEFAULT_IMAGES_DIR = EYE_SEG_ROOT / "dataset" / "images"
 DEFAULT_OUTPUT_DIR = EYE_SEG_ROOT / "check_result"
 
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
-IMG_SIZE = 640  # train_sclera_seg.py와 동일하게 맞춤
+IMG_SIZE = 640  # train_eye_seg.py와 동일하게 맞춤
 
 
 def collect_images(images_dir: Path):

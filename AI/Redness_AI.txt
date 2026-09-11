@@ -78,7 +78,7 @@ MediaPipe로 "얼굴에서 눈 위치 찾기"를 할 필요 자체가 없다.
 
 최종 파이프라인:
   1) (신규) 공막/홍채+동공 세그멘테이션 모델로 두 영역을 픽셀 단위로 분리
-     - AI/scripts/prepare_segmentation.py + train_sclera_seg.py, 아래 5번
+     - AI/scripts/prepare_segmentation.py + train_eye_seg.py, 아래 5번
      섹션 참고
   2) 공막으로 분류된 픽셀들 중 "붉은 색"에 해당하는 비율 계산 (HSV나 Lab
      색공간에서 붉은 색상 범위 임계값 사용 - RGB보다 조명 변화에 덜 민감함)
@@ -127,7 +127,7 @@ MediaPipe로 "얼굴에서 눈 위치 찾기"를 할 필요 자체가 없다.
      다양하게 섞어서) 모아서 labelme로 "sclera"(polygon), "iris_pupil"
      (처음엔 circle로 그렸다가 문제 발견, 아래 참고) 라벨링
   2) prepare_segmentation.py로 YOLO-seg 형식 변환
-  3) Colab에서 train_sclera_seg.py로 학습
+  3) Colab에서 train_eye_seg.py로 학습
   4) 학습된 모델 검증 - 처음엔 iris_pupil이 30장 전부에서 0번 검출(라벨링
      버그, 아래 참고)됐다가, 버그 수정 후 재학습해서 30장 전부 sclera/
      iris_pupil 둘 다 정상 검출되는 것까지 확인 완료
@@ -167,7 +167,7 @@ models/eye_seg/               <- 학습된 모델 + 관련 파일 전부 여기�
 AI/scripts/
   prepare_segmentation.py  labelme json -> YOLO-seg 형식 변환 + train/val 분할
                             (circle/polygon 둘 다 지원 - 위 버그 수정 반영됨)
-  train_sclera_seg.py      세그멘테이션 모델 학습 (Colab, ultralytics 필요) -
+  train_eye_seg.py          세그멘테이션 모델 학습 (Colab, ultralytics 필요) -
                             sclera_seg/ 폴더 안에 두고 쓰는 걸 전제로 경로가
                             잡혀 있음(재학습 필요 시 AI/redness/sclera_seg/를
                             다시 만들어서 raw/ 라벨링부터 새로 해야 함 - 원본

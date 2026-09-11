@@ -37,7 +37,7 @@ AI/
     train_cataract.py        cataract 모델 학습 (Colab 실행, ultralytics 필요)
     train_redness.py         redness 분류 모델 학습 (Colab 실행, ultralytics 필요)
     prepare_segmentation.py  labelme 라벨 -> YOLO-seg 형식 변환 (로컬 실행, Pillow만 필요)
-    train_sclera_seg.py      공막/홍채+동공 세그멘테이션 모델 학습 (Colab, ultralytics 필요)
+    train_eye_seg.py          공막/홍채+동공 세그멘테이션 모델 학습 (Colab, ultralytics 필요)
     inference.py              학습된 세그멘테이션 모델을 사진 한 장에 테스트 (Colab, ultralytics 필요)
   runs/                   학습 결과(가중치 등) 저장 위치 (git에 안 올라감)
 
@@ -119,17 +119,17 @@ AI/runs/redness/weights/best.pt)에 저장됩니다.
    AI/redness/sclera_seg/dataset/ (images/, labels/, data.yaml)에 저장됩니다.
 
 3) Colab에서 학습 - 이 스크립트는 sclera_seg/dataset/과 같은 폴더(sclera_seg/)
-   안에 train_sclera_seg.py를 나란히 두는 걸 전제로 경로가 잡혀 있습니다
+   안에 train_eye_seg.py를 나란히 두는 걸 전제로 경로가 잡혀 있습니다
    (AI/cataract·AI/redness 분류 스크립트처럼 AI/ 전체를 업로드하는 방식이
    아님 - train_cataract.py/train_redness.py와 폴더 가정이 다르니 주의):
        %cd sclera_seg 폴더 경로
        !pip install ultralytics -q
-       !python train_sclera_seg.py
+       !python train_eye_seg.py
    (구조가 다르면 스크립트 상단 DATA_YAML/RUNS_DIR 상수를 직접 수정할 것)
 
 결과물은 sclera_seg/runs/sclera_seg/weights/best.pt에 저장됩니다.
 
-4) 학습 확인 (Colab, 같은 sclera_seg/ 폴더) - inference.py도 train_sclera_seg.py
+4) 학습 확인 (Colab, 같은 sclera_seg/ 폴더) - inference.py도 train_eye_seg.py
    와 같은 폴더에 두는 걸 전제로 경로가 잡혀 있습니다. 테스트할 사진을
    test_image.jpg라는 이름으로 그 폴더에 넣고:
        !python inference.py
