@@ -117,14 +117,17 @@ AI/runs/redness/weights/best.pt)에 저장됩니다.
    라벨명이 sclera/iris_pupil이 아니면 자동으로 건너뛰고 알려줍니다. 결과는
    AI/redness/sclera_seg/dataset/ (images/, labels/, data.yaml)에 저장됩니다.
 
-3) Colab에서 학습:
+3) Colab에서 학습 - 이 스크립트는 sclera_seg/dataset/과 같은 폴더(sclera_seg/)
+   안에 train_sclera_seg.py를 나란히 두는 걸 전제로 경로가 잡혀 있습니다
+   (AI/cataract·AI/redness 분류 스크립트처럼 AI/ 전체를 업로드하는 방식이
+   아님 - train_cataract.py/train_redness.py와 폴더 가정이 다르니 주의):
+       %cd sclera_seg 폴더 경로
        !pip install ultralytics -q
        !python train_sclera_seg.py
-   (AI/cataract, AI/redness 분류 모델과 같은 방식 - 3번 섹션 참고, DATA_YAML
-   경로만 Colab 환경에 맞게 필요시 수정)
+   (구조가 다르면 스크립트 상단 DATA_YAML/RUNS_DIR 상수를 직접 수정할 것)
 
-결과물은 AI/runs/sclera_seg/weights/best.pt에 저장됩니다. 이 모델로 공막
-영역을 뽑아낸 뒤 "공막 내 붉은 픽셀 비율 계산" 로직을 붙이는 건 아직
+결과물은 sclera_seg/runs/sclera_seg/weights/best.pt에 저장됩니다. 이 모델로
+공막 영역을 뽑아낸 뒤 "공막 내 붉은 픽셀 비율 계산" 로직을 붙이는 건 아직
 구현 전입니다 (AI/Redness_AI.txt의 할 일 목록 참고).
 
 ===========================================
