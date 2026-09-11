@@ -1,0 +1,111 @@
+분류 모델 출력을 "확률"로 쓰기 - Calibration 참고 노트
+(작성일: 2026-09-11, 나중에 실제로 필요해지면 이 문서 보고 바로 적용할 것)
+
+지금 당장은 적용하지 않음 - cataract/redness 모델이 실제로 학습되고, S-03에서
+사용자에게 "백내장일 확률 N%" 같은 수치를 보여줘야 하는 시점이 오면 이 문서를
+참고해서 아래 절차를 학습 파이프라인에 추가하면 된다.
+
+===========================================
+1. 배경 - confidence score는 왜 그냥 "확률"이 아닌가
+===========================================
+
+- softmax/sigmoid 출력은 cross-entropy loss로 학습하면 통계적으로는 "확률"이라고
+  부를 수 있다 (베르누이/카테고리 분포의 가능도를 최대화하는 것과 수학적으로
+  동일하기 때문). YOLO-cls도 내부적으로 softmax + cross-entropy를 쓰므로
+  `probs.data`가 형식적으로는 이미 확률 벡터다.
+- 문제는 "형식적으로 확률"과 "실제 빈도와 맞는(calibrated) 확률"이 다르다는 것.
+  딥러닝 모델은 특히 과신(overconfident)하는 경향이 잘 알려져 있어서, 모델이
+  "90% 백내장"이라고 뱉은 샘플들을 모아 실제 정답과 비교해보면 진짜 백내장
+  비율이 90%보다 낮은 경우가 흔하다.
+- 그래서 사용자에게 실제로 보여줄 "위험도 N%" 같은 숫자는, 학습 직후의 raw
+  confidence를 그대로 쓰기보다 후처리 보정(calibration)을 한 번 거치는 게
+  표준적인 방법이다.
+
+===========================================
+2. Temperature Scaling - 가장 간단하고 널리 쓰이는 방법
+===========================================
+
+- 아이디어: softmax에 들어가기 직전의 raw logit을 스칼라 하나(T, temperature)로
+  나눠준다. T > 1이면 분포가 더 평평해져서(덜 과신하게) 보정되고, T = 1이면
+  원래 출력과 동일하다.
+- T는 모델을 다시 학습시키는 게 아니라, val(검증) 데이터셋에 대해 딱 하나의
+  스칼라 값만 최적화하면 된다 (NLL이 최소가 되도록). 몇 초~몇 분이면 끝난다 -
+  모델 정확도(accuracy)나 순위(어떤 클래스가 1등인지)는 전혀 안 바뀌고, 확률
+  숫자의 "믿을만함"만 좋아진다.
+- 참고 논문: Guo et al., "On Calibration of Modern Neural Networks" (2017) -
+  이 논문에서 temperature scaling이 여러 보정 기법 중 제일 간단하면서도
+  효과적이라고 결론 내림.
+
+===========================================
+3. Ultralytics(YOLO-cls) 적용 시 주의점
+===========================================
+
+model.predict()는 이미 softmax를 적용한 확률(results.probs)만 반환하고, softmax
+적용 전의 raw logit은 따로 안 준다. Temperature scaling을 하려면 raw logit이
+필요하므로, 아래 둘 중 하나가 필요:
+
+  (a) model.model(전처리된_입력_텐서)를 직접 호출해서 raw logit을 얻기
+      (predict()가 아니라 내부 nn.Module을 직접 실행)
+  (b) 또는 Ultralytics의 predictor 클래스를 상속해서 softmax 적용 직전 단계에
+      후킹하기 (더 복잡함, 보통 (a)로 충분)
+
+===========================================
+4. 적용 절차 요약
+===========================================
+
+1) AI/<task>/dataset/val/ 이미지 전체에 대해 raw logit과 실제 정답 라벨을 수집
+2) T(초기값 1.0, requires_grad=True)를 두고, val 데이터에 대해
+   NLL(cross-entropy) 손실이 최소가 되도록 T만 최적화 (LBFGS 추천 - 파라미터
+   1개라 몇 스텝이면 수렴)
+3) 추론 시: probs = softmax(logits / T) 로 보정된 확률 사용
+4) 보정 전/후를 ECE(Expected Calibration Error)나 reliability diagram으로
+   비교해서 실제로 좋아졌는지 확인
+
+참고 코드 스켈레톤 (PyTorch):
+
+    import torch
+    import torch.nn as nn
+
+    class TemperatureScaler(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.temperature = nn.Parameter(torch.ones(1) * 1.5)
+
+        def forward(self, logits):
+            return logits / self.temperature
+
+    def fit_temperature(logits, labels):
+        # logits: (N, num_classes) raw logit 텐서, labels: (N,) 정답 인덱스
+        scaler = TemperatureScaler()
+        nll = nn.CrossEntropyLoss()
+        optimizer = torch.optim.LBFGS([scaler.temperature], lr=0.01, max_iter=50)
+
+        def closure():
+            optimizer.zero_grad()
+            loss = nll(scaler(logits), labels)
+            loss.backward()
+            return loss
+
+        optimizer.step(closure)
+        return scaler.temperature.item()
+
+    # 추론 시: calibrated_probs = torch.softmax(raw_logits / T, dim=1)
+
+===========================================
+5. 검증 방법
+===========================================
+
+- ECE(Expected Calibration Error): 예측 확률을 구간(bin)으로 나눠서(예: 0~10%,
+  10~20%, ...), 각 구간에 속한 샘플들의 "평균 예측 확률"과 "실제 정답 비율"의
+  차이를 가중 평균한 값. 0에 가까울수록 잘 보정된 것.
+- Reliability diagram: 위 구간별 비교를 막대그래프로 그린 것 - x축 예측
+  확신도, y축 실제 정확도. 대각선(y=x)에 가까울수록 좋음.
+
+===========================================
+6. 결론 - 지금 시점에서는
+===========================================
+
+- 지금은 모델 학습 자체가 우선이라 이 단계는 보류.
+- cataract/redness 모델이 학습되고 실제로 화면에 "N% 확률"을 보여줄 계획이
+  확정되면, 그때 이 문서의 2~4번 절차를 AI/scripts/에 별도 스크립트
+  (예: calibrate.py)로 추가하면 된다.
