@@ -22,3 +22,8 @@ EyeGod_source.zip
 # Kaggle datasets for future model training - local only, not part of the repo
 cataract/
 conjunctivitis/
+
+# AI/ training data + run outputs - curated locally, large binaries, not part of the repo
+AI/cataract/
+AI/redness/
+AI/runs/
