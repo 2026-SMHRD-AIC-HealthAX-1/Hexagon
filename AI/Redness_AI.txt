@@ -1,8 +1,13 @@
 충혈도(Redness) 모델 - 접근 방식 검토 노트
-(작성일: 2026-09-11)
+(작성일: 2026-09-11, 최종 수정: 2026-09-11)
 
-상태: 결정 보류 - 지금 수집한 conjunctivitis 데이터셋에서 학습에 적합하지 않은
-사진을 골라내고 정리한 뒤에 다시 판단하기로 함. 그때 이 문서부터 다시 읽을 것.
+상태: (B) 방식(공막 검출 + 붉은 픽셀 비율)으로 결정 확정. 그 첫 단계인
+eye_seg 세그멘테이션 모델은 학습/검증까지 완료됨. 다음 할 일은 "공막 내
+붉은 픽셀 비율 계산" 로직 작성 (4번 섹션 참고).
+
+이 문서는 **왜** (B) 방식과 세그멘테이션 모델을 선택했는지에 대한 검토
+기록이다. eye_seg가 담당하는 전체 그림(충혈도뿐 아니라 백내장 파이프라인
+에도 같이 쓰이게 된 것)은 AI/AI_Flow.txt를 먼저 읽을 것.
 
 ===========================================
 1. 두 가지 후보 방식
@@ -112,36 +117,50 @@ MediaPipe로 "얼굴에서 눈 위치 찾기"를 할 필요 자체가 없다.
 해볼 것.
 
 ===========================================
-4. 다음에 이 작업을 다시 볼 때 할 일
+4. 진행 상황 / 다음에 할 일
 ===========================================
 
-1) conjunctivitis/ 원본 데이터셋에서 학습에 부적합한 사진(저화질, 눈이 아닌
-   사진, 중복, 워터마크 등) 골라내서 정리 - 사용자가 직접 진행 중.
-2) 정리가 끝나면 (A) vs (B) 최종 결정. 지금 시점 검토 결과로는 (B)가 더
-   유력하지만, 정리된 데이터의 실제 상태(사진 품질, 눈 클로즈업 여부 등)를
-   보고 다시 판단하는 게 맞음.
-3) (B)로 결정되면:
-   a) AI/redness/sclera_seg/raw/ 에 30장 내외(눈동자 색/반사광/백내장 유무
-      등 다양하게) 골라서 labelme로 "sclera", "iris_pupil" 폴리곤 라벨링
-      (AI/scripts/prepare_segmentation.py 상단 설명 참고)
-   b) python AI/scripts/prepare_segmentation.py 실행 -> YOLO-seg 형식으로 변환
-   c) Colab에서 train_sclera_seg.py로 세그멘테이션 모델 학습
-   d) 학습된 모델로 공막 영역만 뽑아내는 게 실제로 잘 되는지 몇 장으로 확인
-   e) 잘 되면 그 다음 "공막 내 붉은 픽셀 비율 계산" 로직 작성
-4) (A)로 결정되면: severity 라벨링 기준부터 팀이 먼저 합의해야 함(현재
-   존재하지 않으므로).
+완료:
+  1) AI/redness/sclera_seg/raw/ 에 30장(눈동자 색/반사광/백내장 유무 등
+     다양하게 섞어서) 모아서 labelme로 "sclera"(polygon), "iris_pupil"
+     (처음엔 circle로 그렸다가 문제 발견, 아래 참고) 라벨링
+  2) prepare_segmentation.py로 YOLO-seg 형식 변환
+  3) Colab에서 train_sclera_seg.py로 학습
+  4) 학습된 모델 검증 - 처음엔 iris_pupil이 30장 전부에서 0번 검출(라벨링
+     버그, 아래 참고)됐다가, 버그 수정 후 재학습해서 30장 전부 sclera/
+     iris_pupil 둘 다 정상 검출되는 것까지 확인 완료
+  5) 학습 완료 후 raw/ 폴더는 삭제, dataset/는 models/eye_seg/로 이동
+     (5번 섹션 참고 - 지금은 AI/redness/sclera_seg/ 자체가 존재하지 않음)
+
+발견했던 버그: labelme의 Circle 도구는 점을 2개(중심+테두리 한 점)만
+저장하는데, prepare_segmentation.py의 "폴리곤 점 3개 미만이면 스킵" 방어
+코드에 걸려서 iris_pupil 라벨 30개가 전부 조용히 스킵되고 있었음 -
+circle을 32각형으로 근사 변환하는 코드를 추가해서 해결 (수정 완료, 커밋됨).
+
+다음에 할 일 (미구현): "공막 내 붉은 픽셀 비율 계산" 로직 작성 - eye_seg
+추론 결과(sclera 마스크)를 입력받아 HSV/Lab 색공간에서 붉은 픽셀 비율을
+계산하는 순수 이미지 처리 코드. 학습 불필요, 바로 구현 가능한 단계.
+자세한 계획은 AI/AI_Flow.txt의 2번 섹션 참고.
 
 ===========================================
-5. 관련 스크립트/폴더 (이미 만들어둔 기초 코드)
+5. 관련 스크립트/폴더 (현재 위치, 최신)
 ===========================================
 
-AI/redness/sclera_seg/
-  raw/        <- labelme로 라벨링한 이미지+json을 넣는 곳 (아직 비어있음)
-  dataset/    <- prepare_segmentation.py가 자동 생성 (images/labels/data.yaml)
+models/eye_seg/               <- 학습된 모델 + 관련 파일 전부 여기로 이동됨
+  eye_seg.pt                    학습된 가중치
+  dataset/                      학습에 쓴 데이터셋 (images/labels/data.yaml)
+  inference.py                  사진 한 장 테스트
+  batch_inference.py            폴더 전체 일괄 테스트 (dataset/images/ 재귀 스캔)
 AI/scripts/
   prepare_segmentation.py  labelme json -> YOLO-seg 형식 변환 + train/val 분할
-  train_sclera_seg.py      세그멘테이션 모델 학습 (Colab, ultralytics 필요)
+                            (circle/polygon 둘 다 지원 - 위 버그 수정 반영됨)
+  train_sclera_seg.py      세그멘테이션 모델 학습 (Colab, ultralytics 필요) -
+                            sclera_seg/ 폴더 안에 두고 쓰는 걸 전제로 경로가
+                            잡혀 있음(재학습 필요 시 AI/redness/sclera_seg/를
+                            다시 만들어서 raw/ 라벨링부터 새로 해야 함 - 원본
+                            이미지 자체는 models/eye_seg/dataset/images/에
+                            남아있지만 labelme용 .json 라벨은 없어짐)
 
 prepare_segmentation.py는 가짜 이미지+json(정상 폴리곤 1개 + 라벨명이
-틀린 폴리곤 1개)으로 직접 돌려서 검증함 - 틀린 라벨은 스킵되고, 좌표
-정규화(픽셀 -> 0~1)와 train/val 분할, data.yaml 생성까지 정상 동작 확인.
+틀린 폴리곤 1개)으로, circle 변환 로직은 반지름이 보존되는지로 각각 직접
+돌려서 검증함.
