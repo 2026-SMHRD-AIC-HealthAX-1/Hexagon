@@ -38,6 +38,7 @@ AI/
     train_redness.py         redness 분류 모델 학습 (Colab 실행, ultralytics 필요)
     prepare_segmentation.py  labelme 라벨 -> YOLO-seg 형식 변환 (로컬 실행, Pillow만 필요)
     train_sclera_seg.py      공막/홍채+동공 세그멘테이션 모델 학습 (Colab, ultralytics 필요)
+    inference.py              학습된 세그멘테이션 모델을 사진 한 장에 테스트 (Colab, ultralytics 필요)
   runs/                   학습 결과(가중치 등) 저장 위치 (git에 안 올라감)
 
 AI/cataract/, AI/redness/, AI/runs/ 는 전부 .gitignore 처리되어 있습니다 -
@@ -126,9 +127,19 @@ AI/runs/redness/weights/best.pt)에 저장됩니다.
        !python train_sclera_seg.py
    (구조가 다르면 스크립트 상단 DATA_YAML/RUNS_DIR 상수를 직접 수정할 것)
 
-결과물은 sclera_seg/runs/sclera_seg/weights/best.pt에 저장됩니다. 이 모델로
-공막 영역을 뽑아낸 뒤 "공막 내 붉은 픽셀 비율 계산" 로직을 붙이는 건 아직
-구현 전입니다 (AI/Redness_AI.txt의 할 일 목록 참고).
+결과물은 sclera_seg/runs/sclera_seg/weights/best.pt에 저장됩니다.
+
+4) 학습 확인 (Colab, 같은 sclera_seg/ 폴더) - inference.py도 train_sclera_seg.py
+   와 같은 폴더에 두는 걸 전제로 경로가 잡혀 있습니다. 테스트할 사진을
+   test_image.jpg라는 이름으로 그 폴더에 넣고:
+       !python inference.py
+   콘솔에 sclera/iris_pupil 각각의 confidence·픽셀 비율이 출력되고, 마스크를
+   그린 결과가 inference_result.jpg로 저장됩니다 - 눈으로 직접 마스크 위치가
+   맞는지 확인하는 용도. 다른 사진으로 보려면 `!python inference.py --image
+   파일명.jpg`.
+
+이 모델로 공막 영역을 뽑아낸 뒤 "공막 내 붉은 픽셀 비율 계산" 로직을 붙이는
+건 아직 구현 전입니다 (AI/Redness_AI.txt의 할 일 목록 참고).
 
 ===========================================
 5. 참고
