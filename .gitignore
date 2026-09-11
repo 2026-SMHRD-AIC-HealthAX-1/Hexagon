@@ -27,3 +27,8 @@ conjunctivitis/
 AI/cataract/
 AI/redness/
 AI/runs/
+
+# trained sclera/iris segmentation model + its dataset - large binaries, local only.
+# The .py scripts living alongside them stay tracked (real code, not data).
+models/eye_seg/*
+!models/eye_seg/*.py

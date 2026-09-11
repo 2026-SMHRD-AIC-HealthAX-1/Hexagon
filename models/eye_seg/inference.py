@@ -1,19 +1,18 @@
 """
-학습된 공막(sclera)/홍채+동공(iris_pupil) 세그멘테이션 모델을 테스트 사진
-한 장에 돌려서 결과를 확인한다.
+학습된 공막(sclera)/홍채+동공(iris_pupil) 세그멘테이션 모델(eye_seg.pt)을
+테스트 사진 한 장에 돌려서 결과를 확인한다.
 
-이 스크립트는 sclera_seg/ 폴더 바로 안에 두는 것을 전제로 경로가 잡혀있다
-(train_sclera_seg.py와 같은 위치) - 즉:
-    sclera_seg/
-      inference.py       <- 이 파일
-      test_image.jpg     <- 테스트용 사진 (다른 파일명 쓰려면 --image로 지정)
-      runs/sclera_seg/weights/best.pt   <- train_sclera_seg.py가 만든 학습 결과
+이 폴더(models/eye_seg/) 안에 모델 관련 파일들이 함께 있다:
+    models/eye_seg/
+      eye_seg.pt          <- 학습된 가중치
+      dataset/            <- 학습에 쓴 데이터셋 (images/labels/data.yaml)
+      inference.py        <- 이 파일 (사진 한 장용)
+      batch_inference.py  <- 폴더 전체 일괄 테스트용
+      test_image.jpg      <- 테스트용 사진 (다른 파일명 쓰려면 --image로 지정)
 
-Google Colab 사용법:
-    !pip install ultralytics -q
-    !python inference.py
-    # 다른 이미지로 테스트하려면:
-    !python inference.py --image 다른사진.jpg
+사용법 (ultralytics 설치 필요: pip install ultralytics):
+    python inference.py
+    python inference.py --image 다른사진.jpg
 
 결과:
   - 콘솔에 검출된 sclera/iris_pupil 각각의 confidence, 픽셀 수, 이미지 대비
@@ -27,12 +26,12 @@ from pathlib import Path
 import cv2
 from ultralytics import YOLO
 
-SCLERA_SEG_ROOT = Path(__file__).resolve().parent
-WEIGHTS_PATH = SCLERA_SEG_ROOT / "runs" / "sclera_seg" / "weights" / "best.pt"
-DEFAULT_IMAGE = SCLERA_SEG_ROOT / "test_image.jpg"
-OUTPUT_PATH = SCLERA_SEG_ROOT / "inference_result.jpg"
+EYE_SEG_ROOT = Path(__file__).resolve().parent
+WEIGHTS_PATH = EYE_SEG_ROOT / "eye_seg.pt"
+DEFAULT_IMAGE = EYE_SEG_ROOT / "test_image.jpg"
+OUTPUT_PATH = EYE_SEG_ROOT / "inference_result.jpg"
 
-IMG_SIZE = 640  # train_sclera_seg.py와 동일하게 맞춤
+IMG_SIZE = 640
 
 
 def main():
@@ -42,9 +41,7 @@ def main():
     args = parser.parse_args()
 
     if not args.weights.exists():
-        raise FileNotFoundError(
-            f"{args.weights} 가 없습니다 - train_sclera_seg.py로 먼저 학습을 끝내주세요."
-        )
+        raise FileNotFoundError(f"{args.weights} 가 없습니다.")
     if not args.image.exists():
         raise FileNotFoundError(f"{args.image} 를 찾을 수 없습니다.")
 
@@ -55,7 +52,7 @@ def main():
     print(f"이미지: {args.image}")
 
     if result.masks is None:
-        print("검출된 영역이 없습니다 - 라벨링/학습 데이터를 다시 확인해보세요.")
+        print("검출된 영역이 없습니다.")
         return
 
     class_names = result.names  # {0: 'sclera', 1: 'iris_pupil'}
