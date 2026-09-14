@@ -1,14 +1,24 @@
 Eye God - Windows 환경 테스트 가이드
-(작성일: 2026-09-09, 최종 수정: 2026-09-14, public_ver 저장소 기준으로 전면 개정)
+(작성일: 2026-09-09, 최종 수정: 2026-09-14, 저장소 2곳 안내로 개정)
 
-이 프로젝트는 git 저장소로 관리됩니다 (https://github.com/2026-SMHRD-AIC-HealthAX-1/Hexagon,
-public repo, 팀 내부에서는 "public_ver"라고 부름). 압축파일을 따로 주고받지 않고,
-아래 순서대로 git으로 직접 받아서 테스트하면 됩니다. Public 저장소라 초대나
-권한 설정 없이 누구나 바로 clone할 수 있습니다 (자세한 건 1번 참고) - 실제
-개발은 팀 관리자의 별도 저장소에서 진행되고, 이 저장소는 팀원들이 내려받아
-테스트해볼 수 있도록 관리자가 진행 상황을 올려두는 곳입니다. 그래서 항상
-실시간 최신 상태는 아닐 수 있고, 코드를 직접 고쳐서 반영하고 싶다면 이
-저장소가 아니라 관리자에게 별도로 문의해야 합니다.
+이 프로젝트는 git 저장소로 관리됩니다. 압축파일을 따로 주고받지 않고, 아래
+순서대로 git으로 직접 받아서 테스트하면 됩니다.
+
+저장소가 두 곳 있으니 본인 목적에 맞는 쪽을 고르세요:
+
+  [A] 테스트/실행만 할 경우  ->  public_ver (권장, 대부분 여기)
+      https://github.com/2026-SMHRD-AIC-HealthAX-1/Hexagon
+      Public 저장소라 초대·권한 설정·GitHub 로그인 전부 필요 없이 바로
+      clone 됩니다. 관리자가 진행 상황을 주기적으로 올려두는 곳이라 항상
+      실시간 최신은 아닐 수 있습니다.
+
+  [B] 코드를 직접 수정해서 반영할 경우  ->  origin (개발용 원본)
+      https://github.com/StarBlossom99/Eye-God
+      Private 저장소라 관리자(StarBlossom99)의 초대가 먼저 필요하고,
+      Fork + Pull Request 방식으로 작업합니다.
+
+어느 쪽을 받든 이후 과정(가상환경, MySQL, .env, 실행법)은 완전히 동일합니다.
+자세한 건 1번과 3번 참고.
 
 DB는 SQLite에서 MySQL로 전환되었습니다 - 이제 웹 모드를 실행하려면 로컬에
 MySQL 서버가 떠 있어야 합니다 (아래 6번 참고). CLI/데스크톱 모드는 DB를 전혀
@@ -20,7 +30,8 @@ MySQL 서버가 떠 있어야 합니다 (아래 6번 참고). CLI/데스크톱 �
 
 git에 포함되어 관리되는 것:
 - src/, web/, models/face_landmarker.task, requirements.txt, .env.example,
-  .python-version, CLAUDE.md, rhythm_game.txt, doc/ (설계 문서)
+  .python-version, CLAUDE.md, rhythm_game.txt, rhythm_new.txt, AI/ (학습
+  스크립트/문서), doc/ (설계 문서)
 
 git에서 의도적으로 제외되는 것 (.gitignore, 직접 준비해야 함):
 - 파이썬 가상환경(eye/) - macOS 전용 패키지가 섞여있어서 공유 대상이 아님.
@@ -36,14 +47,27 @@ git에서 의도적으로 제외되는 것 (.gitignore, 직접 준비해야 함)
 1. 저장소 접근 권한
 ===========================================
 
-이 저장소는 Public이라 별도 초대나 권한 설정 없이 누구나 바로 clone할 수
-있습니다 - GitHub 계정이나 로그인조차 필요 없습니다. Fork도 필요 없고,
-아래 3번 그대로 git clone 한 줄이면 끝입니다.
+[A] public_ver (Hexagon) - 테스트/실행용
+
+Public이라 별도 초대나 권한 설정 없이 누구나 바로 clone할 수 있습니다 -
+GitHub 계정이나 로그인조차 필요 없습니다. Fork도 필요 없고, 3번의 git clone
+한 줄이면 끝입니다.
 
 이 저장소에는 팀원 개인이 직접 push하지 않습니다 - 관리자가 필요할 때마다
-진행 상황을 올려두는 용도입니다. 테스트하다가 코드를 고치고 싶은 부분이
-있으면 이 저장소에 바로 push하지 말고 관리자에게 문의하세요 (실제 개발은
-별도 저장소에서 진행됨).
+진행 상황을 올려두는 용도입니다. 테스트하다가 고치고 싶은 부분이 생기면
+여기에 push하지 말고 관리자에게 문의하거나 아래 [B] 방식으로 작업하세요.
+
+[B] origin (Eye-God) - 코드 기여용
+
+Private 저장소라 최소 권한(Read)으로 초대되어 있어야 합니다 - Read 권한도
+없으면 Fork 자체가 안 됩니다. 초대 안 됐다면 관리자(StarBlossom99)에게
+GitHub 아이디를 알려주고 초대를 받으세요 (초대 메일의 링크를 눌러 수락해야
+함). Write 권한은 필요 없습니다 - Fork한 본인 계정 사본에는 항상 자유롭게
+push할 수 있기 때문입니다.
+
+운영 방식은 "팀원이 직접 push"가 아니라 "본인 계정으로 Fork해서 작업 ->
+Pull Request로 반영 요청 -> 관리자가 검토 후 merge"입니다. main 브랜치에는
+관리자 승인 없이 아무도 바로 push할 수 없습니다.
 
 ===========================================
 2. 사전 준비 (프로그램 설치)
@@ -61,18 +85,65 @@ git에서 의도적으로 제외되는 것 (.gitignore, 직접 준비해야 함)
   다루기 편함 - 필수는 아니지만 권장.
 
 ===========================================
-3. 프로젝트 받기 (git clone)
+3. 프로젝트 받기
 ===========================================
+
+--- [A] public_ver 에서 받기 (테스트/실행만 할 경우) ---
 
     cd C:\
     git clone https://github.com/2026-SMHRD-AIC-HealthAX-1/Hexagon.git eyegod
     cd eyegod
 
 Public 저장소라 로그인 없이 바로 받아집니다.
-
 나중에 관리자가 새 내용을 올렸을 때 받아오는 법 (같은 폴더 안에서):
 
     git pull
+
+여기까지 했으면 4번으로 넘어가면 됩니다.
+
+
+--- [B] origin 에서 받기 (코드를 직접 수정해서 반영할 경우) ---
+
+(1) Fork 만들기 - 브라우저에서 https://github.com/StarBlossom99/Eye-God
+    접속(1번에서 초대받은 본인 GitHub 계정으로 로그인한 상태) 후 우측 상단
+    "Fork" 버튼 클릭. 본인 계정 밑에 사본이 생깁니다
+    (예: https://github.com/본인아이디/Eye-God).
+
+(2) 본인 Fork를 clone - 원본이 아니라 방금 만든 "본인 Fork"를 받습니다:
+
+    cd C:\
+    git clone https://github.com/본인아이디/Eye-God.git eyegod
+    cd eyegod
+
+    처음 clone할 때 GitHub 로그인 창이 브라우저로 뜹니다 - 본인 계정으로
+    로그인/승인하면 됩니다 (Git for Windows에 기본 포함된 Git Credential
+    Manager가 처리 - 별도 설치 불필요).
+
+(3) 원본 저장소를 upstream으로 등록 - 관리자가 올린 최신 변경사항을
+    받아오려면 필요합니다:
+
+    git remote add upstream https://github.com/StarBlossom99/Eye-God.git
+
+(4) 작업 브랜치 만들기 - main에 바로 작업하지 말고 본인 이름으로 브랜치를
+    만들어서 작업합니다:
+
+    git checkout -b 본인이름-design
+
+(5) 작업한 내용은 본인 Fork(origin)에 push:
+
+    git push -u origin 본인이름-design
+
+(6) 반영 요청 - GitHub에서 본인 Fork 페이지로 가면 "Compare & pull request"
+    버튼이 보입니다. base repository가 StarBlossom99/Eye-God의 main인지
+    확인하고 Pull Request를 엽니다. 관리자가 검토 후 merge해야 실제로 main에
+    반영됩니다 - 본인이 직접 merge할 권한은 없습니다(의도된 동작).
+
+나중에 원본(upstream)에 새 커밋이 올라왔을 때 받아오는 법:
+
+    git checkout main
+    git fetch upstream
+    git merge upstream/main
+    git push origin main
 
 ===========================================
 4. 가상환경 만들기
@@ -290,8 +361,14 @@ MySQL 서버가 떠 있고 .env의 DB_* 값이 채워져 있어야 서버가 정
 - 웹캠 화면이 안 뜸 -> 브라우저 주소창 왼쪽 카메라 아이콘에서 권한 허용
   여부 확인, 다른 프로그램(Zoom, Teams 등)이 카메라를 이미 점유하고 있지
   않은지 확인.
-- git clone이 실패함 -> Public 저장소라 권한 문제는 아님. 저장소 주소를
-  정확히 입력했는지, 인터넷 연결 상태를 확인.
-- git pull했는데 최신 내용이 안 보임 -> 관리자가 아직 그 시점의 진행
-  상황을 이 저장소(public_ver)에 올리지 않은 것일 수 있음 - 관리자에게
-  확인.
+- [A] public_ver: git clone이 실패함 -> Public 저장소라 권한 문제는 아님.
+  저장소 주소를 정확히 입력했는지, 인터넷 연결 상태를 확인.
+- [A] public_ver: git pull했는데 최신 내용이 안 보임 -> 관리자가 아직 그
+  시점의 진행 상황을 이 저장소에 올리지 않은 것일 수 있음 - 관리자에게 확인.
+- [B] origin: git clone/pull이 인증 오류로 실패 -> 저장소에 Read 권한
+  collaborator로 초대되어 있는지, 초대 메일을 수락했는지 확인.
+- [B] origin: Fork 버튼이 안 보이거나 Fork 후에도 저장소 내용이 안 보임 ->
+  초대를 아직 수락하지 않은 것. 초대 메일부터 수락할 것.
+- [B] origin: Pull Request는 열리는데 merge 버튼이 없거나 눌러도 안 됨 ->
+  의도된 동작. Fork 워크플로우에서는 관리자(StarBlossom99)만 merge할 수
+  있음 - 관리자에게 검토를 요청할 것.
