@@ -33,7 +33,18 @@ AI/runs/
 models/eye_seg/*
 !models/eye_seg/*.py
 
+# Python<->JS 수치 일치 테스트가 실행 중에 만들어내는 것들 (run.sh 가 매번 재생성).
+# fixture.json 은 4MB 가까이 되고, vision/ 은 원본을 그대로 복사한 사본이다.
+tests/vision_parity/fixture.json
+tests/vision_parity/vision/
+
 # 리듬게임 디자인 참고용으로 모아둔 상용 게임 스크린샷 (워터마크 포함).
 # 저작권이 확인되지 않은 제3자 이미지라 저장소에 올리지 않는다 - 로컬 참고용.
 # 어떤 자료를 참고했는지는 rhythm_new.txt 에 기록해둠.
 reference_img/
+
+# 브라우저용 MediaPipe 자산 (WASM 엔진 + 모델 사본, 약 38MB).
+# scripts/setup_mediapipe.py 로 각자 로컬에 받는다 - 저장소에는 올리지 않음.
+web/frontend/vendor/
+tests/rhythm_parity/fixture.json
+tests/rhythm_parity/rhythm/

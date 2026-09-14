@@ -28,6 +28,7 @@ from routers.config import router as config_router
 from routers.clinics import router as clinics_router
 from routers.auth import router as auth_router
 from routers.mypage import router as mypage_router
+from routers.calibration_api import router as calibration_api_router
 
 db.init_db()
 
@@ -52,6 +53,7 @@ app.include_router(config_router)
 app.include_router(clinics_router)
 app.include_router(auth_router)
 app.include_router(mypage_router)
+app.include_router(calibration_api_router)
 
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

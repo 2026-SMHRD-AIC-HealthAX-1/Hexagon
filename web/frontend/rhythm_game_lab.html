@@ -1,22 +1,23 @@
 <!--
-  리듬게임 비주얼 개선 테스트 버전 (lab).
+  리듬게임 - 서버(파이썬) 계산 백업 버전.
 
-  원본(rhythm_game.html / js/rhythm_game.js)은 전혀 건드리지 않고 이 파일만 따로 돈다.
-  백엔드도 원본과 똑같은 /ws/rhythm-game 을 그대로 쓰므로 게임 메커니즘(시선으로 레인
-  선택, 눈 깜빡임으로 히트, 판정/점수 계산)은 서버 코드 그대로 = 완전히 동일하다.
-  이 버전에서 바뀐 건 "서버가 보내주는 상태를 화면에 어떻게 그리느냐"뿐이다.
+  정식 버전(rhythm_game.html)은 브라우저에서 MediaPipe 로 직접 계산하지만,
+  이 페이지는 예전 방식 그대로 카메라 프레임을 /ws/rhythm-game 으로 보내
+  서버가 시선/깜빡임/판정을 계산한다. 화면은 정식 버전과 똑같은
+  js/rhythm/renderer.js 를 공유하므로 보이는 건 동일하다.
 
-  원본 교체 방법 (마음에 들 때):
-    1) rhythm_game_lab.html  -> rhythm_game.html 로 덮어쓰기
-       (아래 script src 를 js/rhythm_game.js 로, css link 를 그대로 유지)
-    2) js/rhythm_game_lab.js -> js/rhythm_game.js 로 덮어쓰기
-    3) css/rhythm_game_lab.css 는 그대로 두고 link 만 유지
-  DOM id 를 원본과 동일하게 맞춰놨기 때문에 위 복사만으로 교체가 끝난다.
+  용도:
+    - JS 계산 버전에 문제가 생겼을 때 되돌아갈 수 있는 대조군
+    - 두 계산 방식의 체감 차이(입력 지연 등) 비교
+    - ?demo=1 로 열면 로그인/웹캠/캘리브레이션 없이 디자인만 미리보기
+
+  서버측(sessions/rhythm_game_session.py, routers/rhythm_game_ws.py)은
+  그대로 남아있어 이 페이지만으로 동작한다.
 -->
-<title>리듬게임 (비주얼 테스트) - Eye God</title>
+<title>리듬게임 (서버 계산 백업) - Eye God</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/rhythm_game_lab.css">
+<link rel="stylesheet" href="css/rhythm_game_theme.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap">

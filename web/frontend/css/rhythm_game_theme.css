@@ -1,7 +1,8 @@
 /*
-  리듬게임 lab 버전 전용 테마 (네온 우주).
-  style.css 뒤에 로드되어 이 페이지의 모달/결과화면만 어둡게 덮어쓴다.
-  rhythm_game_lab.html 에서만 link 하므로 다른 페이지에는 전혀 영향이 없다.
+  리듬게임 테마 (네온 우주).
+  style.css 뒤에 로드되어 리듬게임 화면의 모달/결과화면만 어둡게 덮어쓴다.
+  rhythm_game.html 과 rhythm_game_lab.html 에서만 link 하므로
+  다른 페이지에는 전혀 영향이 없다.
 */
 
 :root {
