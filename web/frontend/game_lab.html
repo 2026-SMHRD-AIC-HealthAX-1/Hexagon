@@ -1,0 +1,49 @@
+<!--
+  시선 추적 미니게임 (S-05) - 서버(파이썬) 계산 백업 버전.
+
+  정식 버전(game.html)은 브라우저에서 MediaPipe 로 직접 계산하지만, 이
+  페이지는 예전 방식 그대로 카메라 프레임을 /ws/calibration, /ws/game 으로
+  보내 서버가 시선/캘리브레이션/판정을 계산한다.
+
+  용도:
+    - JS 계산 버전에 문제가 생겼을 때 되돌아갈 수 있는 대조군
+      (index.html 의 미니게임 링크를 이 파일로 바꾸면 됨)
+    - 두 계산 방식의 체감 차이(입력 지연 등) 비교
+
+  서버측(sessions/calibration_session.py, sessions/game_session.py,
+  routers/calibration_ws.py, routers/game_ws.py)은 그대로 남아있어 이
+  페이지만으로 동작한다. routers/calibration_api.py(HTTP, GET/POST
+  /api/calibration)는 정식 버전 전용이라 이 페이지는 쓰지 않는다.
+-->
+<title>시선 추적 미니게임 (서버 계산 백업) - Eye God</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/style.css">
+
+<div id="consent-modal" class="modal">
+  <div class="modal-box">
+    <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
+    <p>시선 추적을 위해 카메라 접근 권한이 필요합니다.</p>
+    <div class="modal-actions">
+      <button id="consent-cancel">취소</button>
+      <button id="consent-confirm" class="primary">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="play-screen" class="hidden">
+  <canvas id="display"></canvas>
+</div>
+
+<div id="result-screen" class="hidden">
+  <h2>게임 결과</h2>
+  <div class="score-card">
+    <div class="label">점수</div>
+    <div id="result-score" class="value">0</div>
+  </div>
+  <div class="actions">
+    <button id="retry-btn" class="primary">다시하기</button>
+    <button id="home-btn">홈으로</button>
+  </div>
+</div>
+
+<script type="module" src="js/game_lab.js"></script>

@@ -1,3 +1,34 @@
+<!--
+  시선 추적 미니게임 (S-05).
+
+  시선/캘리브레이션 계산을 전부 브라우저에서 MediaPipe 로 직접 수행한다 -
+  카메라 영상은 서버로 전송되지 않고, 캘리브레이션이 끝났을 때 표본만,
+  게임이 끝났을 때 점수만 각각 POST 한다.
+  (예전에는 서버 파이썬 MediaPipe 가 /ws/calibration, /ws/game 으로 계산했다.
+   그 버전은 game_lab.html 에 백업으로 남아있다 - 문제가 생기면 그쪽으로
+   되돌릴 수 있다.)
+
+  대응 관계 (서버판 -> 이 파일):
+      landmarker_factory.py      -> js/vision/faceLandmarker.js
+      src/gaze.py                -> js/vision/gaze.js
+      src/calibration.py         -> js/gaze/calibrationEngine.js
+      src/gaze_game.py           -> js/gaze/gameEngine.js
+      gaze_region_classifier.py  -> js/vision/gazeRegionClassifier.js
+      calibration_ws.py          -> js/game.js (캘리브레이션 프레임 루프)
+      game_ws.py                 -> js/game.js (게임 프레임 루프)
+
+  두 언어가 같은 결과를 내는지는 아래 테스트로 검증한다:
+      ./tests/vision_parity/run.sh   (시선/영역 계산 - 리듬게임 포팅 때 검증)
+      ./tests/gaze_parity/run.sh     (캘리브레이션 타이밍/샘플, 목표선택/판정)
+
+  실행 전 준비 (한 번만, 프로젝트 루트에서):
+      python scripts/setup_mediapipe.py
+  브라우저용 MediaPipe 엔진/모델을 web/frontend/vendor/ 에 내려받는다.
+  이걸 안 하면 게임 시작 시 모델 로딩에 실패한다.
+
+  디자인은 원본과 동일하게(단순 캔버스) 유지한다 - 이번 작업은 계산 위치만
+  옮기는 것으로 범위를 한정했다.
+-->
 <title>시선 추적 미니게임 - Eye God</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="css/style.css">
@@ -5,11 +36,21 @@
 <div id="consent-modal" class="modal">
   <div class="modal-box">
     <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
-    <p>시선 추적을 위해 카메라 접근 권한이 필요합니다.</p>
+    <p>
+      시선 추적을 위해 카메라 접근 권한이 필요합니다.
+      이 버전은 영상을 서버로 보내지 않고 브라우저 안에서만 처리합니다.
+    </p>
     <div class="modal-actions">
       <button id="consent-cancel">취소</button>
       <button id="consent-confirm" class="primary">확인</button>
     </div>
+  </div>
+</div>
+
+<div id="loading-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2 id="loading-title">준비 중입니다</h2>
+    <p id="loading-detail">잠시만 기다려주세요.</p>
   </div>
 </div>
 

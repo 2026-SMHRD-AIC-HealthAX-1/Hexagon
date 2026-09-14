@@ -4,7 +4,7 @@
   rhythm_game_lab.js 에 있던 그리기 코드를 그대로 떼어낸 공용 모듈이다.
   두 버전이 같은 화면을 공유한다:
     - rhythm_game_lab.html  : 서버(파이썬)가 WebSocket 으로 상태를 보내주는 버전
-    - rhythm_game_js.html   : 브라우저(JS)가 직접 상태를 계산하는 버전
+    - rhythm_game.html      : 브라우저(JS)가 직접 상태를 계산하는 버전 (기본)
 
   이 모듈은 "상태 payload 를 받아서 그린다"만 담당하고, 그 상태가 어디서
   왔는지는 신경 쓰지 않는다. 그래서 서버를 JS 로 대체해도 화면 코드는

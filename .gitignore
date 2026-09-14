@@ -48,3 +48,6 @@ reference_img/
 web/frontend/vendor/
 tests/rhythm_parity/fixture.json
 tests/rhythm_parity/rhythm/
+tests/gaze_parity/fixture.json
+tests/gaze_parity/gaze/
+tests/gaze_parity/vision/
