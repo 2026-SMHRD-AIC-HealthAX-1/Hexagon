@@ -32,3 +32,8 @@ AI/runs/
 # The .py scripts living alongside them stay tracked (real code, not data).
 models/eye_seg/*
 !models/eye_seg/*.py
+
+# 리듬게임 디자인 참고용으로 모아둔 상용 게임 스크린샷 (워터마크 포함).
+# 저작권이 확인되지 않은 제3자 이미지라 저장소에 올리지 않는다 - 로컬 참고용.
+# 어떤 자료를 참고했는지는 rhythm_new.txt 에 기록해둠.
+reference_img/

@@ -1,0 +1,171 @@
+/*
+  리듬게임 lab 버전 전용 테마 (네온 우주).
+  style.css 뒤에 로드되어 이 페이지의 모달/결과화면만 어둡게 덮어쓴다.
+  rhythm_game_lab.html 에서만 link 하므로 다른 페이지에는 전혀 영향이 없다.
+*/
+
+:root {
+  --lab-bg: #05030e;
+  --lab-magenta: #ff2fd0;
+  --lab-cyan: #38e8ff;
+  --lab-violet: #b06cff;
+  --lab-text: #eaf2ff;
+  --lab-dim: #8b93b8;
+}
+
+body {
+  background: var(--lab-bg);
+}
+
+#play-screen {
+  background: var(--lab-bg);
+}
+
+/* ---- 공통 네온 패널 ---- */
+
+.neon-modal {
+  background: radial-gradient(circle at 50% 40%, rgba(60, 20, 90, 0.55), rgba(3, 2, 8, 0.92));
+  backdrop-filter: blur(6px);
+}
+
+.neon-modal .modal-box,
+#result-screen .score-card {
+  background: linear-gradient(160deg, rgba(28, 16, 52, 0.95), rgba(10, 7, 24, 0.95));
+  border: 1px solid rgba(176, 108, 255, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(56, 232, 255, 0.12),
+    0 0 34px rgba(255, 47, 208, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--lab-text);
+}
+
+.neon-modal .modal-box h2 {
+  color: var(--lab-text);
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+.neon-modal .modal-box p {
+  color: var(--lab-dim);
+}
+
+.neon-eyebrow {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--lab-cyan);
+  text-shadow: 0 0 12px rgba(56, 232, 255, 0.75);
+  margin-bottom: 10px;
+}
+
+/* ---- 버튼 ---- */
+
+.neon-modal button,
+#result-screen button {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(176, 108, 255, 0.5);
+  color: var(--lab-text);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.neon-modal button:hover,
+#result-screen button:hover {
+  background: rgba(176, 108, 255, 0.18);
+  box-shadow: 0 0 18px rgba(176, 108, 255, 0.45);
+}
+
+.neon-modal button:active,
+#result-screen button:active {
+  transform: translateY(1px);
+}
+
+.neon-modal button.primary,
+#result-screen button.primary {
+  background: linear-gradient(135deg, var(--lab-magenta), var(--lab-violet));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 22px rgba(255, 47, 208, 0.55);
+}
+
+.neon-modal button.primary:hover,
+#result-screen button.primary:hover {
+  box-shadow: 0 0 32px rgba(255, 47, 208, 0.8);
+}
+
+/* ---- 결과 화면 ---- */
+
+#result-screen {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(90, 30, 130, 0.5), transparent 60%),
+    var(--lab-bg);
+  color: var(--lab-text);
+  gap: 16px;
+}
+
+#result-screen h2 {
+  font-size: 22px;
+  margin: 0;
+  color: var(--lab-text);
+}
+
+#result-screen .score-card .label,
+#result-screen .result-stat .label {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--lab-dim);
+}
+
+#result-screen .score-card .value {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 52px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 26px rgba(56, 232, 255, 0.85), 0 0 60px rgba(255, 47, 208, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+.result-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.result-stat {
+  min-width: 104px;
+  padding: 14px 18px;
+  text-align: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-stat .value {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--lab-cyan);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.result-stat:nth-child(3) .value {
+  color: #ff7a90;
+}
+
+@media (max-width: 500px) {
+  #result-screen .score-card .value {
+    font-size: 40px;
+  }
+
+  .result-stat {
+    min-width: 88px;
+    padding: 12px 14px;
+  }
+}
