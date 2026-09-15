@@ -1,6 +1,4 @@
-import json
 import time
-from pathlib import Path
 
 
 class Calibration:
@@ -59,31 +57,3 @@ class Calibration:
 
     def is_finished(self):
         return self.current_index >= len(self.points)
-
-    def save(self, path):
-
-        data = {
-            "version": 1,
-
-            "screen": {
-                "width": self.width,
-                "height": self.height
-            },
-
-            "samples": self.samples
-        }
-
-        path = Path(path)
-
-        with open(path, "w") as f:
-            json.dump(
-                data,
-                f,
-                indent=4
-            )
-
-        print(f"Calibration saved: {path}")
-
-    @staticmethod
-    def exists(path):
-        return Path(path).exists()

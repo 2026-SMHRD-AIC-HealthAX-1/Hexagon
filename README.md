@@ -2,12 +2,13 @@
 
 안구 건조증 기반 백내장 위험 조기 예측 서비스
 
-웹캠으로 눈 깜빡임과 시선을 추적해 눈 건강을 관리하는 서비스입니다. 원래는 데스크톱 CLI 도구(MediaPipe 기반 시선 추적)로 시작했고, 지금은 브라우저에서 쓸 수 있는 웹 서비스로 확장되고 있습니다.
+웹캠으로 눈 깜빡임과 시선을 추적해 눈 건강을 관리하는 브라우저 기반 서비스입니다. MediaPipe Face Landmarker로 시선/깜빡임을 계산하는 CV 로직(`src/`)에 FastAPI 웹 서비스(`web/`)를 얹은 구조이며, 웹으로만 동작합니다 — 별도의 데스크톱/CLI 실행 모드는 없습니다.
 
 ## 주요 기능
 
-- **시선 추적 미니게임** — 웹캠으로 캘리브레이션 후, 화면의 목표 지점을 시선으로 맞추는 게임
-- **테스트용 리듬게임** — 시선 좌/중/우 이동 + 눈 깜빡임으로 즐기는 리듬게임
+- **캘리브레이션** — 화면의 9개 지점을 순서대로 바라보며 개인별 시선 기준값 측정 (로그인 계정별로 저장, 두 미니게임이 공유)
+- **시선 추적 미니게임** — 저장된 캘리브레이션으로, 화면의 목표 지점을 시선으로 맞추는 게임
+- **시선 추적 리듬게임** — 시선 좌/중/우 이동 + 눈 깜빡임으로 노트를 맞추는 리듬게임
 - **눈 깜빡임 모니터링** — 실시간 깜빡임 감지, 저조할 때 배너/OS 알림으로 경고
 - **안약 알림 타이머** — 지정한 주기마다 안약 사용 알림
 - **내 주변 안과 찾기** — 위치 기반 안과 검색 + 지도 표시
@@ -15,8 +16,8 @@
 
 ## 기술 스택
 
-- **Backend**: FastAPI, SQLite (stdlib `sqlite3`), MediaPipe Face Landmarker (Tasks API)
-- **Frontend**: 순수 HTML/CSS/JS (빌드 도구 없음)
+- **Backend**: FastAPI, MySQL (`PyMySQL`), MediaPipe Face Landmarker (Tasks API)
+- **Frontend**: 순수 HTML/CSS/JS (빌드 도구 없음), 브라우저에서 직접 MediaPipe(WASM)를 돌려 시선/깜빡임 계산
 - **CV**: OpenCV, MediaPipe
 
 ## 실행 방법
@@ -28,15 +29,7 @@ pip install -r requirements.txt
 cp .env.example .env      # 값 채우기 (아래 참고)
 ```
 
-### CLI / 데스크톱 모드
-
-```bash
-python src/main.py --calibrate   # 1. 캘리브레이션
-python src/main.py               # 2. 시선 추적 게임
-python src/main.py --blink       # 눈 깜빡임 모니터링 (콘솔 출력)
-```
-
-### 웹 모드
+MySQL 서버(로컬 인스턴스면 무엇이든 가능)와 그 위의 전용 데이터베이스/사용자가 필요합니다 — 자세한 내용은 [`CLAUDE.md`](CLAUDE.md)의 "Database" 항목 참고.
 
 ```bash
 uvicorn web.backend.app:app --reload
@@ -48,7 +41,7 @@ uvicorn web.backend.app:app --reload
 
 ## 환경 변수 (`.env`)
 
-`SESSION_SECRET_KEY`만 있으면 서버가 뜹니다. 나머지(`GOOGLE_CLIENT_ID`/`KAKAO_CLIENT_ID` 등)는 없어도 해당 기능만 비활성화되고 나머지는 정상 동작합니다. 자세한 설명은 `.env.example` 참고.
+`SESSION_SECRET_KEY`와 `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASSWORD`/`DB_NAME`(MySQL 접속 정보)이 있어야 서버가 뜹니다. 나머지(`GOOGLE_CLIENT_ID`/`KAKAO_CLIENT_ID` 등)는 없어도 해당 기능만 비활성화되고 나머지는 정상 동작합니다. 자세한 설명은 `.env.example` 참고.
 
 ## 문서
 

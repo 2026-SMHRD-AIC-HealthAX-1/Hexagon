@@ -1,4 +1,3 @@
-import json
 import math
 
 class GazeRegionClassifier:
@@ -25,12 +24,6 @@ class GazeRegionClassifier:
 
         return best_region
     
-
-def load_calibration_samples(path):
-    with open(path, "r") as f:
-        data = json.load(f)
-
-    return data["samples"]
 
 def calculate_region_gaze(samples):
 
@@ -72,29 +65,3 @@ def create_region_points(averages):
         region_points[region] = gaze
 
     return region_points
-
-if __name__ == "__main__":
-
-    samples = load_calibration_samples(
-        "data/calibration.json"
-    )
-
-    averages = calculate_region_gaze(
-        samples
-    )
-
-    region_points = create_region_points(
-        averages
-    )
-
-    print()
-    print("=" * 50)
-    print("Region Gaze Points")
-    print("=" * 50)
-
-    for region, gaze in region_points.items():
-
-        print(
-            f"Region {region}: "
-            f"gaze=({gaze[0]:.4f}, {gaze[1]:.4f})"
-        )

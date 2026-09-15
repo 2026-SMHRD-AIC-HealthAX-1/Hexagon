@@ -74,11 +74,13 @@ def init_db():
             # 웹 경로의 캘리브레이션 데이터 - 예전에는 서버 전체에 파일 하나
             # (data/calibration.json)로만 저장돼서 여러 사용자가 순서대로 캘리브레이션하면
             # 서로 덮어썼다. game.html/rhythm_game.html이 이미 로그인 필수 화면이라, 그
-            # 세션 쿠키로 식별되는 user_id별로 분리 저장한다. data 컬럼엔 calibration.json이
-            # 쓰던 것과 같은 JSON 구조({version, screen, samples})를 문자열로 그대로 저장 -
-            # SQL로 개별 샘플을 조회할 일이 없고 다운스트림 함수들이 그 리스트 구조를 그대로
-            # 기대하기 때문에 굳이 여러 행으로 정규화하지 않는다. CLI/데스크톱 모드는 여전히
-            # data/calibration.json 파일을 그대로 쓰며 이 테이블과 무관하다.
+            # 세션 쿠키로 식별되는 user_id별로 분리 저장한다. data 컬럼엔 그 시절의
+            # calibration.json이 쓰던 것과 같은 JSON 구조({version, screen, samples})를
+            # 문자열로 그대로 저장 - SQL로 개별 샘플을 조회할 일이 없고 다운스트림
+            # 함수들이 그 리스트 구조를 그대로 기대하기 때문에 굳이 여러 행으로
+            # 정규화하지 않는다. CLI/데스크톱 모드(및 그 data/calibration.json 파일)는
+            # 2026-09-15에 완전히 제거되어, 지금은 이 테이블이 캘리브레이션의 유일한
+            # 저장소다.
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS calibration_data (
                     user_id BIGINT PRIMARY KEY,

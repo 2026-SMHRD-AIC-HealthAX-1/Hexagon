@@ -1,7 +1,5 @@
 import random
-import cv2
 import time
-import numpy as np
 
 class GazeGame:
 
@@ -88,42 +86,6 @@ class GazeGame:
 
         return (x1, y1, x2, y2)
 
-    def draw(self, frame):
-
-        rect = self.get_target_rect()
-
-        if rect is None:
-            return frame
-
-        x1, y1, x2, y2 = rect
-
-        # 목표 영역 표시
-        cv2.rectangle(
-            frame,
-            (x1, y1),
-            (x2, y2),
-            (255, 255, 255),
-            5
-        )
-
-        elapsed_time = time.time() - self.start_time
-        remaining_time = max(
-            0,
-            self.time_limit - elapsed_time
-        )
-        
-        cv2.putText(
-            frame,
-            f"Time: {remaining_time:.1f}s",
-            (self.width - 250, 50),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1.0,
-            (255, 255, 255),
-            2
-        )
-        
-        return frame
-    
     def is_finished(self):
         return time.time() - self.start_time >= self.time_limit
     
@@ -164,21 +126,3 @@ class GazeGame:
 
         # 새로운 목표에 대한 응시 시간 초기화
         self.gaze_start_time = None
-        
-if __name__ == "__main__":
-
-    game = GazeGame(900, 600)
-
-    game.next_target()
-
-    frame = np.zeros(
-        (600, 900, 3),
-        dtype=np.uint8
-    )
-
-    frame = game.draw(frame)
-
-    cv2.imshow("Gaze Game Test", frame)
-
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
