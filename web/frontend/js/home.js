@@ -1,6 +1,8 @@
-import { startFrameSender, startWorkerFrameSender, wsUrl } from "./camera.js";
+import { startWorkerFrameCapture } from "./camera.js";
 import { getAuth, isLoggedIn, logout, syncAuthWithServer, PROVIDER_LABELS } from "./auth.js";
 import { loadNaverMapsScript, fetchClinics, createClinicItem, renderMap, searchPlace } from "./nearby_clinics.js";
+import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
+import { BlinkMonitor } from "./vision/blinkMonitor.js";
 
 // index.html은 requireLogin()으로 리다이렉트하지 않는 유일한 페이지이지만, 구글
 // 로그인은 서버 리다이렉트로 완료되므로(클라이언트가 그 시점을 알 수 없음) 로그인
@@ -80,8 +82,26 @@ video.muted = true;
 video.playsInline = true;
 
 let stream = null;
-let ws = null;
 let stopSender = null;
+
+// MediaPipe 추론은 항상 메인 스레드에서 한다 (워커 경로든 폴백 경로든 공유) -
+// blink_capture_worker.js 상단 주석 참고. landmarker는 페이지 세션 동안
+// 한 번만 만들고 토글 on/off 사이에도 재사용한다(game.js의 prepare() 와
+// 같은 캐싱 방식) - 매번 새로 만들면 WASM을 다시 컴파일해야 해서 토글할
+// 때마다 수 초씩 걸린다.
+let landmarker = null;
+let blinkMonitor = null;
+let nextTimestamp = null;
+
+// 로컬(메인 스레드) 폴백 경로 전용 상태 - MediaStreamTrackProcessor 미지원
+// 브라우저(Firefox/Safari 등)에서만 쓰인다. game.js/rhythm_game.js 와 같은
+// rAF 검출 루프 패턴. 탭이 백그라운드로 가면 rAF가 스로틀링되어 검출이
+// 느려지지만, 이건 워커 도입 이전부터 있던 폴백의 한계와 동일하다 - 예전
+// 폴백도 메인 스레드 setInterval로 프레임을 보냈으므로 백그라운드 생존이
+// 보장되지 않았다.
+const LOCAL_DETECT_INTERVAL_MS = 1000 / 8;
+let localRafId = null;
+let localLastDetectAt = 0;
 
 // 모니터링 시작 후 1분마다 그 구간의 깜빡임 횟수를 확인해서, 너무 적으면
 // 화면에 알림을 띄운다 (blink_count는 누적값이라 직전 체크 시점과의 차이로 계산).
@@ -141,8 +161,7 @@ function handleBlinkOpen() {
   statusLabel.textContent = "켜짐";
 }
 
-function handleBlinkMessage(data) {
-  const state = JSON.parse(data);
+function handleBlinkMessage(state) {
   statusEl.textContent = state.is_blinking ? "감김" : "뜸";
   countEl.textContent = state.blink_count;
   latestBlinkCount = state.blink_count;
@@ -152,10 +171,73 @@ function handleBlinkClose() {
   statusLabel.textContent = "꺼짐";
 }
 
+function showModelLoadFailureAlert() {
+  alert(
+    "얼굴 인식 모델을 불러오지 못했습니다.\n" +
+      "프로젝트 루트에서 아래를 한 번 실행했는지 확인해주세요:\n\n" +
+      "    python scripts/setup_mediapipe.py"
+  );
+}
+
+/** 워커가 넘겨준 ImageBitmap 한 장을 메인 스레드 MediaPipe로 처리한다. */
+function handleCapturedFrame(bitmap) {
+  let landmarks;
+  try {
+    landmarks = detectLandmarks(landmarker, bitmap, nextTimestamp());
+  } catch (err) {
+    console.warn("[home] 눈 깜빡임 검출 실패", err);
+    bitmap.close();
+    return;
+  }
+  bitmap.close();
+
+  // 얼굴이 안 잡히면 건너뛴다 - 서버판(blink_ws.py)이
+  // `if not result.face_landmarks: continue` 하던 것과 같은 동작.
+  if (!landmarks) return;
+
+  handleBlinkMessage(blinkMonitor.update(landmarks));
+}
+
 function onWorkerEvent(event) {
   if (event.type === "open") handleBlinkOpen();
-  else if (event.type === "message") handleBlinkMessage(event.data);
-  else if (event.type === "close" || event.type === "error") handleBlinkClose();
+  else if (event.type === "frame") handleCapturedFrame(event.bitmap);
+  else if (event.type === "close") handleBlinkClose();
+}
+
+/** game.js/rhythm_game.js 와 같은 구조의 rAF 검출 루프 (워커 미지원 브라우저용). */
+function localVisionLoop(now) {
+  localRafId = requestAnimationFrame(localVisionLoop);
+
+  if (now - localLastDetectAt < LOCAL_DETECT_INTERVAL_MS) return;
+  localLastDetectAt = now;
+
+  if (video.readyState < 2) return; // 아직 프레임이 준비되지 않음
+
+  let landmarks;
+  try {
+    landmarks = detectLandmarks(landmarker, video, nextTimestamp());
+  } catch (err) {
+    console.warn("[home] 눈 깜빡임 검출 실패", err);
+    return;
+  }
+
+  if (!landmarks) return;
+
+  handleBlinkMessage(blinkMonitor.update(landmarks));
+}
+
+/** 페이지 세션당 한 번만 모델을 불러오고, 이후 토글에는 재사용한다. */
+async function ensureLandmarker() {
+  if (landmarker) return true;
+
+  try {
+    landmarker = await createFaceLandmarker();
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+
+  return true;
 }
 
 async function startBlinkMonitoring() {
@@ -172,22 +254,33 @@ async function startBlinkMonitoring() {
   video.srcObject = stream;
   await video.play();
 
-  // 탭이 hidden 상태여도 계속 동작하도록, 지원 브라우저에서는 워커 기반 캡처를
-  // 우선 시도한다 - 미지원 브라우저(Firefox/Safari 등)는 null을 받아 기존
-  // 메인 스레드 경로로 폴백한다.
-  stopSender = startWorkerFrameSender(stream, "/ws/blink", { fps: 8 }, onWorkerEvent);
+  if (!(await ensureLandmarker())) {
+    toggle.checked = false;
+    stream.getTracks().forEach((track) => track.stop());
+    stream = null;
+    showModelLoadFailureAlert();
+    return;
+  }
+
+  blinkMonitor = new BlinkMonitor();
+  nextTimestamp = createTimestampSource();
+
+  // 탭이 hidden 상태여도 캡처가 이어지도록, 지원 브라우저에서는 워커 기반
+  // 캡처를 우선 시도한다 - 미지원 브라우저(Firefox/Safari 등)는 null을 받아
+  // 메인 스레드 <video> 를 직접 읽는 rAF 폴백으로 전환한다.
+  stopSender = startWorkerFrameCapture(stream, { fps: 8 }, onWorkerEvent);
 
   if (!stopSender) {
-    ws = new WebSocket(wsUrl("/ws/blink"));
+    handleBlinkOpen();
+    localLastDetectAt = 0;
+    localRafId = requestAnimationFrame(localVisionLoop);
 
-    ws.onopen = () => {
-      handleBlinkOpen();
-      stopSender = startFrameSender(video, ws, { fps: 8 });
+    stopSender = () => {
+      if (localRafId !== null) {
+        cancelAnimationFrame(localRafId);
+        localRafId = null;
+      }
     };
-
-    ws.onmessage = (event) => handleBlinkMessage(event.data);
-
-    ws.onclose = () => handleBlinkClose();
   }
 
   latestBlinkCount = 0;
@@ -198,11 +291,10 @@ async function startBlinkMonitoring() {
 function stopBlinkMonitoring() {
   if (stopSender) stopSender();
   stopSender = null;
-  if (ws) {
-    ws.close();
-    ws = null;
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop());
+    stream = null;
   }
-  if (stream) stream.getTracks().forEach((track) => track.stop());
 
   if (blinkAlertIntervalId) {
     clearInterval(blinkAlertIntervalId);
