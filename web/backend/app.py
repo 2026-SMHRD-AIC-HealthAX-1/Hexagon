@@ -5,8 +5,9 @@ BACKEND_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BACKEND_DIR.parents[1]
 SRC_DIR = REPO_ROOT / "src"
 SCRIPTS_DIR = REPO_ROOT / "scripts"
+MODELS_DIR = REPO_ROOT / "models"  # S-03 사진 분석 파이프라인(eye_analysis.py)
 
-for path in (SRC_DIR, BACKEND_DIR, SCRIPTS_DIR):
+for path in (SRC_DIR, BACKEND_DIR, SCRIPTS_DIR, MODELS_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
@@ -31,6 +32,7 @@ from routers.clinics import router as clinics_router
 from routers.auth import router as auth_router
 from routers.mypage import router as mypage_router
 from routers.calibration_api import router as calibration_api_router
+from routers.analysis import router as analysis_router
 
 db.init_db()
 
@@ -75,6 +77,7 @@ app.include_router(clinics_router)
 app.include_router(auth_router)
 app.include_router(mypage_router)
 app.include_router(calibration_api_router)
+app.include_router(analysis_router)
 
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

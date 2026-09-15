@@ -17,12 +17,30 @@ async function render() {
   document.getElementById("last-visit").textContent =
     `${formatDate(data.logged_in_at)} (${PROVIDER_LABELS[auth.provider] || auth.provider} 로그인)`;
 
-  // 백내장 위험도 / 안구 충혈도: 사진 분석(S-03) 기능이 아직 구현되지 않아
-  // 서버가 항상 null을 반환한다 - "측정 기록 없음" 플레이스홀더 유지 (HTML 기본값 그대로).
+  renderMeasurement(
+    "cataract-risk",
+    data.cataract_risk,
+    (risk) => `${(risk.prob * 100).toFixed(1)}% · ${risk.label}`,
+  );
+  renderMeasurement(
+    "redness",
+    data.redness,
+    (redness) => `${(redness.ratio * 100).toFixed(1)}%`,
+  );
 
   renderGameScore("gaze-game-score", data.last_game_gaze);
   renderGameScore("rhythm-game-score", data.last_game_rhythm);
 }
+
+// 사진 분석(S-03)을 한 번도 하지 않았으면 HTML의 "측정 기록 없음" 기본값을 그대로 둔다.
+function renderMeasurement(elementId, measurement, format) {
+  if (!measurement) return;
+
+  const el = document.getElementById(elementId);
+  el.textContent = `${format(measurement)} (${formatDate(measurement.analyzed_at)})`;
+  el.classList.remove("muted");
+}
+
 
 function renderGameScore(elementId, lastGame) {
   const el = document.getElementById(elementId);

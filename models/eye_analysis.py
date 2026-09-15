@@ -55,18 +55,29 @@ from redness_ratio import red_pixel_mask, union_sclera_mask  # noqa: E402
 SEG_WEIGHTS = EYE_SEG_DIR / "eye_seg.pt"
 CLS_WEIGHTS = CATARACT_DIR / "best.pt"
 
+_models = {}
 
-def analyze(image_path: Path, seg_weights: Path = SEG_WEIGHTS, cls_weights: Path = CLS_WEIGHTS) -> dict:
-    """눈 사진 한 장을 분석해서 백내장 확률과 충혈도를 돌려준다.
+
+def _load_model(weights: Path) -> YOLO:
+    """가중치를 한 번만 읽어서 재사용한다 - 웹에서는 요청마다 새로 읽으면 매번 느려진다."""
+    key = str(weights)
+    if key not in _models:
+        _models[key] = YOLO(key)
+    return _models[key]
+
+
+def analyze_image(img_bgr, seg_weights: Path = SEG_WEIGHTS, cls_weights: Path = CLS_WEIGHTS) -> dict:
+    """이미 읽어들인 BGR 이미지 배열 한 장을 분석한다.
+
+    파일 경로가 아니라 배열을 받는 이유: 웹에서 업로드된 사진은 개인정보라서
+    디스크에 저장하지 않고 메모리에서만 처리해야 한다
+    (web/backend/routers/analysis.py). 경로로 넣을 때와 배열로 넣을 때의 추론
+    결과가 완전히 같은 것은 확인함 (박스/confidence/마스크 모두 일치).
 
     영역 검출에 실패하면 {"ok": False, "missing": [...]} 를 반환한다.
     """
-    img_bgr = cv2.imread(str(image_path))
-    if img_bgr is None:
-        raise FileNotFoundError(f"{image_path} 를 읽을 수 없습니다.")
-
-    seg_result = YOLO(str(seg_weights)).predict(
-        source=str(image_path), imgsz=SEG_IMG_SIZE, save=False, verbose=False
+    seg_result = _load_model(seg_weights).predict(
+        source=img_bgr, imgsz=SEG_IMG_SIZE, save=False, verbose=False
     )[0]
 
     iris_box = find_best_iris_pupil_box(seg_result)
@@ -87,8 +98,8 @@ def analyze(image_path: Path, seg_weights: Path = SEG_WEIGHTS, cls_weights: Path
     if missing:
         return {"ok": False, "missing": missing}
 
-    cls_result = YOLO(str(cls_weights)).predict(
-        source=cropped, imgsz=CLS_IMG_SIZE, verbose=False
+    cls_result = _load_model(cls_weights).predict(
+        source=cropped, imgsz=CLS_IMG_SIZE, save=False, verbose=False
     )[0]
     cataract_prob = cataract_probability(cls_result)
 
@@ -100,6 +111,14 @@ def analyze(image_path: Path, seg_weights: Path = SEG_WEIGHTS, cls_weights: Path
         "cataract_label": classify_risk(cataract_prob),
         "redness_ratio": red_pixels / sclera_pixels,
     }
+
+
+def analyze(image_path: Path, seg_weights: Path = SEG_WEIGHTS, cls_weights: Path = CLS_WEIGHTS) -> dict:
+    """사진 파일 한 장을 읽어서 analyze_image()에 넘긴다 (CLI용)."""
+    img_bgr = cv2.imread(str(image_path))
+    if img_bgr is None:
+        raise FileNotFoundError(f"{image_path} 를 읽을 수 없습니다.")
+    return analyze_image(img_bgr, seg_weights, cls_weights)
 
 
 def main():

@@ -27,8 +27,12 @@ function formatGameScore(lastGame) {
   return lastGame ? `${lastGame.score}점` : NOT_MEASURED;
 }
 
-function formatMeasurement(value) {
-  return value != null ? value : NOT_MEASURED;
+function formatCataractRisk(risk) {
+  return risk ? `${(risk.prob * 100).toFixed(0)}% · ${risk.label}` : NOT_MEASURED;
+}
+
+function formatRedness(redness) {
+  return redness ? `${(redness.ratio * 100).toFixed(0)}%` : NOT_MEASURED;
 }
 
 async function renderAuthArea() {
@@ -44,8 +48,8 @@ async function renderAuthArea() {
     const data = await fetch("/api/mypage").then((res) => res.json());
     healthGazeScore.textContent = formatGameScore(data.last_game_gaze);
     healthRhythmScore.textContent = formatGameScore(data.last_game_rhythm);
-    healthCataractRisk.textContent = formatMeasurement(data.cataract_risk);
-    healthRedness.textContent = formatMeasurement(data.redness);
+    healthCataractRisk.textContent = formatCataractRisk(data.cataract_risk);
+    healthRedness.textContent = formatRedness(data.redness);
   } else {
     authLoggedIn.classList.add("hidden");
     loginLink.classList.remove("hidden");

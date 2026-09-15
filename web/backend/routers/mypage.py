@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 import db
+# 경계값의 단일 기준인 models/cataract_cls/infer.py의 함수 - 그 폴더는 sys.path에
+# 없고 eye_analysis가 자기 import 시점에 넣어주므로 파이프라인 쪽에서 가져온다.
+from eye_analysis import classify_risk
 from routers.auth import get_current_user_id
 
 router = APIRouter()
@@ -30,18 +33,37 @@ def _serialize_game_record(record):
     return {"score": record["score"], "played_at": record["played_at"]} if record else None
 
 
+def _serialize_cataract_risk(analysis):
+    if not analysis:
+        return None
+    return {
+        "prob": analysis["cataract_prob"],
+        "label": classify_risk(analysis["cataract_prob"]),
+        "analyzed_at": analysis["analyzed_at"],
+    }
+
+
+def _serialize_redness(analysis):
+    if not analysis:
+        return None
+    return {"ratio": analysis["redness_ratio"], "analyzed_at": analysis["analyzed_at"]}
+
+
 @router.get("/api/mypage")
 async def get_mypage(user_id: int = Depends(get_current_user_id)):
     user = db.get_user(user_id)
     last_gaze_game = db.get_last_game_record(user_id, db.GAME_TYPE_GAZE)
     last_rhythm_game = db.get_last_game_record(user_id, db.GAME_TYPE_RHYTHM)
+    last_analysis = db.get_last_analysis_result(user_id)
 
-    # 백내장 위험도/안구 충혈도: S-03 사진 분석에 아직 실제 모델이 없어
-    # analysis_results에 아무것도 쓰이지 않으므로 항상 null - 프론트가 "측정 기록 없음"으로 표시한다.
+    # 백내장 위험도/안구 충혈도: S-03 사진 분석(routers/analysis.py)을 한 번도
+    # 하지 않았으면 둘 다 null이고, 프론트가 "측정 미완료"로 표시한다.
+    # 등급(정상/주의 필요/위험)은 저장된 값이 아니라 확률에서 그때그때 계산한다 -
+    # 경계값의 단일 기준은 models/cataract_cls/infer.py다 (db.py 스키마 주석 참고).
     return {
         "logged_in_at": user["last_login_at"] if user else None,
         "last_game_gaze": _serialize_game_record(last_gaze_game),
         "last_game_rhythm": _serialize_game_record(last_rhythm_game),
-        "cataract_risk": None,
-        "redness": None,
+        "cataract_risk": _serialize_cataract_risk(last_analysis),
+        "redness": _serialize_redness(last_analysis),
     }

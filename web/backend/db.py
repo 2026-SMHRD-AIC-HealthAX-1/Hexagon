@@ -59,14 +59,22 @@ def init_db():
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """)
-            # S-03 사진 분석이 아직 실제 모델이 없어 지금은 아무 코드도 이 테이블에 쓰지 않는다.
-            # 나중에 AI 모델이 붙을 때 바로 쓸 수 있도록 스키마만 미리 만들어둔다.
+            # S-03 사진 분석 결과 (routers/analysis.py가 매 분석마다 한 행씩 기록).
+            # **분석에 쓴 원본 사진은 저장하지 않는다** - 눈 사진은 개인정보라 서버에
+            # 남기지 않기로 했고, 분석은 메모리에서만 이뤄진다. 여기 남는 건 분석에서
+            # 나온 수치뿐이다.
+            #
+            # 등급 문자열("정상"/"주의 필요"/"위험")이 아니라 원본 수치를 저장하는 이유:
+            # 등급은 확률에 경계값을 적용하면 언제든 다시 계산할 수 있는 파생값이라,
+            # 나중에 경계값을 조정하면 저장해둔 등급과 어긋나버린다. 경계값의 단일
+            # 기준은 models/cataract_cls/infer.py이고, 등급은 읽을 때 계산한다.
+            # (둘 다 0~1 비율값 - 화면에 보일 때만 퍼센트로 바꾼다.)
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS analysis_results (
                     analysis_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                     user_id BIGINT NOT NULL,
-                    cataract_risk VARCHAR(20),
-                    redness VARCHAR(20),
+                    cataract_prob FLOAT NOT NULL,
+                    redness_ratio FLOAT NOT NULL,
                     analyzed_at VARCHAR(64) NOT NULL,
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -252,5 +260,32 @@ def log_blink_alert(user_id):
                 (user_id, _now_iso()),
             )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def insert_analysis_result(user_id, cataract_prob, redness_ratio):
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO analysis_results (user_id, cataract_prob, redness_ratio, analyzed_at) "
+                "VALUES (%s, %s, %s, %s)",
+                (user_id, cataract_prob, redness_ratio, _now_iso()),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_last_analysis_result(user_id):
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM analysis_results WHERE user_id = %s ORDER BY analyzed_at DESC LIMIT 1",
+                (user_id,),
+            )
+            return cursor.fetchone()
     finally:
         conn.close()

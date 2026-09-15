@@ -28,14 +28,30 @@
     <img id="preview">
   </div>
 
-  <div id="loading" class="status-banner hidden" style="margin-top:16px">이미지를 확인하고 있어요...</div>
+  <div id="loading" class="status-banner hidden" style="margin-top:16px">이미지를 분석하고 있어요...</div>
+
+  <div id="error" class="status-banner hidden" style="margin-top:16px"></div>
 
   <div id="result" class="hidden" style="margin-top:16px">
     <div class="mypage-card">
-      <div class="mypage-label">분석 결과</div>
-      <div class="mypage-value muted">AI 분석 기능은 준비 중입니다. 모델 학습 완료 후 제공될 예정입니다.</div>
+      <div class="mypage-label">백내장 의심 확률</div>
+      <div id="cataract-value" class="mypage-value"></div>
+    </div>
+    <div class="mypage-card">
+      <div class="mypage-label">충혈도</div>
+      <div id="redness-value" class="mypage-value"></div>
+      <div class="mypage-value muted" style="font-size:13px">충혈도는 기준값을 조정 중이라 참고용 수치입니다.</div>
+    </div>
+
+    <div class="status-banner" style="margin-top:14px">✅ 분석 결과가 회원님의 계정에 저장되었습니다. 마이페이지에서 다시 확인할 수 있어요.</div>
+
+    <div class="actions">
+      <button id="retry-btn" class="primary">다시 분석하기</button>
+      <button id="home-btn">홈으로</button>
     </div>
   </div>
+
+  <p class="login-desc" style="margin-top:16px">업로드한 사진은 분석에만 사용되고 서버에 저장되지 않습니다.</p>
 
   <div class="site-footer">본 서비스는 정식 의료 서비스가 아니며 참고용이므로 정확한 진단은 전문의 또는 병원을 방문하시기 바랍니다.</div>
 </div>

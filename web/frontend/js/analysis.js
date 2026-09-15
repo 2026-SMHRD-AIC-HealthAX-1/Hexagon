@@ -7,6 +7,11 @@ const fileInput = document.getElementById("photo-input");
 const preview = document.getElementById("preview");
 const loading = document.getElementById("loading");
 const result = document.getElementById("result");
+const errorBox = document.getElementById("error");
+const cataractValue = document.getElementById("cataract-value");
+const rednessValue = document.getElementById("redness-value");
+const retryBtn = document.getElementById("retry-btn");
+const homeBtn = document.getElementById("home-btn");
 
 // 홈 화면의 퀵메뉴에서 "사진 촬영"으로 들어온 경우 갤러리 대신 카메라를 바로 띄운다.
 // capture 속성은 모바일 브라우저에서 갤러리 대신 카메라 앱을 직접 연다.
@@ -18,9 +23,28 @@ if (new URLSearchParams(location.search).get("mode") === "capture") {
   fileInput.click();
 }
 
-// AI 모델이 아직 없으므로 업로드 UI/화면 전환 흐름만 만들어두는 틀(scaffold)이다.
-// 실제 업로드 전송이나 분석 로직은 없고, 잠깐의 로딩 후 "준비 중" 안내만 표시한다.
-fileInput.addEventListener("change", (event) => {
+function showError(message) {
+  errorBox.textContent = message;
+  errorBox.classList.remove("hidden");
+}
+
+// 사진 파일을 multipart가 아니라 요청 본문에 그대로 실어 보낸다 - 서버가 원본을
+// 디스크에 남기지 않고 메모리에서만 처리하기 위한 것 (web/backend/routers/analysis.py).
+async function analyzePhoto(file) {
+  const response = await fetch("/api/analysis", {
+    method: "POST",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null);
+    throw new Error(detail?.detail || "분석에 실패했습니다. 잠시 후 다시 시도해주세요.");
+  }
+  return response.json();
+}
+
+fileInput.addEventListener("change", async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -29,9 +53,39 @@ fileInput.addEventListener("change", (event) => {
 
   loading.classList.remove("hidden");
   result.classList.add("hidden");
+  errorBox.classList.add("hidden");
 
-  setTimeout(() => {
-    loading.classList.add("hidden");
+  try {
+    const data = await analyzePhoto(file);
+
+    if (!data.ok) {
+      showError(data.message);
+      return;
+    }
+
+    cataractValue.textContent =
+      `${(data.cataract_prob * 100).toFixed(1)}% · ${data.cataract_label}`;
+    rednessValue.textContent = `${(data.redness_ratio * 100).toFixed(1)}%`;
     result.classList.remove("hidden");
-  }, 900);
+  } catch (error) {
+    showError(error.message);
+  } finally {
+    loading.classList.add("hidden");
+  }
+});
+
+retryBtn.addEventListener("click", () => {
+  URL.revokeObjectURL(preview.src);
+  preview.removeAttribute("src");
+  preview.style.display = "none";
+
+  // 같은 사진을 다시 고르는 경우에도 change 이벤트가 나도록 값을 비워둔다.
+  fileInput.value = "";
+
+  result.classList.add("hidden");
+  errorBox.classList.add("hidden");
+});
+
+homeBtn.addEventListener("click", () => {
+  location.href = "index.html";
 });
