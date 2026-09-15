@@ -298,17 +298,19 @@ Upload an eye photo → server returns 백내장 의심 확률 + 등급 and 충�
 models/
 ├── eye_analysis.py       # the end-to-end pipeline the web layer calls
 ├── eye_seg/              # yolo26n-seg: sclera + iris_pupil segmentation
-│   ├── eye_seg.pt          (gitignored — weights are local-only, see .gitignore)
+│   ├── eye_seg.pt          6.3MB, committed — clone and run, no separate download
 │   ├── inference.py        standalone single-photo test
 │   ├── batch_inference.py  standalone folder test
 │   └── redness_ratio.py    sclera mask -> red-pixel ratio (충혈도)
 └── cataract_cls/         # yolo11n-cls: cataract vs normal, trained on CROPPED iris_pupil images
-    ├── best.pt             (gitignored, same reason)
+    ├── best.pt             3.1MB, committed — same as above
     ├── infer.py            standalone classification + the 정상/주의 필요/위험 thresholds
     └── 백내장 학습.ipynb    the Colab training notebook
 ```
 
 `AI/AI_Flow.txt` is the authoritative design doc for all of this (how the two models split the work, what's tuned vs. still guesswork, what's deliberately deferred). **Read it before touching anything under `models/` or `AI/`** — several of its decisions look like oversights otherwise.
+
+Both `.pt` weights are committed (~9.4MB total) so a clone can run S-03 without a separate download — unlike `web/frontend/vendor/mediapipe/`, which is fetched by a script. What stays gitignored in those folders is the *training data* and test/result images (`models/eye_seg/dataset/`, `test_image.jpg`, …): those are large and, more importantly, may include third-party images whose licensing was never established (some carry stock-photo watermarks) — the same reason `AI/cataract/`, `AI/redness/` and `reference_img/` are excluded. Keep that split if you add files here. Note git keeps every version of a binary forever, so re-committing retrained weights repeatedly will grow the repo permanently.
 
 - **Pipeline** (`models/eye_analysis.py`): run `eye_seg` **once** per photo, then split its two masks — `iris_pupil` gets cropped and classified by `best.pt` (백내장 확률), `sclera` gets the red-pixel ratio (충혈도). If either region is missing, it returns `{"ok": False, "missing": [...]}` and the user is asked to retake rather than getting a half-result.
 - **The crop is load-bearing, not cosmetic**: `cataract_cls` was trained on cropped `iris_pupil` images, so feeding it a full uncropped photo silently loses accuracy (no error, just worse numbers). `eye_analysis.py` therefore imports the crop helpers (`find_best_iris_pupil_box`, `pad_and_clip_box`, `PADDING_RATIO`) straight from `AI/scripts/crop_iris_pupil.py` — the same code that built the training set — rather than copying the constants. Don't "clean that up" into a local copy; a drifted `PADDING_RATIO` is exactly the failure this avoids.
