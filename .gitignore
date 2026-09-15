@@ -33,6 +33,12 @@ AI/runs/
 models/eye_seg/*
 !models/eye_seg/*.py
 
+# 백내장 분류 모델 가중치(best.pt) - 위 eye_seg.pt 와 같은 이유로 로컬 전용.
+# 추론 스크립트와 학습 노트북은 코드라서 추적한다.
+models/cataract_cls/*
+!models/cataract_cls/*.py
+!models/cataract_cls/*.ipynb
+
 # Python<->JS 수치 일치 테스트가 실행 중에 만들어내는 것들 (run.sh 가 매번 재생성).
 # fixture.json 은 4MB 가까이 되고, vision/ 은 원본을 그대로 복사한 사본이다.
 tests/vision_parity/fixture.json
