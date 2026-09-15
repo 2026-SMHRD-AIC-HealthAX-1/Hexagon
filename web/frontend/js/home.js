@@ -195,7 +195,7 @@ function handleCapturedFrame(bitmap) {
   }
   bitmap.close();
 
-  // 얼굴이 안 잡히면 건너뛴다 - 서버판(blink_ws.py)이
+  // 얼굴이 안 잡히면 건너뛴다 - 다른 WS 라우터들이
   // `if not result.face_landmarks: continue` 하던 것과 같은 동작.
   if (!landmarks) return;
 

@@ -25,7 +25,6 @@ import db
 import setup_mediapipe
 from routers.calibration_ws import router as calibration_router
 from routers.game_ws import router as game_router
-from routers.blink_ws import router as blink_router
 from routers.rhythm_game_ws import router as rhythm_game_router
 from routers.config import router as config_router
 from routers.clinics import router as clinics_router
@@ -70,7 +69,6 @@ app.add_middleware(
 
 app.include_router(calibration_router)
 app.include_router(game_router)
-app.include_router(blink_router)
 app.include_router(rhythm_game_router)
 app.include_router(config_router)
 app.include_router(clinics_router)
