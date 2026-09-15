@@ -44,6 +44,8 @@ uvicorn web.backend.app:app --reload
 
 `http://localhost:8000`으로 접속 (Google/Kakao 로그인 리다이렉트가 `localhost` 기준이라 `127.0.0.1`로는 로그인 불가).
 
+시선추적 게임/리듬게임/캘리브레이션이 쓰는 브라우저용 MediaPipe 자산(`web/frontend/vendor/mediapipe/`)은 저장소에 포함되어 있지 않은데, 최초 실행 시 서버가 자동으로 내려받는다(인터넷 연결 필요, 수 초~수 분 소요, 이후 재기동부터는 건너뜀). 실패하면 콘솔 로그를 보고 `python scripts/setup_mediapipe.py`를 수동으로 실행하면 된다.
+
 ## 환경 변수 (`.env`)
 
 `SESSION_SECRET_KEY`만 있으면 서버가 뜹니다. 나머지(`GOOGLE_CLIENT_ID`/`KAKAO_CLIENT_ID` 등)는 없어도 해당 기능만 비활성화되고 나머지는 정상 동작합니다. 자세한 설명은 `.env.example` 참고.
