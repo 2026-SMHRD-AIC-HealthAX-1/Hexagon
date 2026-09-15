@@ -36,6 +36,7 @@ import { computeGaze, GazeSmoother } from "./vision/gaze.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
 import { RhythmGameEngine } from "./rhythm/gameEngine.js";
 import { fetchLaneX } from "./rhythm/calibration.js";
+import { showGuide } from "./guide.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -48,6 +49,8 @@ const consentModal = document.getElementById("consent-modal");
 const loadingModal = document.getElementById("loading-modal");
 const loadingTitle = document.getElementById("loading-title");
 const loadingDetail = document.getElementById("loading-detail");
+const gameGuideModal = document.getElementById("game-guide-modal");
+const gameGuideConfirm = document.getElementById("game-guide-confirm");
 const playScreen = document.getElementById("play-screen");
 const pauseModal = document.getElementById("pause-modal");
 const resultScreen = document.getElementById("result-screen");
@@ -283,6 +286,8 @@ document.getElementById("consent-confirm").addEventListener("click", async () =>
   consentModal.classList.add("hidden");
 
   if (!(await prepare())) return;
+
+  await showGuide(gameGuideModal, gameGuideConfirm);
 
   playScreen.classList.remove("hidden");
   runGame();

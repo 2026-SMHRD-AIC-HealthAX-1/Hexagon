@@ -1,10 +1,15 @@
 import { startFrameSender, wsUrl } from "./camera.js";
 import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { showGuide } from "./guide.js";
 
 await syncAuthWithServer();
 requireLogin();
 
 const consentModal = document.getElementById("consent-modal");
+const calibrationGuideModal = document.getElementById("calibration-guide-modal");
+const calibrationGuideConfirm = document.getElementById("calibration-guide-confirm");
+const gameGuideModal = document.getElementById("game-guide-modal");
+const gameGuideConfirm = document.getElementById("game-guide-confirm");
 const playScreen = document.getElementById("play-screen");
 const resultScreen = document.getElementById("result-screen");
 const canvas = document.getElementById("display");
@@ -79,13 +84,14 @@ function runCalibration() {
     stopSender = startFrameSender(video, ws, { fps: 15 });
   };
 
-  ws.onmessage = (event) => {
+  ws.onmessage = async (event) => {
     const state = JSON.parse(event.data);
     drawCalibrationState(state);
 
     if (state.finished) {
       if (stopSender) stopSender();
       ws.close();
+      await showGuide(gameGuideModal, gameGuideConfirm);
       runGame();
     }
   };
@@ -155,6 +161,9 @@ document.getElementById("consent-confirm").addEventListener("click", async () =>
   }
 
   consentModal.classList.add("hidden");
+
+  await showGuide(calibrationGuideModal, calibrationGuideConfirm);
+
   playScreen.classList.remove("hidden");
   runCalibration();
 });

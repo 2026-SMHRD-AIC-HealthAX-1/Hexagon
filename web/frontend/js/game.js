@@ -15,6 +15,7 @@ import { calculateRegionGaze, createRegionPoints } from "./vision/gazeRegionClas
 import { CalibrationEngine } from "./gaze/calibrationEngine.js";
 import { GazeGameEngine } from "./gaze/gameEngine.js";
 import { saveCalibration } from "./gaze/calibrationApi.js";
+import { showGuide } from "./guide.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -27,6 +28,10 @@ const consentModal = document.getElementById("consent-modal");
 const loadingModal = document.getElementById("loading-modal");
 const loadingTitle = document.getElementById("loading-title");
 const loadingDetail = document.getElementById("loading-detail");
+const calibrationGuideModal = document.getElementById("calibration-guide-modal");
+const calibrationGuideConfirm = document.getElementById("calibration-guide-confirm");
+const gameGuideModal = document.getElementById("game-guide-modal");
+const gameGuideConfirm = document.getElementById("game-guide-confirm");
 const playScreen = document.getElementById("play-screen");
 const resultScreen = document.getElementById("result-screen");
 const canvas = document.getElementById("display");
@@ -238,6 +243,8 @@ async function finishCalibration() {
     console.error("[game] 캘리브레이션 저장 실패", err);
   }
 
+  await showGuide(gameGuideModal, gameGuideConfirm);
+
   runGame();
 }
 
@@ -299,6 +306,8 @@ document.getElementById("consent-confirm").addEventListener("click", async () =>
   consentModal.classList.add("hidden");
 
   if (!(await prepare())) return;
+
+  await showGuide(calibrationGuideModal, calibrationGuideConfirm);
 
   playScreen.classList.remove("hidden");
   runCalibration();

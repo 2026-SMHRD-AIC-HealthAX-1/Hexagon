@@ -13,6 +13,7 @@
 
 import { startFrameSender, wsUrl } from "./camera.js";
 import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { showGuide } from "./guide.js";
 import {
   LANES,
   NOTE_FALL_DURATION_MS,
@@ -42,6 +43,8 @@ if (!DEMO) requireLogin();
 // ─────────────────────────────────────────────────────────────
 
 const consentModal = document.getElementById("consent-modal");
+const gameGuideModal = document.getElementById("game-guide-modal");
+const gameGuideConfirm = document.getElementById("game-guide-confirm");
 const playScreen = document.getElementById("play-screen");
 const pauseModal = document.getElementById("pause-modal");
 const resultScreen = document.getElementById("result-screen");
@@ -315,6 +318,9 @@ document.getElementById("consent-confirm").addEventListener("click", async () =>
   }
 
   consentModal.classList.add("hidden");
+
+  await showGuide(gameGuideModal, gameGuideConfirm);
+
   playScreen.classList.remove("hidden");
   startRound();
 });
