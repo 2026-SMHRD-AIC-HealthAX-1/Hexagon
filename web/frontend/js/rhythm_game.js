@@ -1,5 +1,5 @@
 /*
-  테스트용 미니게임 (리듬 게임) - 진입점.
+  시선 추적 리듬게임 - 진입점.
 
   서버 WebSocket 없이 동작한다:
       <video> 프레임 -> MediaPipe(WASM) -> 랜드마크
@@ -111,21 +111,8 @@ function stopCamera() {
   }
 }
 
-/** 한 번만 수행하면 되는 무거운 준비(모델 로딩 + 캘리브레이션 조회). */
+/** 한 번만 수행하면 되는 무거운 준비(모델 로딩). laneX 는 이미 시작 시점에 확인했다. */
 async function prepare() {
-  if (!laneX) {
-    showLoading("캘리브레이션 확인 중", "저장된 시선 보정 데이터를 불러옵니다.");
-
-    laneX = await fetchLaneX();
-
-    if (!laneX) {
-      hideLoading();
-      alert("캘리브레이션 데이터가 없습니다. 먼저 시선 추적 미니게임에서 캘리브레이션을 진행해주세요.");
-      goHome();
-      return false;
-    }
-  }
-
   if (!landmarker) {
     showLoading("얼굴 인식 모델 로딩 중", "처음 한 번만 내려받습니다 (약 40MB). 잠시만 기다려주세요.");
     try {
@@ -310,3 +297,15 @@ document.getElementById("retry-btn").addEventListener("click", () => {
 });
 
 document.getElementById("home-btn").addEventListener("click", goHome);
+
+// ─────────────────────────────────────────────────────────────
+// 시작 - 캘리브레이션 데이터가 있어야 콘센트 모달을 보여준다
+// ─────────────────────────────────────────────────────────────
+
+laneX = await fetchLaneX();
+
+if (!laneX) {
+  window.location.href = "calibration.html?next=rhythm_game.html";
+} else {
+  consentModal.classList.remove("hidden");
+}

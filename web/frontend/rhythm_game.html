@@ -1,5 +1,5 @@
 <!--
-  테스트용 미니게임 (리듬 게임).
+  시선 추적 리듬게임.
 
   시선/깜빡임 계산과 노트 판정을 전부 브라우저에서 수행한다 - 카메라 영상은
   서버로 전송되지 않고, 게임이 끝났을 때 최종 점수만 POST 한다.
@@ -13,7 +13,7 @@
 
   관련 문서: rhythm_new.txt (디자인), python_to_js.txt (JS 전환 배경)
 -->
-<title>테스트용 미니게임 - Eye God</title>
+<title>시선 추적 리듬게임 - Eye God</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/rhythm_game_theme.css">
@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap">
 
-<div id="consent-modal" class="modal neon-modal">
+<div id="consent-modal" class="modal neon-modal hidden">
   <div class="modal-box">
     <div class="neon-eyebrow">EYE GOD / RHYTHM</div>
     <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
