@@ -49,11 +49,16 @@ async function render() {
   renderGameScore("rhythm-game-score", data.last_game_rhythm);
 }
 
-// 사진 분석(S-03)을 한 번도 하지 않았으면 HTML의 "측정 기록 없음" 기본값을 그대로 둔다.
 function renderMeasurement(elementId, measurement, format) {
-  if (!measurement) return;
-
   const el = document.getElementById(elementId);
+
+  // 기록이 없거나(최초 방문) 방금 삭제 버튼으로 지운 직후에도 같은 경로를 탄다.
+  if (!measurement) {
+    el.textContent = "측정 기록 없음";
+    el.classList.add("muted");
+    return;
+  }
+
   el.textContent = `${format(measurement)} (${formatDate(measurement.analyzed_at)})`;
   el.classList.remove("muted");
 }
@@ -69,6 +74,32 @@ function renderGameScore(elementId, lastGame) {
     el.classList.add("muted");
   }
 }
+
+const DELETE_CONFIRM_MESSAGE =
+  "해당 정보를 삭제할 경우 눈 건강 요약 정보의 정확도에 영향이 있을 수 있습니다. 그래도 삭제할까요?";
+
+async function handleDelete(button, endpoint) {
+  if (!confirm(DELETE_CONFIRM_MESSAGE)) return;
+
+  button.disabled = true;
+  try {
+    const response = await fetch(endpoint, { method: "DELETE" });
+    if (!response.ok) throw new Error();
+    await render();
+  } catch {
+    alert("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById("delete-analysis-btn").addEventListener("click", (event) => {
+  handleDelete(event.currentTarget, "/api/analysis-results");
+});
+
+document.getElementById("delete-gaze-records-btn").addEventListener("click", (event) => {
+  handleDelete(event.currentTarget, "/api/game-records/gaze");
+});
 
 document.getElementById("logout-btn").addEventListener("click", async () => {
   await logout();

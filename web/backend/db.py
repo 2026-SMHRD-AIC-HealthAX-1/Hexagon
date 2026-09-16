@@ -289,3 +289,28 @@ def get_last_analysis_result(user_id):
             return cursor.fetchone()
     finally:
         conn.close()
+
+
+def delete_analysis_results(user_id):
+    """마이페이지의 "백내장/충혈도 기록 삭제" 버튼 - 해당 사용자의 analysis_results 전체 삭제."""
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM analysis_results WHERE user_id = %s", (user_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_game_records(user_id, game_type):
+    """마이페이지의 게임 기록 삭제 버튼 - game_type 하나만 지운다 (예: 시선 추적만, 리듬은 유지)."""
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM game_records WHERE user_id = %s AND game_type = %s",
+                (user_id, game_type),
+            )
+        conn.commit()
+    finally:
+        conn.close()

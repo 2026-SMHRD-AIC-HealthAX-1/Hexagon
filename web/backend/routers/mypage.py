@@ -29,6 +29,21 @@ async def post_blink_alert(user_id: int = Depends(get_current_user_id)):
     return {"ok": True}
 
 
+@router.delete("/api/analysis-results")
+async def delete_analysis_results(user_id: int = Depends(get_current_user_id)):
+    # 마이페이지의 "백내장·충혈도 측정 기록 삭제" 버튼 - 해당 사용자 것만 지운다
+    # (session에서 나온 user_id로 WHERE 절이 걸리므로 다른 사용자 데이터는 손댈 수 없음).
+    db.delete_analysis_results(user_id)
+    return {"ok": True}
+
+
+@router.delete("/api/game-records/gaze")
+async def delete_gaze_game_records(user_id: int = Depends(get_current_user_id)):
+    # 마이페이지의 "시선 추적 게임 기록 삭제" 버튼 - 리듬게임 기록은 건드리지 않는다.
+    db.delete_game_records(user_id, db.GAME_TYPE_GAZE)
+    return {"ok": True}
+
+
 def _serialize_game_record(record):
     return {"score": record["score"], "played_at": record["played_at"]} if record else None
 
