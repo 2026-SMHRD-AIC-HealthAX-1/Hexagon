@@ -12,6 +12,13 @@ const cataractValue = document.getElementById("cataract-value");
 const rednessValue = document.getElementById("redness-value");
 const retryBtn = document.getElementById("retry-btn");
 const homeBtn = document.getElementById("home-btn");
+const clinicRecommend = document.getElementById("clinic-recommend");
+const clinicRecommendText = document.getElementById("clinic-recommend-text");
+const clinicRecommendBtn = document.getElementById("clinic-recommend-btn");
+
+// 백내장 등급 문자열의 단일 기준은 models/cataract_cls/infer.py의 classify_risk() -
+// 여기서는 그 결과 문자열("정상"/"주의 필요"/"위험")을 그대로 비교만 한다.
+const CLINIC_RECOMMEND_LABELS = ["주의 필요", "위험"];
 
 // 홈 화면의 퀵메뉴에서 "사진 촬영"으로 들어온 경우 갤러리 대신 카메라를 바로 띄운다.
 // capture 속성은 모바일 브라우저에서 갤러리 대신 카메라 앱을 직접 연다.
@@ -66,6 +73,17 @@ fileInput.addEventListener("change", async (event) => {
     cataractValue.textContent =
       `${(data.cataract_prob * 100).toFixed(1)}% · ${data.cataract_label}`;
     rednessValue.textContent = `${(data.redness_ratio * 100).toFixed(1)}%`;
+
+    if (CLINIC_RECOMMEND_LABELS.includes(data.cataract_label)) {
+      clinicRecommendText.textContent =
+        `Eye God 내부 AI 모델 분석 결과 ${data.cataract_label} 단계로 추측됩니다.\n` +
+        "정밀 진단을 위해 안과 방문을 권장합니다.\n" +
+        "현재 위치에서 가까운 안과를 추천해드릴까요?";
+      clinicRecommend.classList.remove("hidden");
+    } else {
+      clinicRecommend.classList.add("hidden");
+    }
+
     result.classList.remove("hidden");
   } catch (error) {
     showError(error.message);
@@ -84,8 +102,13 @@ retryBtn.addEventListener("click", () => {
 
   result.classList.add("hidden");
   errorBox.classList.add("hidden");
+  clinicRecommend.classList.add("hidden");
 });
 
 homeBtn.addEventListener("click", () => {
   location.href = "index.html";
+});
+
+clinicRecommendBtn.addEventListener("click", () => {
+  location.href = "hospitals.html";
 });
