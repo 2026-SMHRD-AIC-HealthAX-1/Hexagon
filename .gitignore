@@ -19,6 +19,9 @@ __pycache__/
 # stale local build artifact - redundant now that the repo itself is the source of truth
 EyeGod_source.zip
 
+# 개발 중 트러블슈팅 기록 - 로컬 참고용으로만 두기로 함, 팀 공유용 doc/는 아님
+doc/트러블슈팅_히스토리.md
+
 # Kaggle datasets for future model training - local only, not part of the repo
 cataract/
 conjunctivitis/

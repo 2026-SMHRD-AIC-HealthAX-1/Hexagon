@@ -35,24 +35,19 @@
     </div>
   </section>
 
-  <div class="mypage-grid">
-    <div class="mypage-card">
-      <div class="mypage-label">최근 백내장 위험도</div>
-      <div id="cataract-risk" class="mypage-value muted">측정 기록 없음</div>
+  <section class="history-section">
+    <div class="tabs tabs-primary" role="tablist">
+      <button type="button" class="tab-btn active" data-category="cataract">백내장 위험도</button>
+      <button type="button" class="tab-btn" data-category="redness">안구 충혈도</button>
+      <button type="button" class="tab-btn" data-category="gaze">미니게임</button>
+      <button type="button" class="tab-btn" data-category="rhythm">리듬게임</button>
     </div>
-    <div class="mypage-card">
-      <div class="mypage-label">최근 안구 충혈도</div>
-      <div id="redness" class="mypage-value muted">측정 기록 없음</div>
+    <div class="tabs tabs-secondary" role="tablist">
+      <button type="button" class="tab-btn active" data-view="list">누적 기록</button>
+      <button type="button" class="tab-btn" data-view="trend">최근 기록 추이</button>
     </div>
-    <div class="mypage-card">
-      <div class="mypage-label">시선 추적 게임 최근 점수</div>
-      <div id="gaze-game-score" class="mypage-value">-</div>
-    </div>
-    <div class="mypage-card">
-      <div class="mypage-label">리듬게임 최근 점수</div>
-      <div id="rhythm-game-score" class="mypage-value">-</div>
-    </div>
-  </div>
+    <div id="history-content" class="history-content"></div>
+  </section>
 
   <div class="actions" style="margin-top:24px">
     <button id="delete-analysis-btn">백내장·충혈도 기록 삭제</button>

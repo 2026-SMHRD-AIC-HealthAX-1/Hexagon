@@ -291,6 +291,34 @@ def get_last_analysis_result(user_id):
         conn.close()
 
 
+def get_analysis_history(user_id):
+    """마이페이지 누적 기록 탭 - 해당 사용자의 S-03 분석 결과 전체를 최신순으로."""
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM analysis_results WHERE user_id = %s ORDER BY analyzed_at DESC",
+                (user_id,),
+            )
+            return cursor.fetchall()
+    finally:
+        conn.close()
+
+
+def get_game_history(user_id, game_type):
+    """마이페이지 누적 기록 탭 - 해당 사용자의 게임 기록 전체(한 종류)를 최신순으로."""
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM game_records WHERE user_id = %s AND game_type = %s ORDER BY played_at DESC",
+                (user_id, game_type),
+            )
+            return cursor.fetchall()
+    finally:
+        conn.close()
+
+
 def delete_analysis_results(user_id):
     """마이페이지의 "백내장/충혈도 기록 삭제" 버튼 - 해당 사용자의 analysis_results 전체 삭제."""
     conn = _connect()
