@@ -1,3 +1,5 @@
+import { clearStoredTheme } from "./theme.js";
+
 const AUTH_KEY = "eyeGodAuth";
 
 export const PROVIDER_LABELS = {
@@ -35,6 +37,8 @@ export async function logout() {
   // 진짜로 로그아웃된다.
   await fetch("/api/auth/logout", { method: "POST" });
   localStorage.removeItem(AUTH_KEY);
+  // 다크모드는 "로그아웃 전까지 유지"가 요구사항이므로 로그아웃 시점에 함께 초기화.
+  clearStoredTheme();
 }
 
 // 로그인이 필요한 페이지 최상단에서 호출: 비로그인이면 현재 경로를 ?next=로 실어

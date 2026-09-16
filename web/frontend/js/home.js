@@ -1,9 +1,10 @@
 import { startWorkerFrameCapture } from "./camera.js";
-import { getAuth, isLoggedIn, logout, syncAuthWithServer, PROVIDER_LABELS } from "./auth.js";
+import { isLoggedIn, logout, syncAuthWithServer } from "./auth.js";
 import { loadNaverMapsScript, fetchClinics, createClinicItem, renderMap, searchPlace } from "./nearby_clinics.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
+import { getStoredTheme, toggleTheme } from "./theme.js";
 
 // index.html은 requireLogin()으로 리다이렉트하지 않는 유일한 페이지이지만, 구글
 // 로그인은 서버 리다이렉트로 완료되므로(클라이언트가 그 시점을 알 수 없음) 로그인
@@ -12,8 +13,8 @@ await syncAuthWithServer();
 
 const loginLink = document.getElementById("login-link");
 const authLoggedIn = document.getElementById("auth-logged-in");
-const authProviderLabel = document.getElementById("auth-provider-label");
 const logoutBtn = document.getElementById("logout-btn");
+const themeToggleBtn = document.getElementById("theme-toggle");
 
 const healthLoginPrompt = document.getElementById("health-login-prompt");
 const healthStats = document.getElementById("health-stats");
@@ -40,8 +41,6 @@ function formatRedness(redness) {
 
 async function renderAuthArea() {
   if (isLoggedIn()) {
-    const auth = getAuth();
-    authProviderLabel.textContent = `${PROVIDER_LABELS[auth.provider] || auth.provider} 로그인됨`;
     authLoggedIn.classList.remove("hidden");
     loginLink.classList.add("hidden");
 
@@ -69,6 +68,20 @@ logoutBtn.addEventListener("click", async () => {
   await logout();
   renderAuthArea();
 });
+
+// 다크모드 토글 - 헤더의 예전 "Google 로그인됨" 자리. 로그인 상태일 때만
+// 보이는 #auth-logged-in 안에 있으므로 표시 여부는 renderAuthArea()가 이미
+// 처리하고, 여기서는 아이콘/클릭 동작만 담당한다.
+function updateThemeToggleIcon() {
+  themeToggleBtn.textContent = getStoredTheme() === "dark" ? "☀️" : "🌙";
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  toggleTheme();
+  updateThemeToggleIcon();
+});
+
+updateThemeToggleIcon();
 
 renderAuthArea();
 

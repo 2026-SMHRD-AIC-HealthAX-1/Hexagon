@@ -15,6 +15,40 @@
   --eye-caution: #d69a34;
   --eye-risk: #c85a46;
   --eye-unknown: var(--blue-dark);
+
+  /* 다크모드용 색상 토큰 - 카드/버튼 등의 흰 배경(#fff)과 그 호버색을 변수로
+     빼둔 것. 라이트모드 기본값은 기존에 하드코딩돼 있던 값 그대로다. */
+  --surface: #fff;
+  --page-bg: #fff;
+  --hover-border: #bdd7f5;
+  --hover-bg: #fafcff;
+  --table-head-bg: #e6eef4;
+  --toggle-track: #d7dce2;
+  --danger-bg: #fdecec;
+  --danger-text: #b3261e;
+  /* 툴팁(.trend-tooltip/.clinic-tooltip)은 --text와 별개로 항상 어두운
+     배경 + 흰 글자를 유지한다 - 다크모드에서 --text가 밝은 색으로 바뀌면
+     툴팁 배경도 같이 밝아져 흰 글자와 대비가 깨지기 때문에 고정값으로 분리. */
+  --tooltip-bg: #252b33;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --blue-light: #1f2f42;
+  --blue-pale: #182233;
+  --text: #e7eaf0;
+  --gray: #97a1ae;
+  --line: #333d4a;
+  --line-blue: #3a4f6b;
+  --surface: #1b2028;
+  --page-bg: #121519;
+  --hover-border: #3a5e86;
+  --hover-bg: #1d2733;
+  --table-head-bg: #202b38;
+  --toggle-track: #3a4048;
+  --danger-bg: #3a2020;
+  --danger-text: #ff8a80;
+  color-scheme: dark;
 }
 
 * {
@@ -24,7 +58,7 @@
 body {
   margin: 0;
   font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
-  background: #fff;
+  background: var(--page-bg);
   color: var(--text);
 }
 
@@ -146,11 +180,11 @@ header.top-bar {
 }
 
 .site-footer {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--line);
   padding: 18px 0 0;
   margin-top: 30px;
   text-align: center;
-  color: #9aa1aa;
+  color: var(--gray);
   font-size: 11px;
   line-height: 1.6;
 }
@@ -164,7 +198,7 @@ header.top-bar {
 
 .menu-card {
   display: block;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 16px;
   padding: 18px;
@@ -244,7 +278,7 @@ header.top-bar {
 
 .health-corner-label {
   display: block;
-  color: #8a949f;
+  color: var(--gray);
   font-size: 12px;
   margin-bottom: 5px;
 }
@@ -322,7 +356,10 @@ header.top-bar {
 }
 
 .eye-pupil {
-  fill: var(--text);
+  /* --text가 아니라 고정값 - 동공은 항상 흰 공막(.eye-sclera는 테마와
+     무관하게 항상 흰색) 위에 그려지므로, 다크모드에서 --text가 밝은 색으로
+     바뀌어도 동공이 공막에 묻히지 않도록 분리해둔다. */
+  fill: #20242b;
 }
 
 .eye-glint {
@@ -448,8 +485,8 @@ header.top-bar {
 }
 
 .game-item:hover {
-  border-color: #bdd7f5;
-  background: #fafcff;
+  border-color: var(--hover-border);
+  background: var(--hover-bg);
 }
 
 .game-icon {
@@ -573,7 +610,7 @@ input.toggle-switch {
   height: 24px;
   border: 0;
   border-radius: 20px;
-  background: #d7dce2;
+  background: var(--toggle-track);
   position: relative;
   flex-shrink: 0;
   transition: background 0.2s;
@@ -655,7 +692,7 @@ input.toggle-switch:disabled {
 
 .quick-option {
   border: 2px solid var(--line);
-  background: #fff;
+  background: var(--surface);
   border-radius: 14px;
   padding: 13px 18px;
   font-size: 14px;
@@ -688,7 +725,7 @@ input.toggle-switch:disabled {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface);
   border-radius: 14px;
   padding: 14px 18px;
   text-align: center;
@@ -705,11 +742,6 @@ input.toggle-switch:disabled {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.auth-label {
-  font-size: 13px;
-  color: var(--gray);
 }
 
 .auth-btn {
@@ -729,10 +761,24 @@ input.toggle-switch:disabled {
 }
 
 .auth-btn-logout {
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   color: var(--gray);
   font-weight: 400;
+}
+
+.theme-toggle-btn {
+  border: 0;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--blue-light);
 }
 
 /* login screen */
@@ -771,7 +817,7 @@ input.toggle-switch:disabled {
 
 .notice {
   font-size: 11px;
-  color: #9aa1aa;
+  color: var(--gray);
   line-height: 1.6;
 }
 
@@ -784,7 +830,7 @@ input.toggle-switch:disabled {
 }
 
 .mypage-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
@@ -802,7 +848,7 @@ input.toggle-switch:disabled {
 }
 
 .mypage-value.muted {
-  color: #9aa0a8;
+  color: var(--gray);
   font-weight: 400;
 }
 
@@ -837,7 +883,7 @@ input.toggle-switch:disabled {
   border: none;
   border-right: 2px solid var(--line);
   border-radius: 0;
-  background: #fff;
+  background: var(--surface);
   padding: 14px 6px;
   font-size: 13px;
   font-weight: 700;
@@ -897,14 +943,14 @@ input.toggle-switch:disabled {
 }
 
 .history-table thead th {
-  background: #e6eef4;
+  background: var(--table-head-bg);
   color: var(--gray);
   font-size: 12px;
   font-weight: 700;
 }
 
 .history-table tbody tr {
-  background: #fff;
+  background: var(--surface);
 }
 
 .history-table td:first-child {
@@ -919,7 +965,7 @@ input.toggle-switch:disabled {
 
 .history-empty {
   text-align: center;
-  color: #9aa0a8;
+  color: var(--gray);
   font-size: 13px;
   padding: 30px 0;
   border: 1px solid var(--line);
@@ -931,7 +977,7 @@ input.toggle-switch:disabled {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px 12px 8px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .trend-caption {
@@ -954,7 +1000,7 @@ input.toggle-switch:disabled {
 .trend-tooltip {
   position: absolute;
   transform: translate(-50%, calc(-100% - 10px));
-  background: var(--text);
+  background: var(--tooltip-bg);
   color: #fff;
   font-size: 12px;
   padding: 6px 10px;
@@ -971,7 +1017,7 @@ input.toggle-switch:disabled {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: var(--text);
+  border-top-color: var(--tooltip-bg);
 }
 
 .trend-grid {
@@ -988,7 +1034,7 @@ input.toggle-switch:disabled {
 }
 
 .trend-point {
-  fill: #fff;
+  fill: var(--surface);
   stroke: var(--blue-dark);
   stroke-width: 2.5;
   cursor: pointer;
@@ -1007,7 +1053,7 @@ input.toggle-switch:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 14px 18px;
@@ -1058,7 +1104,7 @@ input.toggle-switch:disabled {
 }
 
 .modal-box {
-  background: #fff;
+  background: var(--surface);
   border-radius: 16px;
   padding: 28px;
   max-width: 360px;
@@ -1096,7 +1142,8 @@ button {
   padding: 10px 18px;
   border-radius: 10px;
   border: 2px solid var(--line);
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -1113,7 +1160,7 @@ button.primary:hover {
 #result-screen {
   position: fixed;
   inset: 0;
-  background: #fff;
+  background: var(--page-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1187,8 +1234,8 @@ button.primary:hover {
 }
 
 .status-banner.error {
-  background: #fdecec;
-  color: #b3261e;
+  background: var(--danger-bg);
+  color: var(--danger-text);
 }
 
 #map {
@@ -1234,11 +1281,17 @@ button.primary:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 14px;
+  cursor: pointer;
+}
+
+.clinic-item:hover {
+  border-color: var(--hover-border);
+  background: var(--hover-bg);
 }
 
 .clinic-item .distance {
@@ -1256,7 +1309,7 @@ button.primary:hover {
 
 .clinic-tooltip {
   padding: 6px 10px;
-  background: var(--text);
+  background: var(--tooltip-bg);
   color: #fff;
   font-size: 12px;
   border-radius: 6px;
@@ -1276,12 +1329,12 @@ button.primary:hover {
 }
 
 .medication-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px dashed var(--line);
   border-radius: 12px;
   padding: 20px;
   text-align: center;
-  color: #9aa0a8;
+  color: var(--gray);
   font-size: 13px;
 }
 

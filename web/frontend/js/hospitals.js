@@ -66,7 +66,7 @@ async function init(lat, lng) {
     mapEl.style.justifyContent = "center";
     mapEl.style.padding = "20px";
     mapEl.style.fontSize = "13px";
-    mapEl.style.color = "#6b7078";
+    mapEl.style.color = "var(--gray)";
     return;
   }
 
