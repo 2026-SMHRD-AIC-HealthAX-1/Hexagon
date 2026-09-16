@@ -58,4 +58,12 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
   requireLogin();
 });
 
+// home.js의 퀵메뉴 FAB과 동일한 토글 로직 (마크업/CSS도 index.html과 동일하게 재사용).
+const quickFab = document.getElementById("quick-fab");
+const quickMenu = document.getElementById("quick-menu");
+
+quickFab.addEventListener("click", () => {
+  quickMenu.classList.toggle("show");
+});
+
 render();
