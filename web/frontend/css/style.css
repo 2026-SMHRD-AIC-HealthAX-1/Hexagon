@@ -381,9 +381,13 @@ header.top-bar {
   color: var(--text);
 }
 
+.eye-status-text {
+  font-size: 24px;
+}
+
 .eye-status-dot {
-  width: 8px;
-  height: 8px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--eye-color);
   transition: background 0.4s ease;
@@ -1146,6 +1150,31 @@ button.primary:hover {
   font-size: 13px;
   color: var(--gray);
   text-decoration: none;
+}
+
+/* mypage: 기록 삭제 - 버튼이 아니라 back-link 같은 텍스트 링크 형태로,
+   화면 오른쪽 하단에 위아래로 배치 */
+.danger-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.danger-link {
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 13px;
+  color: var(--gray);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.danger-link:hover {
+  text-decoration: underline;
 }
 
 .status-banner {
