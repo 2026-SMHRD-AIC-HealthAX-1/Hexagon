@@ -453,18 +453,25 @@ header.top-bar {
   background: #fafcff;
 }
 
-/* 홈: 시선 추적 미니게임 / 리듬게임 카드만 강조 배경색 - 캘리브레이션 카드는 제외 */
+/* 홈: 시선 추적 미니게임 / 리듬게임 카드만 강조 배경색 - 캘리브레이션 카드는 제외.
+   마이페이지 기록 탭의 선택된 하위 탭(.tabs-secondary .tab-btn.active)과 같은 배경색. */
 .game-item[href="game.html"],
 .game-item[href="rhythm_game.html"] {
-  background: #c8d9ee;
+  background: var(--blue-dark);
 }
 
 .game-item[href="game.html"]:hover,
 .game-item[href="rhythm_game.html"]:hover {
-  background: #bfd0e5;
+  background: var(--navy);
 }
 
-/* 강조 배경 위에서는 기존 파란 화살표가 묻히므로 흰색으로 구분되게 */
+/* 강조 배경 위에서는 어두운 기본 글자색이 묻히므로 흰색 + 조금 더 큰 글씨로 */
+.game-item[href="game.html"] .game-name,
+.game-item[href="rhythm_game.html"] .game-name {
+  color: #fff;
+  font-size: 16px;
+}
+
 .game-item[href="game.html"] .game-arrow,
 .game-item[href="rhythm_game.html"] .game-arrow {
   color: #fff;
