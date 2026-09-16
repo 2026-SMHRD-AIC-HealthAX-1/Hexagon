@@ -11,11 +11,31 @@
 
   <h1 style="font-size:22px;margin:0 0 20px">마이페이지</h1>
 
-  <div class="mypage-grid">
-    <div class="mypage-card">
-      <div class="mypage-label">최근 접속 날짜</div>
-      <div id="last-visit" class="mypage-value">-</div>
+  <section class="health-card">
+    <div class="card-head">
+      <h2 class="card-title">눈 건강 요약</h2>
     </div>
+    <div id="health-stats" class="health-stats">
+      <div class="health-stat">
+        <small>시선 추적 게임</small>
+        <b id="health-gaze-score">-</b>
+      </div>
+      <div class="health-stat">
+        <small>리듬게임</small>
+        <b id="health-rhythm-score">-</b>
+      </div>
+      <div class="health-stat">
+        <small>백내장 위험도</small>
+        <b id="health-cataract-risk">-</b>
+      </div>
+      <div class="health-stat">
+        <small>안구 충혈도</small>
+        <b id="health-redness">-</b>
+      </div>
+    </div>
+  </section>
+
+  <div class="mypage-grid">
     <div class="mypage-card">
       <div class="mypage-label">최근 백내장 위험도</div>
       <div id="cataract-risk" class="mypage-value muted">측정 기록 없음</div>

@@ -1,7 +1,22 @@
-import { getAuth, requireLogin, syncAuthWithServer, logout, PROVIDER_LABELS } from "./auth.js";
+import { getAuth, requireLogin, syncAuthWithServer, logout } from "./auth.js";
 
 await syncAuthWithServer();
 requireLogin();
+
+const NOT_MEASURED = "측정 미완료";
+
+// 홈 화면(home.js)의 눈 건강 요약 패널과 동일한 포맷 - 날짜 없이 요약만 보여준다.
+function formatGameScoreSummary(lastGame) {
+  return lastGame ? `${lastGame.score}점` : NOT_MEASURED;
+}
+
+function formatCataractRiskSummary(risk) {
+  return risk ? `${(risk.prob * 100).toFixed(0)}% · ${risk.label}` : NOT_MEASURED;
+}
+
+function formatRednessSummary(redness) {
+  return redness ? `${(redness.ratio * 100).toFixed(0)}%` : NOT_MEASURED;
+}
 
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString("ko-KR");
@@ -14,8 +29,10 @@ async function render() {
   // 세션 쿠키가 same-origin 요청에 자동으로 실리므로 user_id를 따로 보낼 필요가 없다.
   const data = await fetch("/api/mypage").then((res) => res.json());
 
-  document.getElementById("last-visit").textContent =
-    `${formatDate(data.logged_in_at)} (${PROVIDER_LABELS[auth.provider] || auth.provider} 로그인)`;
+  document.getElementById("health-gaze-score").textContent = formatGameScoreSummary(data.last_game_gaze);
+  document.getElementById("health-rhythm-score").textContent = formatGameScoreSummary(data.last_game_rhythm);
+  document.getElementById("health-cataract-risk").textContent = formatCataractRiskSummary(data.cataract_risk);
+  document.getElementById("health-redness").textContent = formatRednessSummary(data.redness);
 
   renderMeasurement(
     "cataract-risk",
