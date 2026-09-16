@@ -7,9 +7,8 @@
   --gray: #69727d;
   --line: #b9c4d1;
   --line-blue: #a9c2e0;
+  --navy: #4a7cc4;
   --warning: #d64545;
-  --btn-border: #000;
-  --btn-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -91,7 +90,7 @@ header.top-bar {
   flex-shrink: 0;
   width: 28px;
   height: 28px;
-  border: 2px solid var(--btn-border);
+  border: none;
   border-radius: 50%;
   background: var(--blue-light);
   color: var(--blue-dark);
@@ -100,7 +99,6 @@ header.top-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--btn-shadow);
 }
 
 .logo {
@@ -152,13 +150,12 @@ header.top-bar {
 .menu-card {
   display: block;
   background: #fff;
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--line);
   border-radius: 16px;
   padding: 18px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  box-shadow: var(--btn-shadow);
 }
 
 .menu-card .title {
@@ -283,15 +280,31 @@ header.top-bar {
   display: flex;
   align-items: center;
   gap: 14px;
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--navy);
   border-radius: 14px;
   padding: 14px 16px;
-  box-shadow: var(--btn-shadow);
 }
 
 .game-item:hover {
   border-color: #bdd7f5;
   background: #fafcff;
+}
+
+/* 홈: 시선 추적 미니게임 / 리듬게임 카드만 강조 배경색 - 캘리브레이션 카드는 제외 */
+.game-item[href="game.html"],
+.game-item[href="rhythm_game.html"] {
+  background: #c8d9ee;
+}
+
+.game-item[href="game.html"]:hover,
+.game-item[href="rhythm_game.html"]:hover {
+  background: #bfd0e5;
+}
+
+/* 강조 배경 위에서는 기존 파란 화살표가 묻히므로 흰색으로 구분되게 */
+.game-item[href="game.html"] .game-arrow,
+.game-item[href="rhythm_game.html"] .game-arrow {
+  color: #fff;
 }
 
 .game-icon {
@@ -398,13 +411,12 @@ header.top-bar {
 .eyedrop-settings button {
   margin-left: 6px;
   padding: 3px 10px;
-  border: 2px solid var(--btn-border);
+  border: none;
   border-radius: 6px;
   background: var(--blue);
   color: #fff;
   font-size: 11px;
   cursor: pointer;
-  box-shadow: var(--btn-shadow);
 }
 
 input.toggle-switch {
@@ -495,7 +507,7 @@ input.toggle-switch:disabled {
 }
 
 .quick-option {
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--line);
   background: #fff;
   border-radius: 14px;
   padding: 13px 18px;
@@ -507,11 +519,11 @@ input.toggle-switch:disabled {
 .quick-fab {
   width: 64px;
   height: 64px;
-  border: 2px solid var(--btn-border);
+  border: 0;
   border-radius: 50%;
   background: var(--blue);
   color: #fff;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 7px 18px rgba(74, 126, 181, 0.3);
   font-size: 26px;
   display: flex;
   align-items: center;
@@ -555,13 +567,12 @@ input.toggle-switch:disabled {
   font-size: 13px;
   padding: 8px 14px;
   border-radius: 10px;
-  border: 2px solid var(--btn-border);
+  border: 0;
   background: var(--blue);
   color: #fff;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: var(--btn-shadow);
 }
 
 .auth-btn:hover {
@@ -570,7 +581,7 @@ input.toggle-switch:disabled {
 
 .auth-btn-logout {
   background: #fff;
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--line);
   color: var(--gray);
   font-weight: 400;
 }
@@ -592,13 +603,12 @@ input.toggle-switch:disabled {
 .login-btn {
   padding: 15px;
   border-radius: 12px;
-  border: 2px solid var(--btn-border);
+  border: 0;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   background: #f3f5f7;
   color: #30363d;
-  box-shadow: var(--btn-shadow);
 }
 
 .login-btn-kakao {
@@ -649,15 +659,19 @@ input.toggle-switch:disabled {
 
 /* mypage: 누적 기록 / 최근 기록 추이 탭 */
 .history-section {
+  /* 건강 요약 패널과의 간격을 기존 대비 2배(16px -> 32px)로 - 인접 블록의
+     세로 margin은 합이 아니라 더 큰 쪽으로 collapse되므로, 32px을 그대로
+     지정해야 실제로 32px 간격이 된다 (16+16을 기대하고 16px을 넣으면
+     health-card의 margin-bottom 16px과 collapse되어 그대로 16px에 머문다). */
+  margin-top: 32px;
   margin-bottom: 8px;
 }
 
 .tabs {
   display: flex;
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--navy);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: var(--btn-shadow);
 }
 
 .tabs-primary {
@@ -672,12 +686,12 @@ input.toggle-switch:disabled {
 .tabs .tab-btn {
   flex: 1;
   border: none;
-  border-right: 1px solid var(--btn-border);
+  border-right: 2px solid var(--line);
   border-radius: 0;
   background: #fff;
   padding: 14px 6px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--gray);
   white-space: nowrap;
   transition: background 0.15s, color 0.15s;
@@ -734,14 +748,14 @@ input.toggle-switch:disabled {
 }
 
 .history-table thead th {
-  background: var(--blue-pale);
+  background: #e6eef4;
   color: var(--gray);
   font-size: 12px;
   font-weight: 700;
 }
 
-.history-table tbody tr:nth-child(even) {
-  background: #fafcff;
+.history-table tbody tr {
+  background: #fff;
 }
 
 .history-table td:first-child {
@@ -923,21 +937,15 @@ button {
   font-size: 14px;
   padding: 10px 18px;
   border-radius: 10px;
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--line);
   background: #fff;
   cursor: pointer;
-  box-shadow: var(--btn-shadow);
-}
-
-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 button.primary {
   background: var(--blue);
   color: #fff;
-  border-color: var(--btn-border);
+  border-color: var(--blue);
 }
 
 button.primary:hover {
@@ -1023,14 +1031,13 @@ button.primary:hover {
 }
 
 .hosp-search-row button {
-  border: 2px solid var(--btn-border);
+  border: 0;
   border-radius: 12px;
   background: var(--blue-light);
   color: var(--blue-dark);
   padding: 0 16px;
   font-size: 13px;
   white-space: nowrap;
-  box-shadow: var(--btn-shadow);
 }
 
 .clinic-list {
@@ -1045,11 +1052,10 @@ button.primary:hover {
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  border: 2px solid var(--btn-border);
+  border: 2px solid var(--line);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 14px;
-  box-shadow: var(--btn-shadow);
 }
 
 .clinic-item .distance {
@@ -1062,6 +1068,7 @@ button.primary:hover {
   width: 100%;
   text-align: center;
   color: var(--blue-dark);
+  border-color: var(--line-blue);
 }
 
 .clinic-tooltip {
