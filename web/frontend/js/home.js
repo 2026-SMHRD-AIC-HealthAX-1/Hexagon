@@ -53,7 +53,7 @@ async function renderAuthArea() {
     healthRhythmScore.textContent = formatGameScore(data.last_game_rhythm);
     healthCataractRisk.textContent = formatCataractRisk(data.cataract_risk);
     healthRedness.textContent = formatRedness(data.redness);
-    applyEyeStatus(pageRoot, classifyEyeStatus(data.cataract_risk), eyeStatusText);
+    applyEyeStatus(pageRoot, classifyEyeStatus(data.eye_status_risk), eyeStatusText);
   } else {
     authLoggedIn.classList.add("hidden");
     loginLink.classList.remove("hidden");

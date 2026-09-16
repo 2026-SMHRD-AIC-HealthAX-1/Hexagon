@@ -291,6 +291,20 @@ def get_last_analysis_result(user_id):
         conn.close()
 
 
+def get_recent_analysis_results(user_id, limit):
+    """눈 건강 요약 배너용 - 최신순으로 최대 limit개 행 (가중 평균 계산용)."""
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM analysis_results WHERE user_id = %s ORDER BY analyzed_at DESC LIMIT %s",
+                (user_id, limit),
+            )
+            return cursor.fetchall()
+    finally:
+        conn.close()
+
+
 def get_analysis_history(user_id):
     """마이페이지 누적 기록 탭 - 해당 사용자의 S-03 분석 결과 전체를 최신순으로."""
     conn = _connect()

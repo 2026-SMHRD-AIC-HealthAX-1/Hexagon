@@ -7,10 +7,10 @@
    그 버전은 game_lab.html 에 백업으로 남아있다 - 문제가 생기면 그쪽으로
    되돌릴 수 있다.)
 
-  캘리브레이션은 더 이상 이 페이지에서 하지 않는다 - calibration.html 의
-  독립 메뉴로 분리되었다. 이 페이지는 시작 시 /api/calibration 을 조회해
-  데이터가 있으면 곧장 게임으로 들어가고, 없으면 calibration.html 로
-  안내한다 (js/game.js 의 checkCalibration 참고).
+  캘리브레이션은 이 페이지 안에서 게임 시작 직전에 수행된다 - 저장된
+  데이터가 없으면 안내 문구 후 곧장 캘리브레이션을 진행하고, 있으면
+  기존 데이터로 진행할지/새로 캘리브레이션할지 먼저 물어본다
+  (js/game.js 참고).
 
   대응 관계 (서버판 -> 이 파일):
       landmarker_factory.py      -> js/vision/faceLandmarker.js
@@ -36,11 +36,11 @@
 <link rel="stylesheet" href="css/style.css">
 
 <div id="consent-modal" class="modal hidden">
-  <div class="modal-box">
+  <div class="modal-box wide-modal">
     <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
     <p>
-      시선 추적을 위해 카메라 접근 권한이 필요합니다.
-      이 버전은 영상을 서버로 보내지 않고 브라우저 안에서만 처리합니다.
+      시선 추적을 위해 카메라 접근 권한이 필요합니다.<br>
+      영상은 서버에 저장되지 않고, 브라우저 안에서만 처리됩니다.
     </p>
     <div class="modal-actions">
       <button id="consent-cancel">취소</button>
@@ -53,6 +53,40 @@
   <div class="modal-box">
     <h2 id="loading-title">준비 중입니다</h2>
     <p id="loading-detail">잠시만 기다려주세요.</p>
+  </div>
+</div>
+
+<div id="no-calibration-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>캘리브레이션 데이터가 없습니다</h2>
+    <p>캘리브레이션을 진행해주세요.</p>
+    <div class="modal-actions">
+      <button id="no-calibration-confirm" class="primary">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="calibration-choice-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>기존 캘리브레이션 데이터를 기반으로<br>게임을 진행할까요?</h2>
+    <div class="modal-actions">
+      <button id="calibration-choice-reuse" class="primary">게임 진행</button>
+      <button id="calibration-choice-recalibrate">새로 캘리브레이션 진행</button>
+    </div>
+  </div>
+</div>
+
+<div id="calibration-guide-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>캘리브레이션 안내</h2>
+    <p>
+      지금부터 화면에 나타나는 9개의 점을 순서대로 바라봐 주세요.
+      사용자의 자세와 웹캠 위치에 따라 시선의 기준값이 달라지므로,
+      실제 게임을 할 때와 같은 자세를 유지한 채 편안하게 응시해 주세요.
+    </p>
+    <div class="modal-actions">
+      <button id="calibration-guide-confirm" class="primary">확인하고 시작하기</button>
+    </div>
   </div>
 </div>
 

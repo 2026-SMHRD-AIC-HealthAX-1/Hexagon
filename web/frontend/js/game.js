@@ -6,18 +6,22 @@
         -> GazeGameEngine(게임 단계)
       게임이 끝나면 점수만 POST /api/game-result 한다.
 
-  캘리브레이션은 이 페이지에서 직접 하지 않는다 - calibration.html 로
-  분리되었다. 대신 페이지를 열자마자 저장된 캘리브레이션이 있는지부터
-  확인해서(checkCalibration), 있으면 그 결과로 곧장 게임을 시작하고
-  없으면 calibration.html?next=game.html 로 보낸다.
+  캘리브레이션은 더 이상 독립 페이지가 아니라 이 페이지 안에서, 게임을
+  시작하기 직전에 수행된다:
+      - 저장된 캘리브레이션이 없으면: 안내 문구 후 곧장 캘리브레이션 진행
+      - 있으면: "기존 데이터로 진행할지 / 새로 캘리브레이션할지" 선택
+  (예전에는 calibration.html 이라는 독립 메뉴로 분리돼 있었으나, 홈
+  화면의 진입점이 사라지면서 각 게임 진입 흐름 안으로 다시 합쳐졌다.)
 */
 
 import { requireLogin, syncAuthWithServer } from "./auth.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { computeGaze, GazeSmoother } from "./vision/gaze.js";
 import { calculateRegionGaze, createRegionPoints } from "./vision/gazeRegionClassifier.js";
+import { CalibrationEngine } from "./gaze/calibrationEngine.js";
+import { saveCalibration } from "./gaze/calibrationApi.js";
 import { GazeGameEngine } from "./gaze/gameEngine.js";
-import { showGuide } from "./guide.js";
+import { showGuide, showChoice } from "./guide.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -30,6 +34,13 @@ const consentModal = document.getElementById("consent-modal");
 const loadingModal = document.getElementById("loading-modal");
 const loadingTitle = document.getElementById("loading-title");
 const loadingDetail = document.getElementById("loading-detail");
+const noCalibrationModal = document.getElementById("no-calibration-modal");
+const noCalibrationConfirm = document.getElementById("no-calibration-confirm");
+const calibrationChoiceModal = document.getElementById("calibration-choice-modal");
+const calibrationChoiceReuse = document.getElementById("calibration-choice-reuse");
+const calibrationChoiceRecalibrate = document.getElementById("calibration-choice-recalibrate");
+const calibrationGuideModal = document.getElementById("calibration-guide-modal");
+const calibrationGuideConfirm = document.getElementById("calibration-guide-confirm");
 const gameGuideModal = document.getElementById("game-guide-modal");
 const gameGuideConfirm = document.getElementById("game-guide-confirm");
 const playScreen = document.getElementById("play-screen");
@@ -53,20 +64,22 @@ let stream = null;
 let landmarker = null;
 let nextTimestamp = null;
 
-let engine = null;
-let regionPoints = null; // 저장된 캘리브레이션에서 계산해둔 결과 (재시도 시 재사용)
+let calibrationEngine = null; // 캘리브레이션 진행 중일 때만 설정됨
+let gameEngine = null;
+let regionPoints = null; // 캘리브레이션에서 계산해둔 결과 (재시도 시 재사용)
 let visionRafId = null;
 let lastDetectAt = 0;
 
 // ─────────────────────────────────────────────────────────────
-// 캘리브레이션 확인
+// 캘리브레이션 확인/변환
 // ─────────────────────────────────────────────────────────────
+
+function regionPointsFromSamples(samples) {
+  return createRegionPoints(calculateRegionGaze(samples));
+}
 
 /**
  * 저장된 캘리브레이션 샘플을 읽어 regionPoints 로 변환해 돌려준다.
- * js/rhythm/calibration.js 의 fetchLaneX() 와 같은 엔드포인트를 쓰지만,
- * 여기서는 좌/중/우 3값이 아니라 gameEngine.js 가 쓰는 9개 영역 좌표
- * 전체가 필요하므로 createRegionPoints 결과를 그대로 반환한다.
  *
  * @returns {Promise<object|null>} 캘리브레이션이 없으면 null.
  */
@@ -77,7 +90,7 @@ async function checkCalibration() {
   const data = await response.json();
   if (!data.has_calibration || !data.samples.length) return null;
 
-  return createRegionPoints(calculateRegionGaze(data.samples));
+  return regionPointsFromSamples(data.samples);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -132,7 +145,7 @@ async function prepare() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 화면 그리기 (원본 game.js 와 동일한 단순 캔버스 스타일)
+// 화면 그리기
 // ─────────────────────────────────────────────────────────────
 
 function resizeCanvasToWindow() {
@@ -146,6 +159,17 @@ function drawBackground() {
   ctx.strokeStyle = "white";
   ctx.lineWidth = 3;
   ctx.strokeRect(1.5, 1.5, canvas.width - 3, canvas.height - 3);
+}
+
+function drawCalibrationState(state) {
+  drawBackground();
+
+  if (state.point) {
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(state.point[0], state.point[1], 15, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawGameState(state) {
@@ -165,13 +189,13 @@ function drawGameState(state) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 검출 루프
+// 검출 루프 (캘리브레이션 단계 / 게임 단계 공용)
 // ─────────────────────────────────────────────────────────────
 
 function visionLoop(now) {
   visionRafId = requestAnimationFrame(visionLoop);
 
-  if (!engine) return;
+  if (!calibrationEngine && !gameEngine) return;
   if (now - lastDetectAt < DETECT_INTERVAL_MS) return;
   lastDetectAt = now;
 
@@ -189,7 +213,18 @@ function visionLoop(now) {
   // `if not result.face_landmarks: continue` 와 같은 동작.
   if (!landmarks) return;
 
-  const state = engine.process(landmarks);
+  if (calibrationEngine) {
+    const state = calibrationEngine.process(landmarks);
+    drawCalibrationState(state);
+
+    if (state.finished) {
+      stopVisionLoop();
+      finishCalibration();
+    }
+    return;
+  }
+
+  const state = gameEngine.process(landmarks);
   drawGameState(state);
 
   if (state.finished) {
@@ -213,13 +248,61 @@ function stopVisionLoop() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// 캘리브레이션 흐름
+// ─────────────────────────────────────────────────────────────
+
+function startCalibrationEngine() {
+  resizeCanvasToWindow();
+  playScreen.classList.remove("hidden");
+
+  calibrationEngine = new CalibrationEngine(canvas.width, canvas.height, {
+    computeGaze,
+    smoother: new GazeSmoother(0.2),
+  });
+
+  startVisionLoop();
+}
+
+async function runCalibration() {
+  await showGuide(calibrationGuideModal, calibrationGuideConfirm);
+  startCalibrationEngine();
+}
+
+async function finishCalibration() {
+  const calibration = calibrationEngine.calibration;
+
+  try {
+    await saveCalibration(calibration.width, calibration.height, calibration.samples);
+  } catch (err) {
+    console.error("[game] 캘리브레이션 저장 실패", err);
+    alert("캘리브레이션 저장에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
+    calibrationEngine = null;
+    startCalibrationEngine();
+    return;
+  }
+
+  regionPoints = regionPointsFromSamples(calibration.samples);
+  calibrationEngine = null;
+  playScreen.classList.add("hidden");
+
+  await startGame();
+}
+
+// ─────────────────────────────────────────────────────────────
 // 게임 흐름
 // ─────────────────────────────────────────────────────────────
+
+async function startGame() {
+  await showGuide(gameGuideModal, gameGuideConfirm);
+
+  playScreen.classList.remove("hidden");
+  runGame();
+}
 
 function runGame() {
   resizeCanvasToWindow();
 
-  engine = new GazeGameEngine(canvas.width, canvas.height, regionPoints, {
+  gameEngine = new GazeGameEngine(canvas.width, canvas.height, regionPoints, {
     computeGaze,
     smoother: new GazeSmoother(0.2),
   });
@@ -274,10 +357,27 @@ document.getElementById("consent-confirm").addEventListener("click", async () =>
 
   if (!(await prepare())) return;
 
-  await showGuide(gameGuideModal, gameGuideConfirm);
+  // 캘리브레이션 데이터 존재 여부에 따라 흐름이 갈린다.
+  const existingRegionPoints = await checkCalibration();
 
-  playScreen.classList.remove("hidden");
-  runGame();
+  if (!existingRegionPoints) {
+    await showGuide(noCalibrationModal, noCalibrationConfirm);
+    await runCalibration();
+    return;
+  }
+
+  const choice = await showChoice(calibrationChoiceModal, [
+    { button: calibrationChoiceReuse, value: "reuse" },
+    { button: calibrationChoiceRecalibrate, value: "recalibrate" },
+  ]);
+
+  if (choice === "recalibrate") {
+    await runCalibration();
+    return;
+  }
+
+  regionPoints = existingRegionPoints;
+  await startGame();
 });
 
 document.getElementById("retry-btn").addEventListener("click", () => {
@@ -289,13 +389,7 @@ document.getElementById("retry-btn").addEventListener("click", () => {
 document.getElementById("home-btn").addEventListener("click", goHome);
 
 // ─────────────────────────────────────────────────────────────
-// 시작 - 캘리브레이션 데이터가 있어야 콘센트 모달을 보여준다
+// 시작
 // ─────────────────────────────────────────────────────────────
 
-regionPoints = await checkCalibration();
-
-if (!regionPoints) {
-  window.location.href = "calibration.html?next=game.html";
-} else {
-  consentModal.classList.remove("hidden");
-}
+consentModal.classList.remove("hidden");

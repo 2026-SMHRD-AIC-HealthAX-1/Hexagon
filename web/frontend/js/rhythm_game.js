@@ -7,6 +7,15 @@
         -> renderer(화면)
       게임이 끝나면 최종 점수만 POST /api/game-result
 
+  캘리브레이션은 더 이상 독립 페이지가 아니라 이 페이지 안에서, 게임을
+  시작하기 직전에 수행된다:
+      - 저장된 캘리브레이션이 없으면: 안내 문구 후 곧장 캘리브레이션 진행
+      - 있으면: "기존 데이터로 진행할지 / 새로 캘리브레이션할지" 선택
+  캘리브레이션 화면 자체(9포인트 그리드)는 game.js 와 같은 방식으로
+  js/gaze/calibrationEngine.js 를 그대로 재사용한다 - 캘리브레이션 단계는
+  두 게임이 완전히 같은 계산이라 로직을 다시 만들지 않는다. 판정용
+  laneX 로의 변환만 js/rhythm/calibration.js 의 computeLaneX() 를 쓴다.
+
   대응 관계 (서버판 -> 이 파일):
       landmarker_factory.py      -> js/vision/faceLandmarker.js
       src/gaze.py                -> js/vision/gaze.js
@@ -34,9 +43,11 @@ import {
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { computeGaze, GazeSmoother } from "./vision/gaze.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
+import { CalibrationEngine } from "./gaze/calibrationEngine.js";
+import { saveCalibration } from "./gaze/calibrationApi.js";
 import { RhythmGameEngine } from "./rhythm/gameEngine.js";
-import { fetchLaneX } from "./rhythm/calibration.js";
-import { showGuide } from "./guide.js";
+import { fetchLaneX, computeLaneX } from "./rhythm/calibration.js";
+import { showGuide, showChoice } from "./guide.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -49,6 +60,13 @@ const consentModal = document.getElementById("consent-modal");
 const loadingModal = document.getElementById("loading-modal");
 const loadingTitle = document.getElementById("loading-title");
 const loadingDetail = document.getElementById("loading-detail");
+const noCalibrationModal = document.getElementById("no-calibration-modal");
+const noCalibrationConfirm = document.getElementById("no-calibration-confirm");
+const calibrationChoiceModal = document.getElementById("calibration-choice-modal");
+const calibrationChoiceReuse = document.getElementById("calibration-choice-reuse");
+const calibrationChoiceRecalibrate = document.getElementById("calibration-choice-recalibrate");
+const calibrationGuideModal = document.getElementById("calibration-guide-modal");
+const calibrationGuideConfirm = document.getElementById("calibration-guide-confirm");
 const gameGuideModal = document.getElementById("game-guide-modal");
 const gameGuideConfirm = document.getElementById("game-guide-confirm");
 const playScreen = document.getElementById("play-screen");
@@ -78,8 +96,9 @@ let stream = null;
 let landmarker = null;
 let nextTimestamp = null;
 
-let engine = null;
-let laneX = null;
+let calibrationEngine = null; // 캘리브레이션 진행 중일 때만 설정됨
+let gameEngine = null;
+let laneX = null; // 캘리브레이션에서 계산해둔 결과 (재시도 시 재사용)
 let isPaused = false;
 let visionRafId = null;
 let lastDetectAt = 0;
@@ -111,24 +130,24 @@ function stopCamera() {
   }
 }
 
-/** 한 번만 수행하면 되는 무거운 준비(모델 로딩). laneX 는 이미 시작 시점에 확인했다. */
+/** 한 번만 수행하면 되는 무거운 준비(모델 로딩). */
 async function prepare() {
-  if (!landmarker) {
-    showLoading("얼굴 인식 모델 로딩 중", "처음 한 번만 내려받습니다 (약 40MB). 잠시만 기다려주세요.");
-    try {
-      landmarker = await createFaceLandmarker();
-      nextTimestamp = createTimestampSource();
-    } catch (err) {
-      hideLoading();
-      console.error(err);
-      alert(
-        "얼굴 인식 모델을 불러오지 못했습니다.\n" +
-          "프로젝트 루트에서 아래를 한 번 실행했는지 확인해주세요:\n\n" +
-          "    python scripts/setup_mediapipe.py"
-      );
-      goHome();
-      return false;
-    }
+  if (landmarker) return true;
+
+  showLoading("얼굴 인식 모델 로딩 중", "처음 한 번만 내려받습니다 (약 40MB). 잠시만 기다려주세요.");
+  try {
+    landmarker = await createFaceLandmarker();
+    nextTimestamp = createTimestampSource();
+  } catch (err) {
+    hideLoading();
+    console.error(err);
+    alert(
+      "얼굴 인식 모델을 불러오지 못했습니다.\n" +
+        "프로젝트 루트에서 아래를 한 번 실행했는지 확인해주세요:\n\n" +
+        "    python scripts/setup_mediapipe.py"
+    );
+    goHome();
+    return false;
   }
 
   hideLoading();
@@ -136,13 +155,38 @@ async function prepare() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 게임 루프
+// 캘리브레이션 화면 그리기 (game.js 와 동일한 단순 캔버스 스타일)
+// ─────────────────────────────────────────────────────────────
+
+function resizeCanvasToWindow() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function drawCalibrationState(state) {
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1.5, 1.5, canvas.width - 3, canvas.height - 3);
+
+  if (state.point) {
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(state.point[0], state.point[1], 15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 검출 루프
 // ─────────────────────────────────────────────────────────────
 
 function visionLoop(now) {
   visionRafId = requestAnimationFrame(visionLoop);
 
-  if (!engine || isPaused) return;
+  if (!calibrationEngine && (!gameEngine || isPaused)) return;
   if (now - lastDetectAt < DETECT_INTERVAL_MS) return;
   lastDetectAt = now;
 
@@ -160,7 +204,18 @@ function visionLoop(now) {
   // `if not result.face_landmarks: continue` 하던 것과 같은 동작.
   if (!landmarks) return;
 
-  const state = engine.process(landmarks);
+  if (calibrationEngine) {
+    const state = calibrationEngine.process(landmarks);
+    drawCalibrationState(state);
+
+    if (state.finished) {
+      stopVisionLoop();
+      finishCalibration();
+    }
+    return;
+  }
+
+  const state = gameEngine.process(landmarks);
   applyState(state);
 
   if (state.finished) {
@@ -183,13 +238,65 @@ function stopVisionLoop() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// 캘리브레이션 흐름
+// ─────────────────────────────────────────────────────────────
+
+function startCalibrationEngine() {
+  resizeCanvasToWindow();
+  playScreen.classList.remove("hidden");
+
+  calibrationEngine = new CalibrationEngine(canvas.width, canvas.height, {
+    computeGaze,
+    smoother: new GazeSmoother(0.2),
+  });
+
+  startVisionLoop();
+}
+
+async function runCalibration() {
+  await showGuide(calibrationGuideModal, calibrationGuideConfirm);
+  startCalibrationEngine();
+}
+
+async function finishCalibration() {
+  const calibration = calibrationEngine.calibration;
+
+  try {
+    await saveCalibration(calibration.width, calibration.height, calibration.samples);
+  } catch (err) {
+    console.error("[rhythm_game] 캘리브레이션 저장 실패", err);
+    alert("캘리브레이션 저장에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
+    calibrationEngine = null;
+    startCalibrationEngine();
+    return;
+  }
+
+  laneX = computeLaneX(calibration.samples);
+  calibrationEngine = null;
+  playScreen.classList.add("hidden");
+
+  await startGame();
+}
+
+// ─────────────────────────────────────────────────────────────
+// 게임 흐름
+// ─────────────────────────────────────────────────────────────
+
+async function startGame() {
+  await showGuide(gameGuideModal, gameGuideConfirm);
+
+  playScreen.classList.remove("hidden");
+  runGame();
+}
+
 function runGame() {
   resizeCanvas();
   resetVisualState();
   isPaused = false;
   pauseModal.classList.add("hidden");
 
-  engine = new RhythmGameEngine(laneX, {
+  gameEngine = new RhythmGameEngine(laneX, {
     computeGaze,
     smoother: new GazeSmoother(0.2),
     blinkMonitor: new BlinkMonitor(),
@@ -205,15 +312,15 @@ function runGame() {
 
 function togglePause() {
   if (playScreen.classList.contains("hidden")) return;
-  if (!engine) return;
+  if (!gameEngine) return;
 
   isPaused = !isPaused;
 
   if (isPaused) {
-    engine.pause();
+    gameEngine.pause();
     pauseModal.classList.remove("hidden");
   } else {
-    engine.resume();
+    gameEngine.resume();
     pauseModal.classList.add("hidden");
   }
 
@@ -252,7 +359,15 @@ function goHome() {
 // ─────────────────────────────────────────────────────────────
 
 window.addEventListener("resize", () => {
-  if (!playScreen.classList.contains("hidden")) resizeCanvas();
+  if (playScreen.classList.contains("hidden")) return;
+  // 캘리브레이션 단계는 game.js 와 같은 단순 캔버스(DPR 미적용)를 쓰고,
+  // 게임 단계는 renderer.js 의 DPR 인식 캔버스를 쓴다 - 어느 쪽이 활성인지에
+  // 따라 리사이즈 방식도 갈라야 한다.
+  if (calibrationEngine) {
+    resizeCanvasToWindow();
+  } else {
+    resizeCanvas();
+  }
 });
 
 document.addEventListener("keydown", (event) => {
@@ -274,10 +389,27 @@ document.getElementById("consent-confirm").addEventListener("click", async () =>
 
   if (!(await prepare())) return;
 
-  await showGuide(gameGuideModal, gameGuideConfirm);
+  // 캘리브레이션 데이터 존재 여부에 따라 흐름이 갈린다.
+  const existingLaneX = await fetchLaneX();
 
-  playScreen.classList.remove("hidden");
-  runGame();
+  if (!existingLaneX) {
+    await showGuide(noCalibrationModal, noCalibrationConfirm);
+    await runCalibration();
+    return;
+  }
+
+  const choice = await showChoice(calibrationChoiceModal, [
+    { button: calibrationChoiceReuse, value: "reuse" },
+    { button: calibrationChoiceRecalibrate, value: "recalibrate" },
+  ]);
+
+  if (choice === "recalibrate") {
+    await runCalibration();
+    return;
+  }
+
+  laneX = existingLaneX;
+  await startGame();
 });
 
 document.getElementById("resume-btn").addEventListener("click", togglePause);
@@ -299,13 +431,7 @@ document.getElementById("retry-btn").addEventListener("click", () => {
 document.getElementById("home-btn").addEventListener("click", goHome);
 
 // ─────────────────────────────────────────────────────────────
-// 시작 - 캘리브레이션 데이터가 있어야 콘센트 모달을 보여준다
+// 시작
 // ─────────────────────────────────────────────────────────────
 
-laneX = await fetchLaneX();
-
-if (!laneX) {
-  window.location.href = "calibration.html?next=rhythm_game.html";
-} else {
-  consentModal.classList.remove("hidden");
-}
+consentModal.classList.remove("hidden");

@@ -6,6 +6,11 @@
   (예전에는 서버 파이썬 MediaPipe 가 계산했다. 그 버전은 rhythm_game_lab.html
    에 백업으로 남아있다 - 문제가 생기면 그쪽으로 되돌릴 수 있다.)
 
+  캘리브레이션은 이 페이지 안에서 게임 시작 직전에 수행된다 - 저장된
+  데이터가 없으면 안내 문구 후 곧장 캘리브레이션을 진행하고, 있으면
+  기존 데이터로 진행할지/새로 캘리브레이션할지 먼저 물어본다
+  (js/rhythm_game.js 참고).
+
   실행 전 준비 (한 번만, 프로젝트 루트에서):
       python scripts/setup_mediapipe.py
   브라우저용 MediaPipe 엔진/모델을 web/frontend/vendor/ 에 내려받는다.
@@ -22,12 +27,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap">
 
 <div id="consent-modal" class="modal neon-modal hidden">
-  <div class="modal-box">
+  <div class="modal-box wide-modal">
     <div class="neon-eyebrow">EYE GOD / RHYTHM</div>
     <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
     <p>
-      시선 추적과 눈 깜빡임 감지를 위해 카메라 접근 권한이 필요합니다.
-      이 버전은 영상을 서버로 보내지 않고 브라우저 안에서만 처리합니다.
+      시선 추적과 눈 깜빡임 감지를 위해 카메라 접근 권한이 필요합니다.<br>
+      영상은 서버에 저장되지 않고, 브라우저 안에서만 처리됩니다.
     </p>
     <div class="modal-actions">
       <button id="consent-cancel">취소</button>
@@ -41,6 +46,43 @@
     <div class="neon-eyebrow">LOADING</div>
     <h2 id="loading-title">준비 중입니다</h2>
     <p id="loading-detail">잠시만 기다려주세요.</p>
+  </div>
+</div>
+
+<div id="no-calibration-modal" class="modal neon-modal hidden">
+  <div class="modal-box">
+    <div class="neon-eyebrow">CALIBRATION</div>
+    <h2>캘리브레이션 데이터가 없습니다</h2>
+    <p>캘리브레이션을 진행해주세요.</p>
+    <div class="modal-actions">
+      <button id="no-calibration-confirm" class="primary">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="calibration-choice-modal" class="modal neon-modal hidden">
+  <div class="modal-box">
+    <div class="neon-eyebrow">CALIBRATION</div>
+    <h2>기존 캘리브레이션 데이터를 기반으로<br>게임을 진행할까요?</h2>
+    <div class="modal-actions">
+      <button id="calibration-choice-reuse" class="primary">게임 진행</button>
+      <button id="calibration-choice-recalibrate">새로 캘리브레이션 진행</button>
+    </div>
+  </div>
+</div>
+
+<div id="calibration-guide-modal" class="modal neon-modal hidden">
+  <div class="modal-box">
+    <div class="neon-eyebrow">CALIBRATION</div>
+    <h2>캘리브레이션 안내</h2>
+    <p>
+      지금부터 화면에 나타나는 9개의 점을 순서대로 바라봐 주세요.
+      사용자의 자세와 웹캠 위치에 따라 시선의 기준값이 달라지므로,
+      실제 게임을 할 때와 같은 자세를 유지한 채 편안하게 응시해 주세요.
+    </p>
+    <div class="modal-actions">
+      <button id="calibration-guide-confirm" class="primary">확인하고 시작하기</button>
+    </div>
   </div>
 </div>
 

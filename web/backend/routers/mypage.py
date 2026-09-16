@@ -64,23 +64,54 @@ def _serialize_redness(analysis):
     return {"ratio": analysis["redness_ratio"], "analyzed_at": analysis["analyzed_at"]}
 
 
+# 눈 건강 요약 배너(눈 아이콘, js/eyeStatus.js)용 - 가장 최근 측정 1건만 보는
+# 대신, 최근 3건에 최신순 가중치(0.5/0.3/0.2)를 줘서 평균 낸 뒤 그 평균값을
+# classify_risk()에 통과시킨다. 데이터가 3건보다 적으면 있는 만큼의 가중치만
+# 합이 1이 되도록 다시 나눈다(예: 1건이면 그 가중치는 무의미하므로 그대로
+# 100%). 현재는 백내장 확률만 반영한다 - 충혈도(redness_ratio)는 HSV 임계값이
+# 아직 조명에 따라 과다 측정되는 것으로 확인돼 있어(models/redness_ratio.py,
+# AI_Flow.txt 섹션 2) 등급 판정 어디에도 쓰지 않기로 한 기존 결정과 같은
+# 이유로 이 가중 평균에도 포함하지 않는다. 그 임계값이 실측 사진으로 튜닝되면
+# 이 함수를 다시 열어 충혈도를 함께 반영하도록 사용자에게 다시 물어볼 것.
+_RECENT_WEIGHTS = [0.5, 0.3, 0.2]
+
+
+def _weighted_cataract_status(rows):
+    if not rows:
+        return None
+
+    weights = _RECENT_WEIGHTS[: len(rows)]
+    weight_sum = sum(weights)
+    weighted_prob = sum(row["cataract_prob"] * w for row, w in zip(rows, weights)) / weight_sum
+
+    return {
+        "prob": weighted_prob,
+        "label": classify_risk(weighted_prob),
+        "sample_count": len(rows),
+    }
+
+
 @router.get("/api/mypage")
 async def get_mypage(user_id: int = Depends(get_current_user_id)):
     user = db.get_user(user_id)
     last_gaze_game = db.get_last_game_record(user_id, db.GAME_TYPE_GAZE)
     last_rhythm_game = db.get_last_game_record(user_id, db.GAME_TYPE_RHYTHM)
     last_analysis = db.get_last_analysis_result(user_id)
+    recent_analyses = db.get_recent_analysis_results(user_id, len(_RECENT_WEIGHTS))
 
     # 백내장 위험도/안구 충혈도: S-03 사진 분석(routers/analysis.py)을 한 번도
     # 하지 않았으면 둘 다 null이고, 프론트가 "측정 미완료"로 표시한다.
     # 등급(정상/주의 필요/위험)은 저장된 값이 아니라 확률에서 그때그때 계산한다 -
     # 경계값의 단일 기준은 models/cataract_cls/infer.py다 (db.py 스키마 주석 참고).
+    # cataract_risk/redness는 그 latest 측정 그대로(마이페이지 요약 칸에 쓰는 값)고,
+    # eye_status_risk는 눈 건강 요약 배너 전용 가중 평균 값이다 - 서로 다른 목적.
     return {
         "logged_in_at": user["last_login_at"] if user else None,
         "last_game_gaze": _serialize_game_record(last_gaze_game),
         "last_game_rhythm": _serialize_game_record(last_rhythm_game),
         "cataract_risk": _serialize_cataract_risk(last_analysis),
         "redness": _serialize_redness(last_analysis),
+        "eye_status_risk": _weighted_cataract_status(recent_analyses),
     }
 
 

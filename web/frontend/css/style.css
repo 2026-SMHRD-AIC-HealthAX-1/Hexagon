@@ -429,19 +429,14 @@ header.top-bar {
 
 .game-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-}
-
-@media (max-width: 700px) {
-  .game-list {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 .game-item {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   border: 2px solid var(--navy);
   border-radius: 14px;
@@ -451,30 +446,6 @@ header.top-bar {
 .game-item:hover {
   border-color: #bdd7f5;
   background: #fafcff;
-}
-
-/* 홈: 시선 추적 미니게임 / 리듬게임 카드만 강조 배경색 - 캘리브레이션 카드는 제외.
-   마이페이지 기록 탭의 선택된 하위 탭(.tabs-secondary .tab-btn.active)과 같은 배경색. */
-.game-item[href="game.html"],
-.game-item[href="rhythm_game.html"] {
-  background: var(--blue-dark);
-}
-
-.game-item[href="game.html"]:hover,
-.game-item[href="rhythm_game.html"]:hover {
-  background: var(--navy);
-}
-
-/* 강조 배경 위에서는 어두운 기본 글자색이 묻히므로 흰색 + 조금 더 큰 글씨로 */
-.game-item[href="game.html"] .game-name,
-.game-item[href="rhythm_game.html"] .game-name {
-  color: #fff;
-  font-size: 16px;
-}
-
-.game-item[href="game.html"] .game-arrow,
-.game-item[href="rhythm_game.html"] .game-arrow {
-  color: #fff;
 }
 
 .game-icon {
@@ -491,7 +462,8 @@ header.top-bar {
 
 .game-name {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 20px;
+  text-align: center;
   margin-bottom: 2px;
 }
 
@@ -501,9 +473,9 @@ header.top-bar {
 }
 
 .game-arrow {
-  margin-left: auto;
   color: var(--blue-dark);
   font-size: 20px;
+  flex-shrink: 0;
 }
 
 /* home: care box (blink monitoring / reminders) */
@@ -516,6 +488,7 @@ header.top-bar {
 .care-box .section-title {
   margin: 0 0 14px;
   font-size: 16px;
+  text-align: center;
 }
 
 .care-list {
@@ -1086,6 +1059,15 @@ input.toggle-switch:disabled {
   padding: 28px;
   max-width: 360px;
   text-align: center;
+}
+
+/* 웹캠 사용 동의 팝업만 좀 더 넓게 - 안내 문구가 두 줄로 늘어나면서
+   기본 모달 폭(360px)에서는 좁게 느껴져서 게임/리듬게임(default, 클라이언트
+   계산 페이지) 공통으로 넓힘. 백업 페이지(game_lab.html/rhythm_game_lab.html)는
+   같은 #consent-modal id를 쓰지만 이 클래스를 붙이지 않아 원래 폭 그대로 - 롤백
+   대상이라 시각적으로도 건드리지 않기 위함. */
+.modal-box.wide-modal {
+  max-width: min(440px, calc(100vw - 32px));
 }
 
 .modal-box h2 {

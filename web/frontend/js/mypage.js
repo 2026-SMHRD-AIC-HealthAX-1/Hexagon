@@ -30,7 +30,7 @@ async function render() {
   document.getElementById("health-rhythm-score").textContent = formatGameScoreSummary(data.last_game_rhythm);
   document.getElementById("health-cataract-risk").textContent = formatCataractRiskSummary(data.cataract_risk);
   document.getElementById("health-redness").textContent = formatRednessSummary(data.redness);
-  applyEyeStatus(document.querySelector(".page"), classifyEyeStatus(data.cataract_risk), document.getElementById("eye-status-text"));
+  applyEyeStatus(document.querySelector(".page"), classifyEyeStatus(data.eye_status_risk), document.getElementById("eye-status-text"));
 }
 
 // ---- 누적 기록 / 최근 기록 추이 탭 ----
