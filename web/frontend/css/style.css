@@ -9,6 +9,11 @@
   --line-blue: #a9c2e0;
   --navy: #4a7cc4;
   --warning: #d64545;
+  /* 눈 건강 상태(양호/주의/위험) 홍채 색 - 눈 아이콘 배너와 퀵메뉴 FAB이 공유 */
+  --eye-good: #2e9e86;
+  --eye-caution: #d69a34;
+  --eye-risk: #c85a46;
+  --eye-unknown: #97a3b0;
 }
 
 * {
@@ -41,11 +46,17 @@ button {
   max-width: 720px;
   margin: 0 auto;
   padding: 24px 20px 60px;
+  /* 눈 건강 상태(백내장 위험도 기반) - 아직 분석 기록이 없으면 unknown */
+  --eye-color: var(--eye-unknown);
 }
 
 .page.page-wide {
   max-width: 1080px;
 }
+
+.page[data-eye-status="good"] { --eye-color: var(--eye-good); }
+.page[data-eye-status="caution"] { --eye-color: var(--eye-caution); }
+.page[data-eye-status="risk"] { --eye-color: var(--eye-risk); }
 
 .top-grid {
   display: grid;
@@ -203,39 +214,176 @@ header.top-bar {
   color: var(--blue-dark);
 }
 
-.health-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 0;
+.health-banner {
   border-top: 1px solid var(--line-blue);
-  padding-top: 14px;
+  padding-top: 16px;
 }
 
-.health-stat {
+.health-banner-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 10px 18px;
+}
+
+.health-corner {
   text-align: center;
   cursor: pointer;
   padding: 0 4px;
 }
 
-.health-stat:nth-child(2n) {
-  border-left: 1px solid var(--line-blue);
-}
+.health-corner-tl { grid-column: 1; grid-row: 1; }
+.health-corner-tr { grid-column: 3; grid-row: 1; }
+.health-corner-bl { grid-column: 1; grid-row: 2; }
+.health-corner-br { grid-column: 3; grid-row: 2; }
 
-.health-stat:nth-child(n+3) {
-  border-top: 1px solid var(--line-blue);
-  padding-top: 14px;
-}
-
-.health-stat small {
+.health-corner-label {
   display: block;
   color: #8a949f;
   font-size: 12px;
   margin-bottom: 5px;
 }
 
-.health-stat b {
+.health-corner-value {
   display: block;
   font-size: 14px;
+  font-weight: 600;
+}
+
+/* 로봇/AI 느낌의 눈 아이콘 - 사람 눈처럼 곡선/속눈썹으로 그리지 않고
+   육각 렌즈 하우징 + 조리개 링 + 뷰파인더 브래킷으로 구성한다.
+   홍채 색(--eye-color)은 .page[data-eye-status]에서 내려받아 상속되므로,
+   상태가 바뀌면 링/동공 크로스헤어/스캔라인/점/퀵메뉴 FAB이 함께 바뀐다. */
+.eye-icon-wrap {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.eye-icon {
+  width: 150px;
+  height: auto;
+  overflow: visible;
+}
+
+.eye-lens-outline {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.eye-sclera {
+  fill: #fff;
+}
+
+.eye-grid-line {
+  stroke: var(--line);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.eye-iris-ring-outer,
+.eye-iris-ring-inner {
+  fill: none;
+  stroke: var(--eye-color);
+  stroke-width: 2.5;
+  transition: stroke 0.4s ease;
+}
+
+.eye-iris-ticks {
+  stroke: var(--eye-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: eye-icon-rotate 14s linear infinite;
+  transition: stroke 0.4s ease;
+}
+
+.eye-pupil {
+  fill: var(--text);
+}
+
+.eye-glint {
+  fill: #fff;
+}
+
+.eye-icon-glow {
+  animation: eye-icon-pulse 3s ease-in-out infinite;
+}
+
+.eye-scan-line {
+  fill: var(--eye-color);
+  opacity: 0.16;
+  animation: eye-icon-scan 3.2s ease-in-out infinite;
+  transition: fill 0.4s ease;
+}
+
+.eye-brackets path {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.page[data-eye-status="caution"] .eye-icon-glow { animation-duration: 1.8s; }
+.page[data-eye-status="risk"] .eye-icon-glow { animation-duration: 1s; }
+
+@keyframes eye-icon-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes eye-icon-scan {
+  0%, 100% { transform: translateY(-24px); }
+  50% { transform: translateY(24px); }
+}
+
+@keyframes eye-icon-pulse {
+  0%, 100% { filter: drop-shadow(0 0 2px var(--eye-color)); }
+  50% { filter: drop-shadow(0 0 7px var(--eye-color)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eye-iris-ticks,
+  .eye-scan-line,
+  .eye-icon-glow {
+    animation: none;
+  }
+}
+
+.eye-status-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.eye-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--eye-color);
+  transition: background 0.4s ease;
+}
+
+@media (max-width: 640px) {
+  .health-banner-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .eye-icon-wrap { grid-column: 1 / 3; grid-row: 1; }
+  .health-corner-tl { grid-column: 1; grid-row: 2; }
+  .health-corner-tr { grid-column: 2; grid-row: 2; }
+  .health-corner-bl { grid-column: 1; grid-row: 3; }
+  .health-corner-br { grid-column: 2; grid-row: 3; }
 }
 
 .health-login-prompt {
@@ -521,17 +669,19 @@ input.toggle-switch:disabled {
   height: 64px;
   border: 0;
   border-radius: 50%;
-  background: var(--blue);
+  /* 눈 건강 상태 홍채 색과 동일하게 연동 (.page[data-eye-status]) */
+  background: var(--eye-color);
   color: #fff;
   box-shadow: 0 7px 18px rgba(74, 126, 181, 0.3);
   font-size: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.4s ease;
 }
 
 .quick-fab:hover {
-  background: var(--blue-dark);
+  filter: brightness(0.92);
 }
 
 .map-message {

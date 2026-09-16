@@ -30,22 +30,78 @@
         <a class="auth-btn" href="login.html">로그인하기</a>
       </div>
 
-      <div id="health-stats" class="health-stats hidden">
-        <div class="health-stat" onclick="location.href='mypage.html'">
-          <small>시선 추적 게임</small>
-          <b id="health-gaze-score">-</b>
-        </div>
-        <div class="health-stat" onclick="location.href='mypage.html'">
-          <small>리듬게임</small>
-          <b id="health-rhythm-score">-</b>
-        </div>
-        <div class="health-stat" onclick="location.href='mypage.html'">
-          <small>백내장 위험도</small>
-          <b id="health-cataract-risk">-</b>
-        </div>
-        <div class="health-stat" onclick="location.href='mypage.html'">
-          <small>안구 충혈도</small>
-          <b id="health-redness">-</b>
+      <div id="health-stats" class="health-banner hidden">
+        <div class="health-banner-grid">
+          <div class="health-corner health-corner-tl" onclick="location.href='mypage.html'">
+            <span class="health-corner-label">시선 추적 게임</span>
+            <span class="health-corner-value" id="health-gaze-score">-</span>
+          </div>
+          <div class="health-corner health-corner-tr" onclick="location.href='mypage.html'">
+            <span class="health-corner-label">리듬게임</span>
+            <span class="health-corner-value" id="health-rhythm-score">-</span>
+          </div>
+
+          <div class="eye-icon-wrap">
+            <svg class="eye-icon" viewBox="0 0 200 150" aria-hidden="true">
+              <defs>
+                <clipPath id="eyeLensClip">
+                  <path d="M12,75 C50,28 150,28 188,75 C150,122 50,122 12,75 Z"/>
+                </clipPath>
+              </defs>
+
+              <g clip-path="url(#eyeLensClip)">
+                <rect class="eye-sclera" x="0" y="0" width="200" height="150"/>
+                <line class="eye-grid-line" x1="0" y1="75" x2="200" y2="75"/>
+                <line class="eye-grid-line" x1="100" y1="0" x2="100" y2="150"/>
+
+                <g class="eye-icon-glow">
+                  <circle class="eye-iris-ring-outer" cx="100" cy="75" r="34"/>
+                  <circle class="eye-iris-ring-inner" cx="100" cy="75" r="24"/>
+                  <g class="eye-iris-ticks">
+                    <line x1="100" y1="41" x2="100" y2="49"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(30 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(60 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(90 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(120 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(150 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(180 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(210 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(240 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(270 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(300 100 75)"/>
+                    <line x1="100" y1="41" x2="100" y2="49" transform="rotate(330 100 75)"/>
+                  </g>
+                  <circle class="eye-pupil" cx="100" cy="75" r="15"/>
+                  <circle class="eye-glint" cx="85.5" cy="60.5" r="3.5"/>
+                </g>
+
+                <rect class="eye-scan-line" x="0" y="20" width="200" height="6"/>
+              </g>
+
+              <path class="eye-lens-outline" d="M12,75 C50,28 150,28 188,75 C150,122 50,122 12,75 Z"/>
+
+              <g class="eye-brackets">
+                <path d="M4,20 L4,4 L20,4"/>
+                <path d="M180,4 L196,4 L196,20"/>
+                <path d="M196,130 L196,146 L180,146"/>
+                <path d="M20,146 L4,146 L4,130"/>
+              </g>
+            </svg>
+
+            <span class="eye-status-line">
+              <span class="eye-status-dot"></span>
+              <span class="eye-status-text" id="eye-status-text">종합 상태 · 측정 전</span>
+            </span>
+          </div>
+
+          <div class="health-corner health-corner-bl" onclick="location.href='mypage.html'">
+            <span class="health-corner-label">백내장 위험도</span>
+            <span class="health-corner-value" id="health-cataract-risk">-</span>
+          </div>
+          <div class="health-corner health-corner-br" onclick="location.href='mypage.html'">
+            <span class="health-corner-label">안구 충혈도</span>
+            <span class="health-corner-value" id="health-redness">-</span>
+          </div>
         </div>
       </div>
     </section>

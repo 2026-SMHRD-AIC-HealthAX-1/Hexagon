@@ -3,6 +3,7 @@ import { getAuth, isLoggedIn, logout, syncAuthWithServer, PROVIDER_LABELS } from
 import { loadNaverMapsScript, fetchClinics, createClinicItem, renderMap, searchPlace } from "./nearby_clinics.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
+import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
 
 // index.html은 requireLogin()으로 리다이렉트하지 않는 유일한 페이지이지만, 구글
 // 로그인은 서버 리다이렉트로 완료되므로(클라이언트가 그 시점을 알 수 없음) 로그인
@@ -20,6 +21,8 @@ const healthGazeScore = document.getElementById("health-gaze-score");
 const healthRhythmScore = document.getElementById("health-rhythm-score");
 const healthCataractRisk = document.getElementById("health-cataract-risk");
 const healthRedness = document.getElementById("health-redness");
+const eyeStatusText = document.getElementById("eye-status-text");
+const pageRoot = document.querySelector(".page");
 
 const NOT_MEASURED = "측정 미완료";
 
@@ -50,12 +53,14 @@ async function renderAuthArea() {
     healthRhythmScore.textContent = formatGameScore(data.last_game_rhythm);
     healthCataractRisk.textContent = formatCataractRisk(data.cataract_risk);
     healthRedness.textContent = formatRedness(data.redness);
+    applyEyeStatus(pageRoot, classifyEyeStatus(data.cataract_risk), eyeStatusText);
   } else {
     authLoggedIn.classList.add("hidden");
     loginLink.classList.remove("hidden");
 
     healthStats.classList.add("hidden");
     healthLoginPrompt.classList.remove("hidden");
+    applyEyeStatus(pageRoot, "unknown", eyeStatusText);
   }
 }
 
