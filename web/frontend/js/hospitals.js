@@ -86,7 +86,10 @@ function requestLocation() {
       init(position.coords.latitude, position.coords.longitude);
     },
     () => {
-      setStatus("위치 정보를 가져올 수 없습니다. 브라우저 설정에서 위치 권한을 허용한 뒤 다시 시도해주세요.", true);
+      setStatus(
+        "위치 정보를 가져올 수 없습니다. 브라우저 설정에서 위치 권한을 허용한 뒤 다시 시도하거나, 지역 검색으로도 찾아보실 수 있습니다.",
+        true
+      );
     }
   );
 }
