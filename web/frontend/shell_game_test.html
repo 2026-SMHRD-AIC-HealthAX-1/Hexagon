@@ -1,0 +1,71 @@
+<!--
+  야바위(셸 게임) - 프로토타입/테스트 버전.
+
+  정식 서비스에는 아직 편입되지 않은 독립 페이지다 (index.html 등 어디서도
+  링크되지 않음). 시선 추적과 무관한 순수 마우스 클릭 게임이라 카메라/
+  MediaPipe/로그인/DB 연동이 전혀 없다 - 점수는 화면에만 표시되고 서버로
+  전송되지 않는다.
+
+  규칙: 컵 3개 중 하나에 공이 들어가는 모습을 보여준 뒤 15초간 끊김 없이
+  계속 섞고, 섞기가 끝나면 사용자가 컵을 클릭해 공의 위치를 맞힌다.
+  맞히면 다음 단계로(섞는 속도 증가, 획득 점수 증가), 틀리면 그 자리에서
+  게임이 끝난다.
+
+  로직/렌더링은 js/shell_game.js 에 있다.
+-->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>야바위 게임 (테스트)</title>
+<link rel="stylesheet" href="css/shell_game_theme.css">
+</head>
+<body>
+
+<div id="start-screen" class="screen">
+  <div class="panel">
+    <div class="eyebrow">PROTOTYPE · TEST BUILD</div>
+    <h1>야바위 게임</h1>
+    <p class="desc">
+      공이 들어간 컵을 잘 지켜보세요.<br>
+      15초 동안 컵이 쉬지 않고 섞이고 나면, 공이 있을 것 같은 컵을 클릭해서 맞혀보세요.<br>
+      맞히면 다음 단계로 이어지고, 섞는 속도와 획득 점수가 함께 올라갑니다.
+    </p>
+    <button id="start-btn" class="primary-btn" type="button">게임 시작</button>
+    <p class="test-note">※ 테스트 버전 - 이 페이지는 정식 서비스에 연결되어 있지 않고, 점수는 화면에만 표시됩니다.</p>
+  </div>
+</div>
+
+<div id="play-screen" class="screen hidden">
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">LEVEL</span>
+      <span id="hud-level" class="hud-value">1</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">SCORE</span>
+      <span id="hud-score" class="hud-value">0</span>
+    </div>
+  </div>
+  <canvas id="game-canvas"></canvas>
+  <div id="phase-message" class="phase-message"></div>
+</div>
+
+<div id="result-screen" class="screen hidden">
+  <div class="panel">
+    <div class="eyebrow">RESULT</div>
+    <h2 id="result-title">게임 종료</h2>
+    <div class="score-card">
+      <div class="label">최종 점수</div>
+      <div id="result-score" class="value">0</div>
+    </div>
+    <div class="result-sub">도달 단계 <strong id="result-level">1</strong></div>
+    <button id="retry-btn" class="primary-btn" type="button">다시하기</button>
+    <p class="test-note">※ 테스트 버전 - 점수는 화면에만 표시되며 서버(DB)에는 저장되지 않습니다.</p>
+  </div>
+</div>
+
+<script type="module" src="js/shell_game.js"></script>
+</body>
+</html>
