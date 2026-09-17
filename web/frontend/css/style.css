@@ -796,6 +796,18 @@ input.toggle-switch:disabled {
   border: 2px solid var(--line);
   color: var(--gray);
   font-weight: 400;
+  height: 36px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 다크모드 토글을 로그아웃 버튼 왼쪽에, 같은 세로 크기로 배치 (와이드/모바일 동일) */
+#auth-logged-in {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .theme-toggle-btn {
@@ -808,6 +820,8 @@ input.toggle-switch:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 36px;
+  box-sizing: border-box;
 }
 
 .theme-toggle-btn:hover {
