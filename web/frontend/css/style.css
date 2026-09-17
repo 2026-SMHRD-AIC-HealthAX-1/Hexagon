@@ -720,6 +720,15 @@ input.toggle-switch:disabled {
   filter: brightness(0.92);
 }
 
+/* PC처럼 와이드한 화면에서는 퀵메뉴 원 반지름을 2배로 키움 */
+@media (min-width: 851px) {
+  .quick-fab {
+    width: 128px;
+    height: 128px;
+    font-size: 52px;
+  }
+}
+
 .map-message {
   position: absolute;
   left: 50%;
