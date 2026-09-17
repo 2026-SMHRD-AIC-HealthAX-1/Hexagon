@@ -5,6 +5,7 @@ import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
 import { getStoredTheme, toggleTheme } from "./theme.js";
+import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
 
 // index.html은 requireLogin()으로 리다이렉트하지 않는 유일한 페이지이지만, 구글
 // 로그인은 서버 리다이렉트로 완료되므로(클라이언트가 그 시점을 알 수 없음) 로그인
@@ -24,6 +25,7 @@ const healthRhythmScore = document.getElementById("health-rhythm-score");
 const healthCataractRisk = document.getElementById("health-cataract-risk");
 const healthRedness = document.getElementById("health-redness");
 const eyeStatusText = document.getElementById("eye-status-text");
+const eyeIconWrap = document.getElementById("eye-icon-wrap");
 const pageRoot = document.querySelector(".page");
 
 const NOT_MEASURED = "측정 미완료";
@@ -53,16 +55,33 @@ async function renderAuthArea() {
     healthRhythmScore.textContent = formatGameScore(data.last_game_rhythm);
     healthCataractRisk.textContent = formatCataractRisk(data.cataract_risk);
     healthRedness.textContent = formatRedness(data.redness);
-    applyEyeStatus(pageRoot, classifyEyeStatus(data.eye_status_risk), eyeStatusText);
+    applyEyeStatus(pageRoot, classifyEyeStatus(data.eye_status_risk), eyeStatusText, eyeIconWrap);
   } else {
     authLoggedIn.classList.add("hidden");
     loginLink.classList.remove("hidden");
 
     healthStats.classList.add("hidden");
     healthLoginPrompt.classList.remove("hidden");
-    applyEyeStatus(pageRoot, "unknown", eyeStatusText);
+    applyEyeStatus(pageRoot, "unknown", eyeStatusText, eyeIconWrap);
   }
 }
+
+// 백내장/충혈도 측정 기록이 아예 없어 종합 상태가 "측정 전"(unknown)일 때만
+// 눈 아이콘을 클릭 가능하게 만들어 바로 사진 분석으로 유도한다 - applyEyeStatus()가
+// eye-icon-wrap-clickable 클래스/속성을 갱신해주므로, 여기서는 클릭 시점의
+// 실제 상태만 확인해서 이동한다.
+eyeIconWrap.addEventListener("click", () => {
+  if (pageRoot.dataset.eyeStatus === "unknown") {
+    location.href = "analysis.html";
+  }
+});
+
+eyeIconWrap.addEventListener("keydown", (event) => {
+  if ((event.key === "Enter" || event.key === " ") && pageRoot.dataset.eyeStatus === "unknown") {
+    event.preventDefault();
+    location.href = "analysis.html";
+  }
+});
 
 logoutBtn.addEventListener("click", async () => {
   if (!confirm("로그아웃 하시겠습니까?")) return;
@@ -516,12 +535,7 @@ mapSearchForm.addEventListener("submit", (event) => {
   searchAndShowClinics(mapSearchInput.value.trim());
 });
 
-const quickFab = document.getElementById("quick-fab");
-const quickMenu = document.getElementById("quick-menu");
-
-quickFab.addEventListener("click", () => {
-  quickMenu.classList.toggle("show");
-});
+initQuickPhotoMenu();
 
 homeLocateBtn.addEventListener("click", () => {
   homeMapMessageText.textContent = "위치 정보를 확인하고 있어요...";

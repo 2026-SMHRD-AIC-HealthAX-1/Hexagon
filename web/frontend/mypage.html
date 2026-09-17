@@ -27,7 +27,7 @@
           <span class="health-corner-value" id="health-rhythm-score">-</span>
         </div>
 
-        <div class="eye-icon-wrap">
+        <div id="eye-icon-wrap" class="eye-icon-wrap">
           <svg class="eye-icon" viewBox="0 0 200 150" aria-hidden="true">
             <defs>
               <clipPath id="eyeLensClipMypage">
@@ -110,12 +110,14 @@
 
   <div class="quick-fab-wrap">
     <div id="quick-menu" class="quick-menu">
-      <a class="quick-option" href="analysis.html">📷 사진 선택</a>
-      <a class="quick-option" href="analysis.html?mode=capture">📸 사진 촬영</a>
+      <button id="quick-pick-btn" class="quick-option" type="button">📷 사진 선택</button>
+      <button id="quick-capture-btn" class="quick-option" type="button">📸 사진 촬영</button>
     </div>
     <button id="quick-fab" class="quick-fab" type="button" aria-label="눈 검사 메뉴">
       <img class="quick-fab-icon" src="images/cam.png" alt="">
+      <span class="quick-fab-close" aria-hidden="true">✕</span>
     </button>
+    <input type="file" id="quick-photo-input" accept="image/*" class="hidden">
   </div>
 </div>
 

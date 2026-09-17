@@ -1,10 +1,30 @@
 import { getAuth, requireLogin, syncAuthWithServer, logout } from "./auth.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
+import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
 
 await syncAuthWithServer();
 requireLogin();
 
 const NOT_MEASURED = "측정 미완료";
+
+const pageRoot = document.querySelector(".page");
+const eyeIconWrap = document.getElementById("eye-icon-wrap");
+
+// 백내장/충혈도 측정 기록이 아예 없어 종합 상태가 "측정 전"(unknown)일 때만
+// 눈 아이콘을 클릭 가능하게 만들어 바로 사진 분석으로 유도한다 - home.js와
+// 동일한 동작(applyEyeStatus()가 클래스/속성을 갱신, 클릭 시 상태만 확인).
+eyeIconWrap.addEventListener("click", () => {
+  if (pageRoot.dataset.eyeStatus === "unknown") {
+    location.href = "analysis.html";
+  }
+});
+
+eyeIconWrap.addEventListener("keydown", (event) => {
+  if ((event.key === "Enter" || event.key === " ") && pageRoot.dataset.eyeStatus === "unknown") {
+    event.preventDefault();
+    location.href = "analysis.html";
+  }
+});
 
 // 홈 화면(home.js)의 눈 건강 요약 패널과 동일한 포맷 - 날짜 없이 요약만 보여준다.
 function formatGameScoreSummary(lastGame) {
@@ -30,7 +50,7 @@ async function render() {
   document.getElementById("health-rhythm-score").textContent = formatGameScoreSummary(data.last_game_rhythm);
   document.getElementById("health-cataract-risk").textContent = formatCataractRiskSummary(data.cataract_risk);
   document.getElementById("health-redness").textContent = formatRednessSummary(data.redness);
-  applyEyeStatus(document.querySelector(".page"), classifyEyeStatus(data.eye_status_risk), document.getElementById("eye-status-text"));
+  applyEyeStatus(pageRoot, classifyEyeStatus(data.eye_status_risk), document.getElementById("eye-status-text"), eyeIconWrap);
 }
 
 // ---- 누적 기록 / 최근 기록 추이 탭 ----
@@ -338,13 +358,8 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
   requireLogin();
 });
 
-// home.js의 퀵메뉴 FAB과 동일한 토글 로직 (마크업/CSS도 index.html과 동일하게 재사용).
-const quickFab = document.getElementById("quick-fab");
-const quickMenu = document.getElementById("quick-menu");
-
-quickFab.addEventListener("click", () => {
-  quickMenu.classList.toggle("show");
-});
+// 퀵메뉴 동작은 index.html과 완전히 동일 - quickPhotoMenu.js 한 곳에만 둔다.
+initQuickPhotoMenu();
 
 render();
 renderHistoryContent();

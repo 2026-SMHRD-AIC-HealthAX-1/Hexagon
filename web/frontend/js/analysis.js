@@ -1,4 +1,5 @@
 import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { takePendingPhoto } from "./pendingPhoto.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -30,6 +31,15 @@ if (new URLSearchParams(location.search).get("mode") === "capture") {
   fileInput.click();
 }
 
+// 홈/마이페이지 퀵메뉴에서 고르거나 촬영한 사진은 IndexedDB에 담겨
+// ?mode=pending과 함께 넘어온다 (js/quickPhotoMenu.js) - 여기서 다시 고를
+// 필요 없이 곧바로 같은 분석 흐름을 태운다.
+if (new URLSearchParams(location.search).get("mode") === "pending") {
+  takePendingPhoto().then((file) => {
+    if (file) handleFile(file);
+  });
+}
+
 function showError(message) {
   errorBox.textContent = message;
   errorBox.classList.remove("hidden");
@@ -51,10 +61,14 @@ async function analyzePhoto(file) {
   return response.json();
 }
 
-fileInput.addEventListener("change", async (event) => {
+fileInput.addEventListener("change", (event) => {
   const file = event.target.files[0];
-  if (!file) return;
+  if (file) handleFile(file);
+});
 
+// 이 페이지에서 직접 고른 사진과 퀵메뉴에서 넘어온 사진이 같은 경로를 타도록
+// 분리해둔 함수.
+async function handleFile(file) {
   preview.src = URL.createObjectURL(file);
   preview.style.display = "block";
 
@@ -90,7 +104,7 @@ fileInput.addEventListener("change", async (event) => {
   } finally {
     loading.classList.add("hidden");
   }
-});
+}
 
 retryBtn.addEventListener("click", () => {
   URL.revokeObjectURL(preview.src);

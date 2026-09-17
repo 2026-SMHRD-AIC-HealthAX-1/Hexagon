@@ -302,6 +302,22 @@ header.top-bar {
   gap: 8px;
 }
 
+/* 백내장/충혈도 측정 기록이 없어 종합 상태가 "측정 전"일 때만 붙는 클릭 가능
+   상태 - 사진 분석(analysis.html)으로 바로 이동시키는 진입점 역할 */
+.eye-icon-wrap-clickable {
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+.eye-icon-wrap-clickable:hover .eye-icon {
+  filter: drop-shadow(0 0 8px var(--eye-color));
+}
+
+.eye-icon-wrap-clickable:focus-visible {
+  outline: 2px solid var(--eye-color);
+  outline-offset: 6px;
+}
+
 .eye-icon {
   width: 150px;
   height: auto;
@@ -726,6 +742,21 @@ input.toggle-switch:disabled {
   object-fit: contain;
 }
 
+/* 메뉴가 열려 있는 동안에는 FAB 자체가 "닫기" 버튼이 된다 */
+.quick-fab-close {
+  display: none;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.quick-fab.is-open .quick-fab-icon {
+  display: none;
+}
+
+.quick-fab.is-open .quick-fab-close {
+  display: block;
+}
+
 /* PC처럼 와이드한 화면에서는 퀵메뉴 원 반지름을 2배, 메뉴 버튼도 그에 맞게 확대 */
 @media (min-width: 851px) {
   .quick-fab {
@@ -736,6 +767,10 @@ input.toggle-switch:disabled {
   .quick-fab-icon {
     width: 56px;
     height: 56px;
+  }
+
+  .quick-fab-close {
+    font-size: 56px;
   }
 
   .quick-option {
@@ -1173,6 +1208,10 @@ input.toggle-switch:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 홈/마이페이지의 퀵메뉴 FAB(.quick-fab-wrap)이 z-index: 20이라, 그 위에
+     카메라 촬영 모달이 덮이도록 명시한다. 게임 화면들은 모달보다 위에 쌓이는
+     요소가 없어 이 값과 무관하게 지금까지와 동일하게 보인다. */
+  z-index: 50;
 }
 
 .modal-box {
@@ -1207,6 +1246,19 @@ input.toggle-switch:disabled {
   display: flex;
   gap: 10px;
   justify-content: center;
+}
+
+/* 퀵메뉴 "사진 촬영"의 카메라 미리보기 (js/cameraCapture.js가 만드는 모달).
+   좌우 반전은 일부러 하지 않는다 - 미리보기와 실제 저장되는 사진이 달라지면
+   사용자가 프레이밍을 맞추기 어렵다. */
+.camera-preview {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #000;
+  object-fit: contain;
 }
 
 button {
