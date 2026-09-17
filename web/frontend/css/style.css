@@ -1501,22 +1501,6 @@ button.primary:hover {
   margin: 24px 0 10px;
 }
 
-.medication-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.medication-card {
-  background: var(--surface);
-  border: 1px dashed var(--line);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  color: var(--gray);
-  font-size: 13px;
-}
-
 /* analysis screen */
 .analysis-guide {
   display: grid;
@@ -1561,7 +1545,6 @@ button.primary:hover {
 @media (max-width: 500px) {
   .analysis-guide,
   .mypage-grid,
-  .medication-grid,
   .game-list {
     grid-template-columns: 1fr;
   }
