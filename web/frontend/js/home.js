@@ -15,6 +15,7 @@ const loginLink = document.getElementById("login-link");
 const authLoggedIn = document.getElementById("auth-logged-in");
 const logoutBtn = document.getElementById("logout-btn");
 const themeToggleBtn = document.getElementById("theme-toggle");
+const themeToggleIcon = document.getElementById("theme-toggle-icon");
 
 const healthLoginPrompt = document.getElementById("health-login-prompt");
 const healthStats = document.getElementById("health-stats");
@@ -73,7 +74,9 @@ logoutBtn.addEventListener("click", async () => {
 // 보이는 #auth-logged-in 안에 있으므로 표시 여부는 renderAuthArea()가 이미
 // 처리하고, 여기서는 아이콘/클릭 동작만 담당한다.
 function updateThemeToggleIcon() {
-  themeToggleBtn.textContent = getStoredTheme() === "dark" ? "☀️" : "🌙";
+  const isDark = getStoredTheme() === "dark";
+  themeToggleIcon.classList.toggle("icon-sun", isDark);
+  themeToggleIcon.classList.toggle("icon-moon", !isDark);
 }
 
 themeToggleBtn.addEventListener("click", () => {

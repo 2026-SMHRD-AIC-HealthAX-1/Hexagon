@@ -720,11 +720,13 @@ input.toggle-switch:disabled {
 }
 
 .quick-fab-icon {
+  display: block;
   width: 28px;
   height: 28px;
+  object-fit: contain;
 }
 
-/* PC처럼 와이드한 화면에서는 퀵메뉴 원 반지름을 2배로 키움 */
+/* PC처럼 와이드한 화면에서는 퀵메뉴 원 반지름을 2배, 메뉴 버튼도 그에 맞게 확대 */
 @media (min-width: 851px) {
   .quick-fab {
     width: 128px;
@@ -737,9 +739,15 @@ input.toggle-switch:disabled {
   }
 
   .quick-option {
-    width: 128px;
+    width: 256px;
+    height: 72px;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    font-size: 22px;
+    font-weight: 700;
   }
 }
 
@@ -793,15 +801,42 @@ input.toggle-switch:disabled {
 .theme-toggle-btn {
   border: 0;
   background: none;
-  font-size: 18px;
   line-height: 1;
-  padding: 4px 6px;
+  padding: 6px;
   border-radius: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .theme-toggle-btn:hover {
   background: var(--blue-light);
+}
+
+/* 라이트/다크 모드 전환 아이콘 - sun.png/moon.png를 마스크로 써서
+   버튼 배경(투명) 위에서 --text 색으로 렌더링, 테마가 바뀌어도 항상 보이게 함 */
+.theme-toggle-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: var(--text);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.theme-toggle-icon.icon-sun {
+  -webkit-mask-image: url("../images/sun.png");
+  mask-image: url("../images/sun.png");
+}
+
+.theme-toggle-icon.icon-moon {
+  -webkit-mask-image: url("../images/moon.png");
+  mask-image: url("../images/moon.png");
 }
 
 /* login screen */
