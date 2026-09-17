@@ -343,6 +343,75 @@ secondaryTabButtons.forEach((button) => {
   });
 });
 
+// ---- 게임 랭킹 TOP 10 ----
+//
+// 개인 기록(history)과 달리 로그인한 본인 것이 아니라 해당 게임 종류 전체
+// 사용자 중 점수 상위 10명을 보여준다. 실제 기록이 10개가 안 되면 나머지는
+// 빈 행("-")으로 채워 항상 10행을 유지한다.
+
+const RANKING_GAMES = ["gaze", "rhythm"];
+const RANKING_ROWS = 10;
+
+let currentRankingGame = RANKING_GAMES[0]; // 항상 가장 왼쪽 탭이 기본값
+const rankingCache = new Map(); // game_type -> records (지연 로드 + 캐시)
+
+async function fetchRanking(gameType) {
+  if (!rankingCache.has(gameType)) {
+    const data = await fetch(`/api/mypage/ranking?game_type=${gameType}`).then((res) => res.json());
+    rankingCache.set(gameType, data.records);
+  }
+  return rankingCache.get(gameType);
+}
+
+function renderRankingTable(container, records) {
+  const rows = [];
+  for (let i = 0; i < RANKING_ROWS; i++) {
+    const record = records[i];
+    rows.push(
+      record
+        ? `<tr><td>${record.user_id}</td><td>${record.score}점</td><td class="ranking-date-col">${formatDateTime(record.played_at)}</td></tr>`
+        : `<tr class="ranking-empty-row"><td>-</td><td>-</td><td>-</td></tr>`,
+    );
+  }
+
+  container.innerHTML = `
+    <table class="ranking-table">
+      <thead>
+        <tr>
+          <th>회원 번호</th>
+          <th>게임 점수</th>
+          <th>게임 플레이 일시</th>
+        </tr>
+      </thead>
+      <tbody>${rows.join("")}</tbody>
+    </table>
+  `;
+}
+
+async function renderRankingContent() {
+  const container = document.getElementById("ranking-content");
+  const gameType = currentRankingGame;
+
+  container.innerHTML = `<div class="history-empty">불러오는 중...</div>`;
+  const records = await fetchRanking(gameType);
+
+  // 응답을 기다리는 동안 사용자가 다른 탭으로 옮겼으면 이 결과는 버린다.
+  if (gameType !== currentRankingGame) return;
+
+  renderRankingTable(container, records);
+}
+
+const rankingTabButtons = document.querySelectorAll(".tabs-ranking .tab-btn");
+
+rankingTabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.dataset.game === currentRankingGame) return;
+    currentRankingGame = button.dataset.game;
+    setActiveTab(rankingTabButtons, button);
+    renderRankingContent();
+  });
+});
+
 // ---- 기록 삭제 (선택 삭제) ----
 //
 // "기록 삭제" 한 번 누르면 안내 문구 동의 후 삭제 모드로 들어간다 - 이때부터
@@ -409,3 +478,4 @@ initQuickPhotoMenu();
 
 render();
 renderHistoryContent();
+renderRankingContent();

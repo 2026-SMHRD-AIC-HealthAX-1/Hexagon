@@ -351,6 +351,23 @@ def delete_analysis_results_by_ids(user_id, ids):
         conn.close()
 
 
+def get_game_ranking(game_type, limit=10):
+    """마이페이지 랭킹 탭 - 해당 게임 종류에서 전체 사용자 중 점수 상위 limit개
+    (동점이면 먼저 기록한 순으로 정렬). 개인 기록이 아니라 모든 사용자를 대상으로 하는
+    전체 랭킹이라 user_id로 필터링하지 않는다."""
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT user_id, score, played_at FROM game_records WHERE game_type = %s "
+                "ORDER BY score DESC, played_at ASC LIMIT %s",
+                (game_type, limit),
+            )
+            return cursor.fetchall()
+    finally:
+        conn.close()
+
+
 def delete_game_records_by_ids(user_id, game_type, ids):
     """마이페이지 누적 기록 탭의 선택 삭제(미니게임/리듬게임) - game_type도 같이
     검사해서 다른 게임 종류의 id가 섞여 들어와도 지워지지 않게 한다."""

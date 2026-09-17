@@ -30,6 +30,12 @@
      배경 + 흰 글자를 유지한다 - 다크모드에서 --text가 밝은 색으로 바뀌면
      툴팁 배경도 같이 밝아져 흰 글자와 대비가 깨지기 때문에 고정값으로 분리. */
   --tooltip-bg: #252b33;
+  /* 마이페이지 "게임 랭킹" 테이블 전용 짙은 남색 테마 - 바로 위 개인 기록 탭이
+     쓰는 파란 계열(--blue/--blue-dark)과 구분되도록 일부러 더 어두운 톤을 쓴다. */
+  --rank-navy: #1b2a4a;
+  --rank-navy-hover: #24365f;
+  --rank-navy-header: #47608f;
+  --rank-pale: #e8ecf6;
   color-scheme: light;
 }
 
@@ -48,6 +54,10 @@
   --toggle-track: #3a4048;
   --danger-bg: #3a2020;
   --danger-text: #ff8a80;
+  --rank-navy: #3a4f80;
+  --rank-navy-hover: #4a6099;
+  --rank-navy-header: #566d9e;
+  --rank-pale: #1c2740;
   color-scheme: dark;
 }
 
@@ -1000,7 +1010,14 @@ input.toggle-switch:disabled {
   overflow: hidden;
 }
 
+/* 게임 랭킹 탭(.tabs-ranking)과 같은 밑줄 형태 - 채워진 세그먼트 박스 대신
+   텍스트 색 + 아래 밑줄로만 선택 상태를 표시한다. 색상 자체(--blue/--blue-dark)는
+   이 탭이 기존에 쓰던 파란 계열 그대로 유지한다. */
 .tabs-primary {
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid var(--line);
+  overflow: visible;
   margin-bottom: 10px;
 }
 
@@ -1028,18 +1045,25 @@ input.toggle-switch:disabled {
 }
 
 .tabs-primary .tab-btn {
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
   font-size: 15px;
+  font-weight: 500;
+  color: var(--gray);
 }
 
 .tabs-primary .tab-btn:hover:not(.active) {
-  background: var(--blue-light);
+  background: transparent;
   color: var(--blue-dark);
 }
 
 .tabs-primary .tab-btn.active {
-  background: var(--blue);
-  color: #fff;
+  background: transparent;
+  color: var(--blue-dark);
   font-weight: 700;
+  border-bottom-color: var(--blue-dark);
 }
 
 .tabs-secondary .tab-btn {
@@ -1125,6 +1149,101 @@ input.toggle-switch:disabled {
   padding: 30px 0;
   border: 1px solid var(--line);
   border-radius: 12px;
+}
+
+/* mypage: 게임 랭킹 TOP 10 - 개인 기록 탭(파란 계열) 바로 아래, 짙은 남색
+   계열로 색을 구분해 서로 다른 성격의 정보(개인용 vs 전체 순위)임을 드러낸다. */
+.ranking-section {
+  /* "기록 삭제" 버튼(.danger-links)이 바로 위에 오므로, 개인 기록 탭 바로
+     아래 있던 예전보다 간격을 눈에 띄게 더 준다. */
+  margin-top: 44px;
+  margin-bottom: 8px;
+}
+
+.ranking-title {
+  margin-top: 0;
+}
+
+/* 개인 기록 탭(꽉 채운 필박스)과 달리 밑줄로만 선택 상태를 표시하는 절제된
+   형태 - "게임 랭킹"이 개인 기록보다 부수적인 정보임을 덜 도드라지는 디자인으로 드러낸다. */
+.tabs-ranking {
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid var(--line);
+  overflow: visible;
+  margin-bottom: 10px;
+}
+
+.tabs-ranking .tab-btn {
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  padding: 10px 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray);
+}
+
+.tabs-ranking .tab-btn:hover:not(.active) {
+  background: transparent;
+  color: var(--rank-navy);
+}
+
+.tabs-ranking .tab-btn.active {
+  background: transparent;
+  color: var(--rank-navy);
+  font-weight: 700;
+  border-bottom-color: var(--rank-navy);
+}
+
+.ranking-content {
+  min-height: 120px;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  table-layout: fixed;
+}
+
+.ranking-table th,
+.ranking-table td {
+  border: 1px solid var(--line);
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.ranking-table thead th {
+  background: var(--rank-navy-header);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ranking-table tbody tr {
+  background: var(--surface);
+}
+
+.ranking-table tbody tr:nth-child(even) {
+  background: var(--rank-pale);
+}
+
+.ranking-table td:first-child {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ranking-table td.ranking-date-col {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+/* 기록이 10개 미만이라 채워진 빈 행 - 값 대신 "-"만 흐리게 표시 */
+.ranking-table tr.ranking-empty-row td {
+  color: var(--gray);
+  opacity: 0.6;
 }
 
 /* mypage: 최근 기록 추이 (꺾은선 그래프) */
@@ -1590,6 +1709,17 @@ button.primary:hover {
 
   .history-table th,
   .history-table td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .tabs-ranking .tab-btn {
+    font-size: 13px;
+    padding: 10px 2px;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
     padding: 10px 6px;
     font-size: 12px;
   }

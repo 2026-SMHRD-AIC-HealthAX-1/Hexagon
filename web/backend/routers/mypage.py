@@ -126,6 +126,19 @@ async def get_mypage_history(category: str, user_id: int = Depends(get_current_u
     return {"records": records}
 
 
+# 마이페이지의 "게임 랭킹" 탭 - 개인 기록이 아니라 해당 게임 종류 전체 사용자 중
+# 점수 상위 10명을 보여준다. 로그인은 다른 마이페이지 API와 동일하게 요구하지만
+# user_id 자체는 조회에 쓰이지 않는다(전체 랭킹이라 본인 여부와 무관).
+@router.get("/api/mypage/ranking")
+async def get_mypage_ranking(game_type: str, user_id: int = Depends(get_current_user_id)):
+    if game_type not in (db.GAME_TYPE_GAZE, db.GAME_TYPE_RHYTHM):
+        raise HTTPException(status_code=400, detail="invalid game_type")
+
+    rows = db.get_game_ranking(game_type, limit=10)
+    records = [{"user_id": row["user_id"], "score": row["score"], "played_at": row["played_at"]} for row in rows]
+    return {"records": records}
+
+
 class HistoryDeleteRequest(BaseModel):
     category: str
     ids: list[int]
