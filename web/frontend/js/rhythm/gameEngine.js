@@ -20,10 +20,17 @@ export const LANES = ["left", "center", "right"];
 export const NOTE_FALL_DURATION_MS = 3000;
 const NOTE_SPAWN_MIN_INTERVAL_MS = 1600;
 const NOTE_SPAWN_MAX_INTERVAL_MS = 3000;
+
+// 판정 윈도우: PERFECT_WINDOW_MS <= GREAT_WINDOW_MS <= GOOD_WINDOW_MS 순서의
+// 누적 경계선. GOOD_WINDOW_MS 가 캐치 시도/노트 만료 기준(구 CATCH_WINDOW_MS)이다.
 const PERFECT_WINDOW_MS = 150;
-const CATCH_WINDOW_MS = 400;
+const GREAT_WINDOW_MS = 280;
+const GOOD_WINDOW_MS = 400;
 const JUDGMENT_FLASH_MS = 350;
+
 const SCORE_PER_PERFECT = 100;
+const SCORE_PER_GREAT = 70;
+const SCORE_PER_GOOD = 50;
 
 export class CalibrationNotFoundError extends Error {
   constructor() {
@@ -102,6 +109,8 @@ export class RhythmGameEngine {
 
     this.score = 0;
     this.perfectCount = 0;
+    this.greatCount = 0;
+    this.goodCount = 0;
     this.missCount = 0;
 
     this.isPaused = false;
@@ -166,7 +175,7 @@ export class RhythmGameEngine {
 
   _expireNotes(elapsedMs) {
     for (const note of this.notes) {
-      if (!note.judged && elapsedMs - note.targetTimeMs > CATCH_WINDOW_MS) {
+      if (!note.judged && elapsedMs - note.targetTimeMs > GOOD_WINDOW_MS) {
         note.judged = true;
         note.result = "miss";
         note.resultTimeMs = elapsedMs;
@@ -185,7 +194,7 @@ export class RhythmGameEngine {
       (note) =>
         note.lane === this.focusLane &&
         !note.judged &&
-        Math.abs(elapsedMs - note.targetTimeMs) <= CATCH_WINDOW_MS
+        Math.abs(elapsedMs - note.targetTimeMs) <= GOOD_WINDOW_MS
     );
 
     if (candidates.length === 0) {
@@ -205,13 +214,20 @@ export class RhythmGameEngine {
     note.judged = true;
     note.resultTimeMs = elapsedMs;
 
+    // candidates 가 이미 GOOD_WINDOW_MS 이내로 걸러져 있으므로, 여기서 갈리는
+    // 캐치는 항상 perfect/great/good 중 하나다 - miss 는 만료(_expireNotes)로만 나온다.
     if (bestDiff <= PERFECT_WINDOW_MS) {
       note.result = "perfect";
       this.perfectCount += 1;
       this.score += SCORE_PER_PERFECT;
+    } else if (bestDiff <= GREAT_WINDOW_MS) {
+      note.result = "great";
+      this.greatCount += 1;
+      this.score += SCORE_PER_GREAT;
     } else {
-      note.result = "miss";
-      this.missCount += 1;
+      note.result = "good";
+      this.goodCount += 1;
+      this.score += SCORE_PER_GOOD;
     }
 
     this.lastJudgment = { lane: note.lane, result: note.result };
@@ -263,6 +279,8 @@ export class RhythmGameEngine {
       })),
       score: this.score,
       perfect_count: this.perfectCount,
+      great_count: this.greatCount,
+      good_count: this.goodCount,
       miss_count: this.missCount,
       last_judgment: this.lastJudgment,
       remaining: roundTo1(remaining),

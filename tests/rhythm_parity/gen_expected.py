@@ -171,6 +171,7 @@ final = states[-1]
 judged = sum(1 for s in states if s["last_judgment"])
 print(f"기준값 생성: {dest.name}  (frames={len(frames)})")
 print(f"  판정 이벤트 {judged}회, 최종 score={final['score']} "
-      f"perfect={final['perfect_count']} miss={final['miss_count']}")
+      f"perfect={final['perfect_count']} great={final['great_count']} "
+      f"good={final['good_count']} miss={final['miss_count']}")
 if judged == 0:
     print("  경고: 판정이 한 번도 발생하지 않아 검증 가치가 없습니다.")

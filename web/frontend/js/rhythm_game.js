@@ -78,6 +78,8 @@ initRenderer(canvas);
 const resultScoreEl = document.getElementById("result-score");
 const resultComboEl = document.getElementById("result-combo");
 const resultPerfectEl = document.getElementById("result-perfect");
+const resultGreatEl = document.getElementById("result-great");
+const resultGoodEl = document.getElementById("result-good");
 const resultMissEl = document.getElementById("result-miss");
 
 // ─────────────────────────────────────────────────────────────
@@ -336,6 +338,8 @@ function showResult(state) {
   resultScoreEl.textContent = state.score;
   resultComboEl.textContent = getMaxCombo();
   resultPerfectEl.textContent = state.perfect_count;
+  resultGreatEl.textContent = state.great_count;
+  resultGoodEl.textContent = state.good_count;
   resultMissEl.textContent = state.miss_count;
 
   // 세션 쿠키가 same-origin 요청에 자동으로 실리므로 user_id를 따로 보낼 필요가 없다.

@@ -17,10 +17,22 @@ LANES = ("left", "center", "right")
 NOTE_FALL_DURATION_MS = 3000
 NOTE_SPAWN_MIN_INTERVAL_MS = 1600
 NOTE_SPAWN_MAX_INTERVAL_MS = 3000
+
+# 판정 윈도우: 노트의 목표 시각과 블링크 시각의 오차(diff, ms)에 따라
+# perfect/great/good/miss 4단계로 나뉜다. 세 값 모두 그 이하일 때 해당
+# 등급이 되는 누적 경계선이라, PERFECT_WINDOW_MS <= GREAT_WINDOW_MS <=
+# GOOD_WINDOW_MS 순서를 유지해야 한다. GOOD_WINDOW_MS 는 기존 CATCH_WINDOW_MS
+# 를 대체하며(이름만 바뀜, 400ms 그대로), 캐치 시도 가능 범위이자 노트 만료
+# 기준 그대로다 - diff 가 이보다 크면 애초에 캐치 후보에 들지 않고, 캐치를
+# 못 한 채 이 시간이 지나면 만료되어 miss 로 처리된다.
 PERFECT_WINDOW_MS = 150
-CATCH_WINDOW_MS = 400
+GREAT_WINDOW_MS = 280
+GOOD_WINDOW_MS = 400
 JUDGMENT_FLASH_MS = 350
+
 SCORE_PER_PERFECT = 100
+SCORE_PER_GREAT = 70
+SCORE_PER_GOOD = 50
 
 
 class CalibrationNotFoundError(Exception):
@@ -72,6 +84,8 @@ class RhythmGameSession:
 
         self.score = 0
         self.perfect_count = 0
+        self.great_count = 0
+        self.good_count = 0
         self.miss_count = 0
 
         self.is_paused = False
@@ -115,7 +129,7 @@ class RhythmGameSession:
 
     def _expire_notes(self, elapsed_ms):
         for note in self.notes:
-            if not note.judged and elapsed_ms - note.target_time_ms > CATCH_WINDOW_MS:
+            if not note.judged and elapsed_ms - note.target_time_ms > GOOD_WINDOW_MS:
                 note.judged = True
                 note.result = "miss"
                 note.result_time_ms = elapsed_ms
@@ -132,7 +146,7 @@ class RhythmGameSession:
             note for note in self.notes
             if note.lane == self.focus_lane
             and not note.judged
-            and abs(elapsed_ms - note.target_time_ms) <= CATCH_WINDOW_MS
+            and abs(elapsed_ms - note.target_time_ms) <= GOOD_WINDOW_MS
         ]
 
         if not candidates:
@@ -144,13 +158,21 @@ class RhythmGameSession:
         note.judged = True
         note.result_time_ms = elapsed_ms
 
+        # candidates 가 이미 GOOD_WINDOW_MS 이내로 걸러져 있으므로, 여기서
+        # 갈리는 캐치는 항상 perfect/great/good 중 하나다 - miss 는 캐치를
+        # 아예 못 하고 시간이 지나 만료됐을 때만(_expire_notes) 발생한다.
         if diff <= PERFECT_WINDOW_MS:
             note.result = "perfect"
             self.perfect_count += 1
             self.score += SCORE_PER_PERFECT
+        elif diff <= GREAT_WINDOW_MS:
+            note.result = "great"
+            self.great_count += 1
+            self.score += SCORE_PER_GREAT
         else:
-            note.result = "miss"
-            self.miss_count += 1
+            note.result = "good"
+            self.good_count += 1
+            self.score += SCORE_PER_GOOD
 
         self.last_judgment = {"lane": note.lane, "result": note.result}
 
@@ -198,6 +220,8 @@ class RhythmGameSession:
             ],
             "score": self.score,
             "perfect_count": self.perfect_count,
+            "great_count": self.great_count,
+            "good_count": self.good_count,
             "miss_count": self.miss_count,
             "last_judgment": self.last_judgment,
             "remaining": round(remaining, 1),

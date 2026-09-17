@@ -11,9 +11,11 @@
   그대로 재사용된다.
 
   기대하는 상태 모양 (서버 rhythm_game_session.py 와 JS gameEngine.js 가
-  동일하게 만들어낸다):
+  동일하게 만들어낸다). result/last_judgment.result 는
+  "perfect"/"great"/"good"/"miss" 중 하나다:
     { type, paused, focus_lane, notes:[{id,lane,progress,result}],
-      score, perfect_count, miss_count, last_judgment, remaining, finished }
+      score, perfect_count, great_count, good_count, miss_count,
+      last_judgment, remaining, finished }
 
   사용법:
     initRenderer(canvasEl);
@@ -41,7 +43,34 @@ const LANE_COLORS = {
 };
 
 const COLOR_PERFECT = [130, 255, 246];
+const COLOR_GREAT = [154, 255, 130];
+const COLOR_GOOD = [255, 214, 92];
 const COLOR_MISS = [255, 77, 106];
+
+// 판정 등급별 이펙트 강도 - perfect > great > good > miss 순으로 약해진다.
+// score는 UI 표시용이 아니라 rhythm_game_session.py 의 SCORE_PER_* 와 맞춘 값.
+const JUDGMENT_STYLE = {
+  perfect: {
+    color: COLOR_PERFECT, text: "PERFECT", score: 100,
+    particleCount: 28, particleSpeed: 180, spreadAngle: 2.6,
+    shockwaveMax: 480, beam: true, shakeMag: 3, shakeMs: 110,
+  },
+  great: {
+    color: COLOR_GREAT, text: "GREAT", score: 70,
+    particleCount: 20, particleSpeed: 140, spreadAngle: 2.2,
+    shockwaveMax: 420, beam: true, shakeMag: 2, shakeMs: 90,
+  },
+  good: {
+    color: COLOR_GOOD, text: "GOOD", score: 50,
+    particleCount: 13, particleSpeed: 110, spreadAngle: 1.9,
+    shockwaveMax: 360, beam: false, shakeMag: 1.5, shakeMs: 70,
+  },
+  miss: {
+    color: COLOR_MISS, text: "MISS", score: 0,
+    particleCount: 12, particleSpeed: 90, spreadAngle: 1.6,
+    shockwaveMax: 320, beam: false, shakeMag: 5, shakeMs: 90,
+  },
+};
 
 // 원근 강도: 소실점 쪽 폭이 판정선 쪽 폭의 몇 배인지
 const FAR_SCALE = 0.26;
@@ -216,41 +245,39 @@ function spawnHitEffect(lane, result) {
   const laneIndex = LANES.indexOf(lane);
   if (laneIndex < 0) return;
 
+  const style = JUDGMENT_STYLE[result] || JUDGMENT_STYLE.miss;
   const x = laneCenterX(laneIndex, 1, L);
   const y = L.judgeY;
-  const perfect = result === "perfect";
-  const base = perfect ? LANE_COLORS[lane] : COLOR_MISS;
-  const count = perfect ? 28 : 12;
+  const isHit = result !== "miss";
+  const base = isHit ? LANE_COLORS[lane] : COLOR_MISS;
+  const count = style.particleCount;
 
   for (let i = 0; i < count; i++) {
-    const angle = -Math.PI / 2 + (Math.random() - 0.5) * (perfect ? 2.6 : 1.6);
-    const speed = (perfect ? 180 : 90) * (0.35 + Math.random() * 0.95);
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * style.spreadAngle;
+    const speed = style.particleSpeed * (0.35 + Math.random() * 0.95);
     particles.push({
       x: x + (Math.random() - 0.5) * laneUnit(L) * 0.7,
       y,
       vx: Math.cos(angle) * speed + (Math.random() - 0.5) * 90,
       vy: Math.sin(angle) * speed,
       life: 0,
-      maxLife: perfect ? 520 + Math.random() * 380 : 340 + Math.random() * 200,
-      size: (perfect ? 12 : 8) * (0.5 + Math.random()),
+      maxLife: isHit ? 520 + Math.random() * 380 : 340 + Math.random() * 200,
+      size: (isHit ? 12 : 8) * (0.5 + Math.random()),
       color: Math.random() < 0.45 ? [255, 255, 255] : base,
     });
   }
 
-  shockwaves.push({ x, y, life: 0, maxLife: perfect ? 480 : 320, color: perfect ? COLOR_PERFECT : COLOR_MISS });
+  shockwaves.push({ x, y, life: 0, maxLife: style.shockwaveMax, color: style.color });
 
-  if (perfect) {
+  if (style.beam) {
     beams.push({ laneIndex, life: 0, maxLife: 420, color: LANE_COLORS[lane] });
-    shakeUntil = performance.now() + 110;
-    shakeMag = 3;
-  } else {
-    shakeUntil = performance.now() + 90;
-    shakeMag = 5;
   }
+  shakeUntil = performance.now() + style.shakeMs;
+  shakeMag = style.shakeMag;
 
   judgeFx = {
-    text: perfect ? "PERFECT" : "MISS",
-    color: perfect ? COLOR_PERFECT : COLOR_MISS,
+    text: style.text,
+    color: style.color,
     at: performance.now(),
   };
 }
@@ -521,16 +548,18 @@ function drawNotes(notes, nowMs) {
     let alpha = Math.min(1, 0.25 + u * 1.5);
     let color = LANE_COLORS[note.lane];
 
-    if (fx && fx.result === "perfect") {
-      const k = Math.min(1, age / 260);
-      w *= 1 + k * 0.9;
-      h *= 1 + k * 0.5;
-      alpha = (1 - k) * 0.95;
-      color = COLOR_PERFECT;
-    } else if (fx && fx.result === "miss") {
+    if (fx && fx.result === "miss") {
       const k = Math.min(1, age / 320);
       alpha = (1 - k) * 0.7;
       color = COLOR_MISS;
+    } else if (fx && fx.result) {
+      // perfect/great/good: 등급이 높을수록 팝 애니메이션이 크다.
+      const growScale = { perfect: 0.9, great: 0.6, good: 0.35 }[fx.result] ?? 0.35;
+      const k = Math.min(1, age / 260);
+      w *= 1 + k * growScale;
+      h *= 1 + k * growScale * 0.55;
+      alpha = (1 - k) * 0.95;
+      color = JUDGMENT_STYLE[fx.result]?.color ?? COLOR_PERFECT;
     }
 
     if (alpha <= 0.02) return;
@@ -646,8 +675,10 @@ function drawHud(state, now) {
 }
 
 function drawAccuracyGauge(state, pad) {
-  const judged = state.perfect_count + state.miss_count;
-  const acc = judged > 0 ? state.perfect_count / judged : 1;
+  // score 는 perfect=100/great=70/good=50/miss=0 로 매겨지므로, 판정된 노트 수 대비
+  // "만점(전부 perfect) 대비 획득 비율"로 정확도를 정의한다.
+  const judged = state.perfect_count + state.great_count + state.good_count + state.miss_count;
+  const acc = judged > 0 ? state.score / (judged * JUDGMENT_STYLE.perfect.score) : 1;
 
   const w = 8;
   const h = Math.min(viewH * 0.3, 240);
@@ -824,7 +855,7 @@ function applyState(state) {
   // 콤보가 중복으로 올라가지 않는다.
   if (state.last_judgment && !state.paused) {
     const { lane, result } = state.last_judgment;
-    if (result === "perfect") {
+    if (result !== "miss") {
       combo += 1;
       maxCombo = Math.max(maxCombo, combo);
     } else {

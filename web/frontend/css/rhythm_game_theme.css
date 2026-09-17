@@ -156,7 +156,19 @@ body {
   margin-top: 2px;
 }
 
-.result-stat:nth-child(3) .value {
+.result-stat.stat-perfect .value {
+  color: var(--lab-cyan);
+}
+
+.result-stat.stat-great .value {
+  color: #9aff82;
+}
+
+.result-stat.stat-good .value {
+  color: #ffd65c;
+}
+
+.result-stat.stat-miss .value {
   color: #ff7a90;
 }
 

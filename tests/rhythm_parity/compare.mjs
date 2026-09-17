@@ -64,6 +64,8 @@ function compareState(index, got, exp) {
   if (got.focus_lane !== exp.focus_lane) add(`focus_lane ${got.focus_lane} != ${exp.focus_lane}`);
   if (got.score !== exp.score) add(`score ${got.score} != ${exp.score}`);
   if (got.perfect_count !== exp.perfect_count) add(`perfect_count ${got.perfect_count} != ${exp.perfect_count}`);
+  if (got.great_count !== exp.great_count) add(`great_count ${got.great_count} != ${exp.great_count}`);
+  if (got.good_count !== exp.good_count) add(`good_count ${got.good_count} != ${exp.good_count}`);
   if (got.miss_count !== exp.miss_count) add(`miss_count ${got.miss_count} != ${exp.miss_count}`);
   if (got.finished !== exp.finished) add(`finished ${got.finished} != ${exp.finished}`);
 
@@ -128,7 +130,7 @@ const final = expectedStates[expectedStates.length - 1];
 console.log("=== Python vs JS 리듬게임 판정 로직 검증 ===\n");
 console.log(`재생 프레임: ${frames.length} (일시정지 ${pauseAt}~${resumeAt} 프레임 포함)`);
 console.log(`판정 이벤트: ${judgmentCount}회`);
-console.log(`최종 상태 기준값: score=${final.score} perfect=${final.perfect_count} miss=${final.miss_count} finished=${final.finished}`);
+console.log(`최종 상태 기준값: score=${final.score} perfect=${final.perfect_count} great=${final.great_count} good=${final.good_count} miss=${final.miss_count} finished=${final.finished}`);
 console.log("");
 
 if (problems.length === 0) {

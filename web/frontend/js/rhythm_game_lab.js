@@ -53,6 +53,8 @@ initRenderer(canvas);
 const resultScoreEl = document.getElementById("result-score");
 const resultComboEl = document.getElementById("result-combo");
 const resultPerfectEl = document.getElementById("result-perfect");
+const resultGreatEl = document.getElementById("result-great");
+const resultGoodEl = document.getElementById("result-good");
 const resultMissEl = document.getElementById("result-miss");
 
 // ─────────────────────────────────────────────────────────────
@@ -143,6 +145,8 @@ function createDemoDriver() {
   let nextSpawnAt = 700;
   let score = 0;
   let perfectCount = 0;
+  let greatCount = 0;
+  let goodCount = 0;
   let missCount = 0;
   let focus = "center";
   let nextFocusAt = 900;
@@ -172,15 +176,25 @@ function createDemoDriver() {
       if (n.result) return;
       const targetAt = n.spawn + NOTE_FALL_DURATION_MS;
       if (elapsed >= targetAt) {
-        const hit = Math.random() < 0.78; // perfect / miss 이펙트를 둘 다 보여주기 위해
-        n.result = hit ? "perfect" : "miss";
-        n.resultAt = elapsed;
-        if (hit) {
+        // perfect/great/good/miss 이펙트를 골고루 보여주기 위한 가중 랜덤
+        const roll = Math.random();
+        if (roll < 0.45) {
+          n.result = "perfect";
           perfectCount += 1;
           score += 100;
+        } else if (roll < 0.7) {
+          n.result = "great";
+          greatCount += 1;
+          score += 70;
+        } else if (roll < 0.85) {
+          n.result = "good";
+          goodCount += 1;
+          score += 50;
         } else {
+          n.result = "miss";
           missCount += 1;
         }
+        n.resultAt = elapsed;
         lastJudgment = { lane: n.lane, result: n.result };
         focus = n.lane;
       }
@@ -203,6 +217,8 @@ function createDemoDriver() {
       })),
       score,
       perfect_count: perfectCount,
+      great_count: greatCount,
+      good_count: goodCount,
       miss_count: missCount,
       last_judgment: lastJudgment,
       remaining: Math.round(remaining * 10) / 10,
@@ -274,6 +290,8 @@ function showResult(state) {
   resultScoreEl.textContent = state.score;
   if (resultComboEl) resultComboEl.textContent = getMaxCombo();
   if (resultPerfectEl) resultPerfectEl.textContent = state.perfect_count;
+  if (resultGreatEl) resultGreatEl.textContent = state.great_count;
+  if (resultGoodEl) resultGoodEl.textContent = state.good_count;
   if (resultMissEl) resultMissEl.textContent = state.miss_count;
 
   // 세션 쿠키가 same-origin 요청에 자동으로 실리므로 user_id를 따로 보낼 필요가 없다.
