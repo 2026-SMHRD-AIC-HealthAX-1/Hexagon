@@ -709,7 +709,6 @@ input.toggle-switch:disabled {
   background: var(--eye-color);
   color: #fff;
   box-shadow: 0 7px 18px rgba(74, 126, 181, 0.3);
-  font-size: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -720,12 +719,27 @@ input.toggle-switch:disabled {
   filter: brightness(0.92);
 }
 
+.quick-fab-icon {
+  width: 28px;
+  height: 28px;
+}
+
 /* PC처럼 와이드한 화면에서는 퀵메뉴 원 반지름을 2배로 키움 */
 @media (min-width: 851px) {
   .quick-fab {
     width: 128px;
     height: 128px;
-    font-size: 52px;
+  }
+
+  .quick-fab-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .quick-option {
+    width: 128px;
+    box-sizing: border-box;
+    text-align: center;
   }
 }
 
