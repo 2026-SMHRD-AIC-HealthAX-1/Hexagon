@@ -1,0 +1,130 @@
+/*
+  시선 추적 미니게임(S-05) 테마.
+  리듬게임(css/rhythm_game_theme.css)과 같은 네온 연출 문법(글로우 테두리 /
+  어두운 그라디언트 패널 / Orbitron 폰트)을 그대로 쓰되, 메인 색상은
+  리듬게임의 마젠타/보라 보조색 없이 사이트 기본 하늘색 계열 단일 톤으로
+  맞춘다. style.css 뒤에 로드되어 이 페이지의 모달/결과화면만 덮어쓰고,
+  game.html 에서만 link 하므로 다른 페이지에는 영향이 없다.
+*/
+
+:root {
+  --game-bg: #050a12;
+  --game-cyan: #4fd6ff;
+  --game-cyan-dim: #2b8fc9;
+  --game-text: #eaf4ff;
+  --game-dim: #8ba3ba;
+}
+
+body {
+  background: var(--game-bg);
+}
+
+#play-screen {
+  background: var(--game-bg);
+}
+
+/* ---- 공통 네온 패널 ---- */
+
+.neon-modal {
+  background: radial-gradient(circle at 50% 40%, rgba(20, 70, 100, 0.5), rgba(3, 6, 12, 0.92));
+  backdrop-filter: blur(6px);
+}
+
+.neon-modal .modal-box,
+#result-screen .score-card {
+  background: linear-gradient(160deg, rgba(14, 32, 48, 0.95), rgba(6, 10, 18, 0.95));
+  border: 1px solid rgba(79, 214, 255, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(79, 214, 255, 0.12),
+    0 0 34px rgba(79, 214, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: var(--game-text);
+}
+
+.neon-modal .modal-box h2 {
+  color: var(--game-text);
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+.neon-modal .modal-box p {
+  color: var(--game-dim);
+}
+
+/* ---- 버튼 ---- */
+
+.neon-modal button,
+#result-screen button {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(79, 214, 255, 0.4);
+  color: var(--game-text);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.neon-modal button:hover,
+#result-screen button:hover {
+  background: rgba(79, 214, 255, 0.16);
+  box-shadow: 0 0 18px rgba(79, 214, 255, 0.4);
+}
+
+.neon-modal button:active,
+#result-screen button:active {
+  transform: translateY(1px);
+}
+
+.neon-modal button.primary,
+#result-screen button.primary {
+  background: linear-gradient(135deg, var(--game-cyan-dim), var(--game-cyan));
+  border-color: transparent;
+  color: #04141d;
+  box-shadow: 0 0 22px rgba(79, 214, 255, 0.5);
+}
+
+.neon-modal button.primary:hover,
+#result-screen button.primary:hover {
+  box-shadow: 0 0 32px rgba(79, 214, 255, 0.8);
+}
+
+/* ---- 결과 화면 ---- */
+
+#result-screen {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(30, 100, 140, 0.45), transparent 60%),
+    var(--game-bg);
+  color: var(--game-text);
+  gap: 16px;
+}
+
+#result-screen h2 {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 22px;
+  margin: 0;
+  color: var(--game-text);
+}
+
+#result-screen .score-card .label {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--game-dim);
+}
+
+#result-screen .score-card .value {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 52px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 26px rgba(79, 214, 255, 0.85), 0 0 60px rgba(79, 214, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 500px) {
+  #result-screen .score-card .value {
+    font-size: 40px;
+  }
+}

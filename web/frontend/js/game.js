@@ -70,6 +70,13 @@ let regionPoints = null; // 캘리브레이션에서 계산해둔 결과 (재시
 let visionRafId = null;
 let lastDetectAt = 0;
 
+// 게임 단계 연출용 상태 (판정 로직과 무관한 순수 렌더링 상태) - runGame()에서 매판 초기화됨
+let previousScore = 0;
+let previousTargetRect = null; // 방금까지의 타겟 rect (성공 하이라이트를 그 자리에 그리기 위함)
+let displayedProgress = 0; // 화면에 그리는 진행률 - 이탈 시 뚝 끊기지 않도록 별도로 감쇠시킨다
+let lastGameFrameAt = null; // displayedProgress 감쇠용 델타타임 계산
+let successFlash = null; // { rect, startedAt } - 점수 획득 직후 잠깐 표시되는 하이라이트
+
 // ─────────────────────────────────────────────────────────────
 // 캘리브레이션 확인/변환
 // ─────────────────────────────────────────────────────────────
@@ -172,20 +179,157 @@ function drawCalibrationState(state) {
   }
 }
 
+// 9분할 보드를 상시 표시한다 - 시선이 분산되지 않도록 옅게, 다만 게임 테마
+// 색(네온 하늘색)이 느껴질 정도로는 밝게 그린다.
+const GRID_LINE_COLOR = "rgba(120, 210, 255, 0.28)";
+
+function drawGrid() {
+  const cellW = canvas.width / 3;
+  const cellH = canvas.height / 3;
+
+  ctx.save();
+  ctx.strokeStyle = GRID_LINE_COLOR;
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 3; i++) {
+    const x = Math.round(cellW * i) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+
+    const y = Math.round(cellH * i) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// 타겟 영역을 응시한 시간에 비례해 중앙에서부터 네온 하늘색 원이 번져나가며
+// 채워진다. 리듬게임 테마(css/rhythm_game_theme.css)와 같은 글로우 문법을
+// 쓰되, 메인 색은 그 테마의 마젠타/보라 없이 사이트 기본 하늘색 계열 단일
+// 톤(css/game_theme.css 의 --game-cyan)으로 맞춘다.
+const NEON_CYAN = "#4fd6ff";
+const PROGRESS_FILL_COLOR = "rgba(79, 214, 255, 0.55)";
+// 시선이 타겟을 벗어나면 판정은 즉시 0으로 리셋되지만, 화면에는 ~150ms에
+// 걸쳐 줄어들게 그려서 "놓쳤다"는 게 뚝 끊기지 않고 자연스럽게 전달되게 한다.
+const PROGRESS_DECAY_PER_SEC = 1 / 0.15;
+
+function drawTargetProgress(rect, progress) {
+  const [x1, y1, x2, y2] = rect;
+
+  ctx.save();
+  ctx.strokeStyle = NEON_CYAN;
+  ctx.lineWidth = 4;
+  ctx.shadowColor = NEON_CYAN;
+  ctx.shadowBlur = 18;
+  ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+  ctx.restore();
+
+  if (progress <= 0.001) return;
+
+  const cx = (x1 + x2) / 2;
+  const cy = (y1 + y2) / 2;
+  const maxRadius = Math.hypot(x2 - x1, y2 - y1) / 2; // progress===1일 때 모서리까지 덮도록
+  const radius = maxRadius * progress;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x1, y1, x2 - x1, y2 - y1);
+  ctx.clip();
+
+  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  gradient.addColorStop(0, "rgba(224, 250, 255, 0.9)");
+  gradient.addColorStop(0.7, PROGRESS_FILL_COLOR);
+  gradient.addColorStop(1, "rgba(79, 214, 255, 0.15)");
+
+  ctx.fillStyle = gradient;
+  ctx.shadowColor = NEON_CYAN;
+  ctx.shadowBlur = 24;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// 점수를 획득한 순간, 방금까지의 타겟 자리에 잠깐 네온 플래시 + 확산되는 테두리를 보여준다.
+const SUCCESS_FLASH_MS = 350;
+
+function drawSuccessFlash(flash, now) {
+  const t = (now - flash.startedAt) / SUCCESS_FLASH_MS;
+  if (t >= 1) return false;
+
+  const [x1, y1, x2, y2] = flash.rect;
+  const fade = 1 - t;
+  const expand = 14 * t;
+
+  ctx.save();
+  ctx.globalAlpha = fade;
+  ctx.shadowColor = NEON_CYAN;
+  ctx.shadowBlur = 30;
+  ctx.fillStyle = "#eafcff";
+  ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+  ctx.strokeStyle = NEON_CYAN;
+  ctx.lineWidth = 5;
+  ctx.strokeRect(x1 - expand, y1 - expand, x2 - x1 + expand * 2, y2 - y1 + expand * 2);
+  ctx.restore();
+  return true;
+}
+
+// 점수/남은시간 HUD - 리듬게임 결과화면과 같은 Orbitron 폰트 + 네온 글로우.
+function drawHud(state) {
+  ctx.save();
+  ctx.font = "700 24px Orbitron, sans-serif";
+  ctx.fillStyle = "#eafcff";
+  ctx.shadowColor = NEON_CYAN;
+  ctx.shadowBlur = 14;
+
+  ctx.textAlign = "left";
+  ctx.fillText(`Score: ${state.score}`, 30, 50);
+
+  // 폰트가 기존 sans-serif보다 넓어 고정 오프셋이 아닌 오른쪽 정렬로 계산.
+  ctx.textAlign = "right";
+  ctx.fillText(`Time: ${state.remaining.toFixed(1)}s`, canvas.width - 30, 50);
+  ctx.restore();
+}
+
 function drawGameState(state) {
+  const now = performance.now();
+  const dt = lastGameFrameAt === null ? 0 : (now - lastGameFrameAt) / 1000;
+  lastGameFrameAt = now;
+
   drawBackground();
+  drawGrid();
+
+  if (state.score > previousScore && previousTargetRect) {
+    successFlash = { rect: previousTargetRect, startedAt: now };
+  }
+  previousScore = state.score;
+
+  // gameEngine.game 은 GazeGame 인스턴스 그대로 - 판정에 쓰는 gazeStartTime을
+  // 읽기만 해서 진행률을 계산한다 (GazeGameEngine.process()의 반환값/게임
+  // 로직은 전혀 건드리지 않음).
+  const gaze = gameEngine.game;
+  let targetProgress = 0;
+  if (gaze.gazeStartTime !== null) {
+    targetProgress = Math.min(1, (gaze.now() - gaze.gazeStartTime) / gaze.requiredGazeTime);
+  }
+  displayedProgress =
+    targetProgress > displayedProgress
+      ? targetProgress
+      : Math.max(targetProgress, displayedProgress - PROGRESS_DECAY_PER_SEC * dt);
 
   if (state.rect) {
-    const [x1, y1, x2, y2] = state.rect;
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 5;
-    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+    drawTargetProgress(state.rect, displayedProgress);
+    previousTargetRect = state.rect;
   }
 
-  ctx.fillStyle = "white";
-  ctx.font = "28px sans-serif";
-  ctx.fillText(`Score: ${state.score}`, 30, 50);
-  ctx.fillText(`Time: ${state.remaining.toFixed(1)}s`, canvas.width - 220, 50);
+  if (successFlash && !drawSuccessFlash(successFlash, now)) {
+    successFlash = null;
+  }
+
+  drawHud(state);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -306,6 +450,13 @@ function runGame() {
     computeGaze,
     smoother: new GazeSmoother(0.2),
   });
+
+  // 재시도("다시하기") 시 이전 판의 연출 상태가 남아있지 않도록 초기화.
+  previousScore = 0;
+  previousTargetRect = null;
+  displayedProgress = 0;
+  lastGameFrameAt = null;
+  successFlash = null;
 
   startVisionLoop();
 }
