@@ -117,7 +117,6 @@ async function ensureNotificationPermission() {
 
 const toggle = document.getElementById("blink-toggle");
 const statusLabel = document.getElementById("blink-status-text");
-const statusEl = document.getElementById("blink-status");
 const countEl = document.getElementById("blink-count");
 const recentCountEl = document.getElementById("blink-recent-count");
 const blinkAlertEl = document.getElementById("blink-alert");
@@ -207,7 +206,6 @@ function handleBlinkOpen() {
 }
 
 function handleBlinkMessage(state) {
-  statusEl.textContent = state.is_blinking ? "감김" : "뜸";
   countEl.textContent = state.blink_count;
   latestBlinkCount = state.blink_count;
 }
@@ -347,7 +345,6 @@ function stopBlinkMonitoring() {
   }
   hideBlinkAlert();
 
-  statusEl.textContent = "-";
   countEl.textContent = "0";
   recentCountEl.textContent = "-";
   statusLabel.textContent = "꺼짐";

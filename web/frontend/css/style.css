@@ -695,11 +695,19 @@ input.toggle-switch:disabled {
   gap: 10px;
 }
 
+/* "사진 선택"/"사진 촬영"을 하나로 합친 카드 - 테두리/배경/그림자/둥근 모서리는
+   이 컨테이너가 갖고, 안의 두 버튼(.quick-option)은 그 안에서 각자 클릭되는
+   투명한 영역일 뿐이다. overflow: hidden으로 버튼의 hover 배경이 카드의 둥근
+   모서리 밖으로 삐져나오지 않게 한다. */
 .quick-menu {
   display: none;
   flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
+  align-items: stretch;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: 0 5px 15px rgba(40, 70, 100, 0.1);
+  overflow: hidden;
 }
 
 .quick-menu.show {
@@ -707,13 +715,21 @@ input.toggle-switch:disabled {
 }
 
 .quick-option {
-  border: 2px solid var(--line);
-  background: var(--surface);
-  border-radius: 14px;
+  border: 0;
+  background: none;
   padding: 13px 18px;
   font-size: 14px;
-  box-shadow: 0 5px 15px rgba(40, 70, 100, 0.1);
   white-space: nowrap;
+  cursor: pointer;
+}
+
+/* 두 버튼 사이 구분선 */
+.quick-option + .quick-option {
+  border-top: 1px solid var(--line);
+}
+
+.quick-option:hover {
+  background: var(--blue-light);
 }
 
 .quick-fab {
@@ -742,11 +758,12 @@ input.toggle-switch:disabled {
   object-fit: contain;
 }
 
-/* 메뉴가 열려 있는 동안에는 FAB 자체가 "닫기" 버튼이 된다 */
+/* 메뉴가 열려 있는 동안에는 FAB 자체가 "닫기" 버튼이 된다 - 카메라 아이콘과
+   크기가 항상 같도록 .quick-fab-icon과 동일한 width/height 값을 쓴다 */
 .quick-fab-close {
   display: none;
-  font-size: 28px;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
 }
 
 .quick-fab.is-open .quick-fab-icon {
@@ -757,11 +774,11 @@ input.toggle-switch:disabled {
   display: block;
 }
 
-/* PC처럼 와이드한 화면에서는 퀵메뉴 원 반지름을 2배, 메뉴 버튼도 그에 맞게 확대 */
+/* PC처럼 와이드한 화면에서는 퀵메뉴 원을 조금 더 키우고, 메뉴 버튼도 그에 맞게 확대 */
 @media (min-width: 851px) {
   .quick-fab {
-    width: 128px;
-    height: 128px;
+    width: 90px;
+    height: 90px;
   }
 
   .quick-fab-icon {
@@ -770,7 +787,8 @@ input.toggle-switch:disabled {
   }
 
   .quick-fab-close {
-    font-size: 56px;
+    width: 34px;
+    height: 34px;
   }
 
   .quick-option {
