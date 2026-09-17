@@ -117,7 +117,7 @@ function renderHistoryList(container, category, records) {
     .join("");
 
   const checkboxHeader = deleteMode
-    ? `<th class="history-checkbox-col"><label class="history-select-all">전체 선택<input type="checkbox" id="history-select-all-checkbox"></label></th>`
+    ? `<th class="history-checkbox-col"><label class="history-select-all"><span class="history-select-all-text">전체<br>선택</span><input type="checkbox" id="history-select-all-checkbox"></label></th>`
     : "";
 
   container.innerHTML = `
