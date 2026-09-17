@@ -4,7 +4,7 @@
   대응 관계:
       Calibration(width, height)  -> new Calibration(width, height, now)
       calibration_session.py 의 CalibrationSession.process() 타이밍 로직
-      (0.5~3.8s 구간 샘플 수집, 4.0s 에 다음 포인트) -> CalibrationEngine.process()
+      (0.3~2.8s 구간 샘플 수집, 3.0s 에 다음 포인트) -> CalibrationEngine.process()
 
   DB 저장(db.save_calibration)은 여기서 하지 않는다 - 서버판은 완료 시
   세션이 직접 DB에 썼지만, 여기서는 계산이 브라우저에서 끝나므로 호출부가
@@ -17,9 +17,9 @@
   (Python time.time() 과 같은 "초" 단위)을 기본값으로 쓴다.
 */
 
-const SAMPLE_WINDOW_START_SEC = 0.5;
-const SAMPLE_WINDOW_END_SEC = 3.8;
-const POINT_ADVANCE_SEC = 4.0;
+const SAMPLE_WINDOW_START_SEC = 0.3;
+const SAMPLE_WINDOW_END_SEC = 2.8;
+const POINT_ADVANCE_SEC = 3.0;
 
 export class Calibration {
   constructor(width, height, now) {

@@ -22,10 +22,10 @@ class CalibrationSession:
         if point is not None:
             elapsed = time.time() - self.calibration.start_time
 
-            if 0.5 <= elapsed < 3.8:
+            if 0.3 <= elapsed < 2.8:
                 self.calibration.add_sample(gaze_x, gaze_y)
 
-            if elapsed >= 4.0:
+            if elapsed >= 3.0:
                 self.calibration.next_point()
 
         finished = self.calibration.is_finished()
