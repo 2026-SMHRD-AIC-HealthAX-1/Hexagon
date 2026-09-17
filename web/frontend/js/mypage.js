@@ -60,6 +60,7 @@ const HISTORY_VIEWS = ["list", "trend"];
 
 let currentCategory = HISTORY_CATEGORIES[0]; // 항상 가장 왼쪽 탭이 기본값
 let currentView = HISTORY_VIEWS[0];
+let deleteMode = false; // "기록 삭제" 버튼으로 켜짐 - 상위 탭을 옮겨도 유지된다.
 const historyCache = new Map(); // category -> records (지연 로드 + 캐시)
 
 // YYYY-MM-DD / HH:MM (요청된 표시 형식) - 브라우저 로컬 시각 기준.
@@ -101,16 +102,23 @@ function renderHistoryList(container, category, records) {
   }
 
   // 백엔드가 이미 최신순(analyzed_at/played_at DESC)으로 정렬해 내려준다.
+  // 삭제 모드일 때만 각 행에 체크박스 열을 붙인다 - 최근 기록 추이 탭에는
+  // 이 함수 자체가 호출되지 않으므로 선택 삭제는 누적 기록 탭에만 적용된다.
   const rows = records
     .map(
       (record) => `
         <tr>
           <td>${formatHistoryValue(category, record)}</td>
-          <td>${formatDateTime(historyTimestamp(category, record))}</td>
+          <td class="history-date-col">${formatDateTime(historyTimestamp(category, record))}</td>
+          ${deleteMode ? `<td class="history-checkbox-col"><input type="checkbox" class="history-row-checkbox" data-id="${record.id}"></td>` : ""}
         </tr>
       `,
     )
     .join("");
+
+  const checkboxHeader = deleteMode
+    ? `<th class="history-checkbox-col"><label class="history-select-all">전체 선택<input type="checkbox" id="history-select-all-checkbox"></label></th>`
+    : "";
 
   container.innerHTML = `
     <table class="history-table">
@@ -118,11 +126,22 @@ function renderHistoryList(container, category, records) {
         <tr>
           <th>${historyValueLabel(category)}</th>
           <th>측정 일시</th>
+          ${checkboxHeader}
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>
   `;
+
+  if (deleteMode) {
+    const selectAll = document.getElementById("history-select-all-checkbox");
+    const rowCheckboxes = container.querySelectorAll(".history-row-checkbox");
+    selectAll.addEventListener("change", () => {
+      rowCheckboxes.forEach((checkbox) => {
+        checkbox.checked = selectAll.checked;
+      });
+    });
+  }
 }
 
 // ---- 최근 기록 추이 (꺾은선 그래프) ----
@@ -324,32 +343,59 @@ secondaryTabButtons.forEach((button) => {
   });
 });
 
-const DELETE_CONFIRM_MESSAGE =
-  "해당 정보를 삭제할 경우 눈 건강 요약 정보의 정확도에 영향이 있을 수 있습니다. 그래도 삭제할까요?";
+// ---- 기록 삭제 (선택 삭제) ----
+//
+// "기록 삭제" 한 번 누르면 안내 문구 동의 후 삭제 모드로 들어간다 - 이때부터
+// 버튼이 "삭제"(붉은 버튼)로 바뀌고, 누적 기록 탭의 테이블에 체크박스 열이
+// 붙는다. 삭제 모드는 상위 탭(카테고리/뷰)을 옮겨도 풀리지 않는 전역 상태다
+// (deleteMode 변수 하나로 관리 - renderHistoryList()가 매번 그 값을 참고해
+// 체크박스를 넣을지 정한다).
+const DELETE_MODE_CONFIRM_MESSAGE =
+  "기록의 일부 또는 전체를 삭제할 경우\n눈 건강 요약 정보 제공에 영향이 있습니다.\n그럼에도 삭제 모드로 진입하시겠습니까?";
 
-async function handleDelete(button, endpoint, affectedCategories) {
-  if (!confirm(DELETE_CONFIRM_MESSAGE)) return;
+const deleteBtn = document.getElementById("delete-records-btn");
 
-  button.disabled = true;
+function updateDeleteButtonUI() {
+  deleteBtn.textContent = deleteMode ? "삭제" : "기록 삭제";
+  deleteBtn.classList.toggle("delete-mode-active", deleteMode);
+}
+
+async function executeSelectedDelete() {
+  const ids = Array.from(document.querySelectorAll(".history-row-checkbox:checked")).map((checkbox) =>
+    Number(checkbox.dataset.id),
+  );
+
+  if (!ids.length) {
+    alert("선택된 기록이 없습니다.");
+    return;
+  }
+
+  deleteBtn.disabled = true;
   try {
-    const response = await fetch(endpoint, { method: "DELETE" });
+    const response = await fetch("/api/mypage/history", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category: currentCategory, ids }),
+    });
     if (!response.ok) throw new Error();
-    affectedCategories.forEach((category) => historyCache.delete(category));
-    await render();
-    await renderHistoryContent();
+    // 요구사항대로 삭제 후 바로 새로고침 - 요약 패널/기록 캐시를 따로 갱신할 필요가 없다.
+    location.reload();
   } catch {
     alert("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
-  } finally {
-    button.disabled = false;
+    deleteBtn.disabled = false;
   }
 }
 
-document.getElementById("delete-analysis-btn").addEventListener("click", (event) => {
-  handleDelete(event.currentTarget, "/api/analysis-results", ["cataract", "redness"]);
-});
+deleteBtn.addEventListener("click", () => {
+  if (!deleteMode) {
+    if (!confirm(DELETE_MODE_CONFIRM_MESSAGE)) return;
+    deleteMode = true;
+    updateDeleteButtonUI();
+    renderHistoryContent();
+    return;
+  }
 
-document.getElementById("delete-gaze-records-btn").addEventListener("click", (event) => {
-  handleDelete(event.currentTarget, "/api/game-records/gaze", ["gaze"]);
+  executeSelectedDelete();
 });
 
 document.getElementById("logout-btn").addEventListener("click", async () => {

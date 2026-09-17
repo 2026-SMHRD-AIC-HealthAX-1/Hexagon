@@ -29,29 +29,17 @@ async def post_blink_alert(user_id: int = Depends(get_current_user_id)):
     return {"ok": True}
 
 
-@router.delete("/api/analysis-results")
-async def delete_analysis_results(user_id: int = Depends(get_current_user_id)):
-    # 마이페이지의 "백내장·충혈도 측정 기록 삭제" 버튼 - 해당 사용자 것만 지운다
-    # (session에서 나온 user_id로 WHERE 절이 걸리므로 다른 사용자 데이터는 손댈 수 없음).
-    db.delete_analysis_results(user_id)
-    return {"ok": True}
-
-
-@router.delete("/api/game-records/gaze")
-async def delete_gaze_game_records(user_id: int = Depends(get_current_user_id)):
-    # 마이페이지의 "시선 추적 게임 기록 삭제" 버튼 - 리듬게임 기록은 건드리지 않는다.
-    db.delete_game_records(user_id, db.GAME_TYPE_GAZE)
-    return {"ok": True}
-
-
 def _serialize_game_record(record):
-    return {"score": record["score"], "played_at": record["played_at"]} if record else None
+    if not record:
+        return None
+    return {"id": record["game_record_id"], "score": record["score"], "played_at": record["played_at"]}
 
 
 def _serialize_cataract_risk(analysis):
     if not analysis:
         return None
     return {
+        "id": analysis["analysis_id"],
         "prob": analysis["cataract_prob"],
         "label": classify_risk(analysis["cataract_prob"]),
         "analyzed_at": analysis["analyzed_at"],
@@ -61,7 +49,7 @@ def _serialize_cataract_risk(analysis):
 def _serialize_redness(analysis):
     if not analysis:
         return None
-    return {"ratio": analysis["redness_ratio"], "analyzed_at": analysis["analyzed_at"]}
+    return {"id": analysis["analysis_id"], "ratio": analysis["redness_ratio"], "analyzed_at": analysis["analyzed_at"]}
 
 
 # 눈 건강 요약 배너(눈 아이콘, js/eyeStatus.js)용 - 가장 최근 측정 1건만 보는
@@ -136,3 +124,24 @@ async def get_mypage_history(category: str, user_id: int = Depends(get_current_u
         raise HTTPException(status_code=400, detail="invalid category")
 
     return {"records": records}
+
+
+class HistoryDeleteRequest(BaseModel):
+    category: str
+    ids: list[int]
+
+
+# 마이페이지 누적 기록 탭의 "삭제 모드" - 체크박스로 고른 레코드의 id만 지운다.
+# cataract/redness는 같은 analysis_results 행의 서로 다른 컬럼이라 선택한 id는
+# 어느 탭에서 지우든 그 행 전체(백내장 확률 + 충혈도)를 함께 지운다 - 컬럼
+# 하나만 지우는 방법은 없다(DB 스키마 주석 참고).
+@router.delete("/api/mypage/history")
+async def delete_mypage_history(request: HistoryDeleteRequest, user_id: int = Depends(get_current_user_id)):
+    if request.category in ("cataract", "redness"):
+        db.delete_analysis_results_by_ids(user_id, request.ids)
+    elif request.category in (db.GAME_TYPE_GAZE, db.GAME_TYPE_RHYTHM):
+        db.delete_game_records_by_ids(user_id, request.category, request.ids)
+    else:
+        raise HTTPException(status_code=400, detail="invalid category")
+
+    return {"ok": True}

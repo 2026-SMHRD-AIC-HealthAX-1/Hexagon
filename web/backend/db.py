@@ -333,25 +333,36 @@ def get_game_history(user_id, game_type):
         conn.close()
 
 
-def delete_analysis_results(user_id):
-    """마이페이지의 "백내장/충혈도 기록 삭제" 버튼 - 해당 사용자의 analysis_results 전체 삭제."""
+def delete_analysis_results_by_ids(user_id, ids):
+    """마이페이지 누적 기록 탭의 선택 삭제(백내장/충혈도) - 같은 analysis_results
+    행의 서로 다른 컬럼일 뿐이라, 어느 탭에서 선택하든 행 단위로 함께 지워진다."""
+    if not ids:
+        return
     conn = _connect()
     try:
         with conn.cursor() as cursor:
-            cursor.execute("DELETE FROM analysis_results WHERE user_id = %s", (user_id,))
+            placeholders = ",".join(["%s"] * len(ids))
+            cursor.execute(
+                f"DELETE FROM analysis_results WHERE user_id = %s AND analysis_id IN ({placeholders})",
+                (user_id, *ids),
+            )
         conn.commit()
     finally:
         conn.close()
 
 
-def delete_game_records(user_id, game_type):
-    """마이페이지의 게임 기록 삭제 버튼 - game_type 하나만 지운다 (예: 시선 추적만, 리듬은 유지)."""
+def delete_game_records_by_ids(user_id, game_type, ids):
+    """마이페이지 누적 기록 탭의 선택 삭제(미니게임/리듬게임) - game_type도 같이
+    검사해서 다른 게임 종류의 id가 섞여 들어와도 지워지지 않게 한다."""
+    if not ids:
+        return
     conn = _connect()
     try:
         with conn.cursor() as cursor:
+            placeholders = ",".join(["%s"] * len(ids))
             cursor.execute(
-                "DELETE FROM game_records WHERE user_id = %s AND game_type = %s",
-                (user_id, game_type),
+                f"DELETE FROM game_records WHERE user_id = %s AND game_type = %s AND game_record_id IN ({placeholders})",
+                (user_id, game_type, *ids),
             )
         conn.commit()
     finally:
