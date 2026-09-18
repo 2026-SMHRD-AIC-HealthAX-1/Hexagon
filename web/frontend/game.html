@@ -31,7 +31,7 @@
 <body>
 
 <div id="consent-modal" class="modal hidden">
-  <div class="modal-box wide-modal">
+  <div class="modal-box wide-modal modal-box-xl">
     <div class="eyebrow">EYE SHOT</div>
     <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
     <p>
@@ -46,7 +46,7 @@
 </div>
 
 <div id="loading-modal" class="modal hidden">
-  <div class="modal-box">
+  <div class="modal-box modal-box-xl">
     <div class="eyebrow">LOADING</div>
     <h2 id="loading-title">준비 중입니다</h2>
     <p id="loading-detail">잠시만 기다려주세요.</p>
@@ -54,7 +54,7 @@
 </div>
 
 <div id="no-calibration-modal" class="modal hidden">
-  <div class="modal-box">
+  <div class="modal-box modal-box-xl">
     <div class="eyebrow">CALIBRATION</div>
     <h2>캘리브레이션 데이터가 없습니다</h2>
     <p>캘리브레이션을 진행해주세요.</p>
@@ -65,7 +65,7 @@
 </div>
 
 <div id="calibration-choice-modal" class="modal hidden">
-  <div class="modal-box">
+  <div class="modal-box modal-box-xl">
     <div class="eyebrow">CALIBRATION</div>
     <h2>기존 캘리브레이션 데이터를 기반으로<br>게임을 진행할까요?</h2>
     <div class="modal-actions">
@@ -76,12 +76,12 @@
 </div>
 
 <div id="calibration-guide-modal" class="modal hidden">
-  <div class="modal-box">
+  <div class="modal-box modal-box-xl">
     <div class="eyebrow">CALIBRATION</div>
     <h2>캘리브레이션 안내</h2>
     <p>
-      화면에 나타나는 9개의 점을 순서대로 바라봐 주세요. 실제 게임을 할 때와
-      같은 자세를 유지한 채 편안하게 응시해 주세요.
+      화면에 나타나는 9개의 점을 순서대로 바라봐 주세요.<br>
+      실제 게임을 할 때와 같은 자세를 유지한 채 편안하게 응시해 주세요.
     </p>
     <div class="modal-actions">
       <button id="calibration-guide-confirm" class="primary" type="button">확인하고 시작하기</button>
@@ -90,13 +90,48 @@
 </div>
 
 <div id="game-guide-modal" class="modal hidden">
-  <div class="modal-box">
+  <div class="modal-box modal-box-xl">
     <div class="eyebrow">GUIDE</div>
     <h2>게임 방법 안내</h2>
+    <div class="guide-visual">
+      <div class="guide-visual-item is-good">
+        <svg viewBox="0 -12 100 112" aria-hidden="true">
+          <defs>
+            <radialGradient id="moleGoodGrad" cx="35%" cy="25%" r="75%">
+              <stop offset="0%" stop-color="#ffe9a8"/>
+              <stop offset="100%" stop-color="#8a5a2b"/>
+            </radialGradient>
+          </defs>
+          <path d="M50,8 C74,8 88,28 88,46 C88,66 72,90 64,90 L36,90 C28,90 12,66 12,46 C12,28 26,8 50,8 Z" fill="url(#moleGoodGrad)" stroke="#3a2412" stroke-width="3"/>
+          <circle cx="38" cy="46" r="6" fill="#1a1108"/>
+          <circle cx="62" cy="46" r="6" fill="#1a1108"/>
+          <path d="M32,64 Q41,72 50,64 Q59,72 68,64" fill="none" stroke="#2b1a0e" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <div class="guide-visual-label">일반 두더지<span class="guide-visual-sub">바라보고 깜빡여 타격 · +점수</span></div>
+      </div>
+      <div class="guide-visual-item is-bad">
+        <svg viewBox="0 -12 100 112" aria-hidden="true">
+          <defs>
+            <radialGradient id="moleBadGrad" cx="35%" cy="25%" r="75%">
+              <stop offset="0%" stop-color="#c9a6ff"/>
+              <stop offset="100%" stop-color="#3a2b52"/>
+            </radialGradient>
+          </defs>
+          <path d="M50,8 C74,8 88,28 88,46 C88,66 72,90 64,90 L36,90 C28,90 12,66 12,46 C12,28 26,8 50,8 Z" fill="url(#moleBadGrad)" stroke="#2a1840" stroke-width="3"/>
+          <path d="M33,40 L43,50 M43,40 L33,50" stroke="#ff5c5c" stroke-width="4" stroke-linecap="round"/>
+          <path d="M57,40 L67,50 M67,40 L57,50" stroke="#ff5c5c" stroke-width="4" stroke-linecap="round"/>
+          <path d="M50,8 Q59,2 57,-4" fill="none" stroke="#e8d9b8" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="57" cy="-4" r="6" fill="#ffcf4d"/>
+        </svg>
+        <div class="guide-visual-label">폭탄 두더지<span class="guide-visual-sub">피하세요 · 타격하면 -점수</span></div>
+      </div>
+    </div>
     <p>
-      고개는 최대한 고정한 채로 진행해 주세요. 화면은 좌/중/우 3구역으로
-      나뉘어 있습니다. 두더지가 나타난 구역을 바라보며 눈을 깜빡여
-      타격하세요. 폭탄 두더지(어두운 색)를 때리면 점수가 깎이니 피해주세요!
+      고개는 최대한 고정한 채로 진행해 주세요.<br>
+      화면은 좌/중/우 3구역으로 나뉘어 있습니다.<br>
+      두더지가 나타난 구역을 바라보며 눈을 깜빡여 타격하세요.<br>
+      위 그림처럼 심지가 달린 어두운 색 폭탄 두더지를 때리면 <br>
+      점수가 깎이니 피해주세요!
     </p>
     <div class="modal-actions">
       <button id="game-guide-confirm" class="primary" type="button">확인하고 시작하기</button>
@@ -105,7 +140,7 @@
 </div>
 
 <div id="play-screen" class="hidden">
-  <div class="hud">
+  <div id="hud" class="hud hidden">
     <div class="hud-item">
       <span class="hud-label">SCORE</span>
       <span id="hud-score" class="hud-value">0</span>

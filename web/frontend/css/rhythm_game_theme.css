@@ -60,6 +60,108 @@ body {
   margin-bottom: 10px;
 }
 
+/* 게임 진입 시 나오는 모든 안내창(웹캠 동의/로딩/캘리브레이션 안내/게임 가이드) -
+   기본 모달(360px, 텍스트 13~19px)의 약 2배 크기로 확대. 결과 화면(#result-screen)은
+   진입 흐름이 아니라서 대상에서 제외. wide-modal(웹캠 동의)은 원래도 더 넓었으므로
+   그만큼 더 넓게(880px) 키운다.
+   .neon-modal .modal-box h2 { font-size: 19px }(specificity 0,2,1)보다 이겨야 해서
+   .modal-box-xl 단독이 아니라 .modal-box.modal-box-xl 로 명시도를 맞춘다. */
+.modal-box.modal-box-xl {
+  max-width: min(720px, calc(100vw - 32px));
+  padding: 56px 48px;
+}
+
+.modal-box.modal-box-xl.wide-modal {
+  max-width: min(880px, calc(100vw - 32px));
+}
+
+.modal-box.modal-box-xl h2 {
+  font-size: 38px;
+}
+
+.modal-box.modal-box-xl p {
+  font-size: 28px;
+  line-height: 1.6;
+}
+
+.modal-box.modal-box-xl .modal-actions button {
+  font-size: 18px;
+  padding: 14px 30px;
+}
+
+.guide-visual-rhythm {
+  margin: 8px 0 26px;
+}
+
+.guide-timing-diagram {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin: 4px auto 10px;
+}
+
+.guide-timing-caption {
+  font-size: 18px !important;
+  line-height: 1.5 !important;
+  color: var(--lab-dim);
+  margin: 0 0 14px !important;
+}
+
+.guide-timing-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--lab-text);
+}
+
+.tl-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tl-item::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--tl-color);
+  box-shadow: 0 0 8px var(--tl-color);
+  flex-shrink: 0;
+}
+
+.tl-item b {
+  font-size: 18px;
+}
+
+@media (max-width: 500px) {
+  .modal-box.modal-box-xl {
+    padding: 36px 24px;
+  }
+
+  .modal-box.modal-box-xl h2 {
+    font-size: 28px;
+  }
+
+  .modal-box.modal-box-xl p {
+    font-size: 20px;
+  }
+
+  .guide-timing-caption {
+    font-size: 15px !important;
+  }
+
+  .guide-timing-legend {
+    font-size: 13px;
+    gap: 12px;
+  }
+}
+
 /* ---- 버튼 ---- */
 
 .neon-modal button,

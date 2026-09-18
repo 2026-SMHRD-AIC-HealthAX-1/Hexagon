@@ -84,6 +84,7 @@ const resultScreen = document.getElementById("result-screen");
 const canvas = document.getElementById("display");
 const ctx = canvas.getContext("2d");
 
+const hudEl = document.getElementById("hud");
 const hudScoreEl = document.getElementById("hud-score");
 const hudComboEl = document.getElementById("hud-combo");
 const hudTimerEl = document.getElementById("hud-timer");
@@ -981,6 +982,10 @@ function drawCalibrationState(state) {
 function startCalibrationEngine() {
   resizeCanvasToWindow();
   playScreen.classList.remove("hidden");
+  // 캘리브레이션 화면도 play-screen(캔버스+HUD)을 그대로 재사용하는데,
+  // HUD 는 실제 게임 점수판이라 캘리브레이션 중에는 숨겨야 한다 - 안 그러면
+  // 아직 시작하지 않은 게임의 0/0/45 스코어보드가 캘리브레이션 화면 위에 겹쳐 보인다.
+  hudEl.classList.add("hidden");
 
   calibrationEngine = new CalibrationEngine(canvas.width, canvas.height, {
     computeGaze,
@@ -1146,6 +1151,7 @@ async function startGame() {
 function runGame() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  hudEl.classList.remove("hidden");
 
   particles = [];
   floatingTexts = [];
