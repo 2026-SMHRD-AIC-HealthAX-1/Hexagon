@@ -12,7 +12,11 @@
 
   computeGaze/smoother 는 (js/rhythm/gameEngine.js 와 마찬가지로) vision/gaze.js
   를 직접 import 하지 않고 deps 로 주입받는다 - 판정 로직을 시선 계산과
-  분리해두면 tests/gaze_parity 에서 순수 로직만 결정론적으로 재현할 수 있다.
+  분리해두면 순수 로직만 결정론적으로 재현할 수 있다(원래 이 방식으로
+  tests/gaze_parity 가 검증했으나, 그 테스트는 두더지 사냥 리워크 이후
+  gaze/gameEngine.js 와 함께 2026-09-18에 삭제됐다 - 오늘은 이 주입점을
+  쓰는 자동화 테스트가 없지만, game.js/rhythm_game.js 양쪽이 이 클래스를
+  그대로 재사용하므로 구조는 유지한다).
   now 역시 같은 이유의 주입점이며, 실제 실행에서는 performance.now()/1000
   (Python time.time() 과 같은 "초" 단위)을 기본값으로 쓴다.
 */
@@ -77,7 +81,8 @@ export class Calibration {
  * @param {{computeGaze:Function, smoother:object, now?:Function}} deps
  *   computeGaze/smoother 는 필수 - 실제 실행에서는 호출부(js/game.js)가
  *   vision/gaze.js 의 computeGaze 와 new GazeSmoother(0.2) 를 넘긴다.
- *   now 는 tests/gaze_parity 용 주입점, 기본값은 performance.now()/1000.
+ *   now 는 결정론적 테스트를 위한 주입점(현재는 이를 실제로 쓰는 테스트가 없음),
+ *   기본값은 performance.now()/1000.
  */
 export class CalibrationEngine {
   constructor(width, height, deps) {
