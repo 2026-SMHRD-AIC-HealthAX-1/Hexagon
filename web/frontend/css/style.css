@@ -1786,7 +1786,7 @@ button.primary:hover {
 .page-wide .game-icon { font-size: 22px; }
 .page-wide .game-name-sub { font-size: 16px; }
 .page-wide .game-arrow { font-size: 22px; }
-.page-wide .section-title { font-size: 17px; }
+.page-wide .section-title { font-size: 18px; }
 .page-wide .login-desc { font-size: 16px; }
 .page-wide .hosp-search-row input { font-size: 18px; }
 .page-wide .hosp-search-row button { font-size: 15px; }
@@ -1799,4 +1799,62 @@ button.primary:hover {
 
 @media (min-width: 851px) {
   .page-wide .quick-option { font-size: 24px; }
+}
+
+/* mypage.html / hospitals.html / analysis.html 전용 글자 크기 확대(+2px) -
+   위 .page-wide 블록과 같은 이유로, 여기 쓰인 클래스들은 다른 화면과도 공유되므로
+   .page-mypage/.page-map/.page-analysis(각 페이지 최상위 div에만 붙는 클래스)로
+   범위를 한정한다. health-banner(#eye-status-text)는 index.html과 마이페이지가
+   똑같은 배너를 그대로 공유하므로 두 화면의 크기를 맞추기 위해 여기서도 제외한다. */
+.page-mypage .back-link,
+.page-map .back-link,
+.page-analysis .back-link { font-size: 15px; }
+.page-mypage .logo,
+.page-map .logo,
+.page-analysis .logo { font-size: 24px; }
+.page-mypage .login-desc,
+.page-map .login-desc,
+.page-analysis .login-desc { font-size: 16px; }
+.page-mypage .site-footer,
+.page-map .site-footer,
+.page-analysis .site-footer { font-size: 13px; }
+
+.page-mypage .health-card .card-title { font-size: 19px; }
+.page-mypage .health-corner-label { font-size: 14px; }
+.page-mypage .health-corner-value { font-size: 16px; }
+.page-mypage .section-title { font-size: 17px; }
+.page-mypage .tabs-primary .tab-btn { font-size: 17px; }
+.page-mypage .tabs-secondary .tab-btn { font-size: 14px; }
+.page-mypage .tabs-ranking .tab-btn { font-size: 16px; }
+.page-mypage .history-table { font-size: 16px; }
+.page-mypage .history-table thead th { font-size: 14px; }
+.page-mypage .history-table td.history-date-col { font-size: 15px; }
+.page-mypage .history-empty { font-size: 15px; }
+.page-mypage .ranking-table { font-size: 16px; }
+.page-mypage .ranking-table thead th { font-size: 14px; }
+.page-mypage .ranking-table td.ranking-date-col { font-size: 15px; }
+.page-mypage .trend-caption { font-size: 14px; }
+.page-mypage .trend-tooltip { font-size: 14px; }
+.page-mypage .trend-axis-label { font-size: 13px; }
+.page-mypage .danger-link { font-size: 15px; }
+.page-mypage .logout-btn { font-size: 16px; }
+.page-mypage .quick-option { font-size: 16px; }
+
+.page-map .hosp-search-row input { font-size: 18px; }
+.page-map .hosp-search-row button { font-size: 15px; }
+.page-map .status-banner { font-size: 15px; }
+.page-map .clinic-item { font-size: 16px; }
+.page-map .clinic-item .distance { font-size: 14px; }
+.page-map .clinic-tooltip { font-size: 14px; }
+
+.page-analysis .analysis-guide div { font-size: 15px; }
+.page-analysis .analysis-upload p { font-size: 18px; }
+.page-analysis .auth-btn { font-size: 15px; }
+.page-analysis .status-banner { font-size: 15px; }
+.page-analysis .mypage-label { font-size: 14px; }
+.page-analysis .mypage-value { font-size: 17px; }
+.page-analysis button { font-size: 16px; }
+
+@media (min-width: 851px) {
+  .page-mypage .quick-option { font-size: 24px; }
 }

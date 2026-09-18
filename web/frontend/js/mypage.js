@@ -46,6 +46,12 @@ async function render() {
   const auth = getAuth();
   if (!auth) return; // requireLogin()이 이미 로그인 페이지로 리다이렉트 중
 
+  // home.js의 눈 건강 요약 패널과 동일한 "~님의 최근 눈 건강 요약" 포맷
+  const nickname = auth.nickname;
+  document.getElementById("health-card-title").textContent = nickname
+    ? `${nickname}님의 최근 눈 건강 요약`
+    : "최근 눈 건강 요약";
+
   // 세션 쿠키가 same-origin 요청에 자동으로 실리므로 user_id를 따로 보낼 필요가 없다.
   const data = await fetch("/api/mypage").then((res) => res.json());
 

@@ -368,15 +368,24 @@ def get_game_ranking(game_type, limit=10):
     """마이페이지 랭킹 탭 - 해당 게임 종류에서 전체 사용자 중 점수 상위 limit개
     (동점이면 먼저 기록한 순으로 정렬). 개인 기록이 아니라 모든 사용자를 대상으로 하는
     전체 랭킹이라 user_id로 필터링하지 않는다. 화면엔 회원 번호 대신 닉네임을 보여주므로
-    users를 조인해서 nickname도 같이 가져온다."""
+    users를 조인해서 nickname도 같이 가져온다. 한 사용자가 여러 번 플레이해도 랭킹에는
+    그 사용자의 최고 기록 한 줄만 나와야 하므로, user_id별로 점수 내림차순(동점이면
+    먼저 기록한 순)으로 순위를 매겨 1위 기록만 남긴 뒤 그 결과를 다시 전체 순위로 정렬한다."""
     conn = _connect()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT gr.user_id, u.nickname, gr.score, gr.played_at "
-                "FROM game_records gr JOIN users u ON u.id = gr.user_id "
-                "WHERE gr.game_type = %s "
-                "ORDER BY gr.score DESC, gr.played_at ASC LIMIT %s",
+                "SELECT user_id, nickname, score, played_at FROM ("
+                "  SELECT gr.user_id, u.nickname, gr.score, gr.played_at,"
+                "         ROW_NUMBER() OVER ("
+                "           PARTITION BY gr.user_id"
+                "           ORDER BY gr.score DESC, gr.played_at ASC"
+                "         ) AS rn"
+                "  FROM game_records gr JOIN users u ON u.id = gr.user_id"
+                "  WHERE gr.game_type = %s"
+                ") best_per_user "
+                "WHERE rn = 1 "
+                "ORDER BY score DESC, played_at ASC LIMIT %s",
                 (game_type, limit),
             )
             return cursor.fetchall()
