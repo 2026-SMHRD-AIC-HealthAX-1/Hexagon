@@ -560,6 +560,8 @@ header.top-bar {
 
 .care-box .section-title {
   margin: 0 0 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-blue);
   font-size: 16px;
   text-align: center;
 }
@@ -595,6 +597,7 @@ header.top-bar {
 
 .care-name {
   font-size: 13px;
+  font-weight: 700;
   margin-bottom: 3px;
 }
 
@@ -1723,4 +1726,44 @@ button.primary:hover {
     padding: 10px 6px;
     font-size: 12px;
   }
+}
+
+/* home(index.html) 전용 글자 크기 확대(+2px) - #eye-status-text, .game-name은 제외.
+   여기 쓰인 클래스 다수(.logo/.auth-btn/.card-title/.section-title 등)는 다른
+   페이지와도 공유되므로, .page-wide(index.html의 최상위 div에만 붙는 클래스)로
+   범위를 한정해 다른 화면에는 영향이 없도록 한다. */
+.page-wide .header-search input { font-size: 15px; }
+.page-wide .header-search button { font-size: 16px; }
+.page-wide .logo { font-size: 24px; }
+.page-wide .auth-btn { font-size: 15px; }
+.page-wide .health-card .card-title { font-size: 19px; }
+.page-wide .health-card .detail-link { font-size: 15px; }
+.page-wide .health-login-prompt strong { font-size: 18px; }
+.page-wide .health-corner-label { font-size: 18px; }
+.page-wide .health-corner-value { font-size: 18px; }
+.page-wide .care-box .section-title { font-size: 18px; }
+.page-wide .care-icon { font-size: 17px; }
+.page-wide .care-name { font-size: 15px; }
+.page-wide .care-description { font-size: 13px; }
+.page-wide .blink-alert { font-size: 13px; }
+.page-wide .eyedrop-settings { font-size: 13px; }
+.page-wide .eyedrop-settings input[type="number"] { font-size: 13px; }
+.page-wide .eyedrop-settings button { font-size: 13px; }
+.page-wide .game-panel .section-title { font-size: 18px; }
+.page-wide .game-icon { font-size: 22px; }
+.page-wide .game-name-sub { font-size: 16px; }
+.page-wide .game-arrow { font-size: 22px; }
+.page-wide .section-title { font-size: 17px; }
+.page-wide .login-desc { font-size: 16px; }
+.page-wide .hosp-search-row input { font-size: 18px; }
+.page-wide .hosp-search-row button { font-size: 15px; }
+.page-wide .map-message { font-size: 15px; }
+.page-wide .site-footer { font-size: 13px; }
+.page-wide .quick-option { font-size: 16px; }
+.page-wide .clinic-item { font-size: 16px; }
+.page-wide .clinic-item .distance { font-size: 14px; }
+.page-wide .clinic-tooltip { font-size: 14px; }
+
+@media (min-width: 851px) {
+  .page-wide .quick-option { font-size: 24px; }
 }
