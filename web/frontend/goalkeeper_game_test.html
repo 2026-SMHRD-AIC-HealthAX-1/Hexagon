@@ -1,0 +1,131 @@
+<!--
+  시선 골키퍼 (웹캠 시선 게임) - 프로토타입/테스트 버전.
+
+  정식 서비스에는 아직 편입되지 않은 독립 페이지다 (index.html 등 어디서도
+  링크되지 않음, 로그인도 불필요 - 야바위 게임 프로토타입과 같은 위치).
+  두더지 사냥 프로토타입(mole_game_test.html)과 같은 진입 흐름/시선 판정
+  방식을 쓴다 - 그 프로토타입은 디자인 다듬기를 거쳐 game.html(S-05,
+  "시선 추적 미니게임")로 정식 편입되면서 삭제됐다. 자세한 캘리브레이션/
+  좌우 판정 로직 배경은 js/game.js 의 주석을 참고.
+
+  규칙: 상대의 슛이 좌/중/우 중 한 골대 방향으로 날아온다. 슛이 날아오는
+  방향을 미리 파악해 그 구역을 바라보다가, 공이 도착하는 순간 눈을
+  깜빡여 다이빙 세이브한다. 타이밍이 정확할수록 PERFECT SAVE, 약간
+  빗나가면 GOOD SAVE, 아예 못 막으면 GOAL. 8번의 슛을 막아내는
+  1회성 승부.
+
+  로직/렌더링은 js/goalkeeper_game.js 에 있다.
+-->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시선 골키퍼 (테스트)</title>
+<link rel="stylesheet" href="css/goalkeeper_game_theme.css">
+</head>
+<body>
+
+<div id="consent-modal" class="modal">
+  <div class="modal-box wide-modal">
+    <div class="eyebrow">PROTOTYPE · GAZE KEEPER</div>
+    <h2>웹캠을 사용하여 게임을 진행하시겠습니까?</h2>
+    <p>
+      시선 추적과 눈 깜빡임 감지를 위해 카메라 접근 권한이 필요합니다.<br>
+      영상은 서버에 저장되지 않고, 브라우저 안에서만 처리됩니다.
+    </p>
+    <div class="modal-actions">
+      <button id="consent-cancel" type="button">취소</button>
+      <button id="consent-confirm" class="primary" type="button">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading-modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="eyebrow">LOADING</div>
+    <h2 id="loading-title">준비 중입니다</h2>
+    <p id="loading-detail">잠시만 기다려주세요.</p>
+  </div>
+</div>
+
+<div id="calibration-guide-modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="eyebrow">CALIBRATION</div>
+    <h2>캘리브레이션 안내</h2>
+    <p>
+      화면에 나타나는 9개의 점을 순서대로 바라봐 주세요. 실제 게임을 할 때와
+      같은 자세를 유지한 채 편안하게 응시해 주세요.
+    </p>
+    <div class="modal-actions">
+      <button id="calibration-guide-confirm" class="primary" type="button">확인하고 시작하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="game-guide-modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="eyebrow">GUIDE</div>
+    <h2>게임 방법 안내</h2>
+    <p>
+      고개는 최대한 고정한 채로 진행해 주세요. 공이 날아오는 골대 방향
+      (왼쪽/가운데/오른쪽)을 미리 보고 있다가, 공이 도착하는 순간 눈을
+      깜빡여 막아주세요. 총 8번의 슛을 막아냅니다.
+    </p>
+    <div class="modal-actions">
+      <button id="game-guide-confirm" class="primary" type="button">확인하고 시작하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="play-screen" class="hidden">
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">SCORE</span>
+      <span id="hud-score" class="hud-value">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">SAVE</span>
+      <span id="hud-save" class="hud-value">0/8</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">SHOT</span>
+      <span id="hud-shot" class="hud-value">1/8</span>
+    </div>
+  </div>
+  <canvas id="display"></canvas>
+</div>
+
+<div id="result-screen" class="modal hidden">
+  <div class="modal-box">
+    <div class="eyebrow">RESULT</div>
+    <h2>경기 결과</h2>
+    <div class="score-card">
+      <div class="label">SCORE</div>
+      <div id="result-score" class="value">0</div>
+    </div>
+    <div class="result-stats">
+      <div class="result-stat stat-perfect">
+        <div class="label">PERFECT</div>
+        <div id="result-perfect" class="value">0</div>
+      </div>
+      <div class="result-stat stat-good">
+        <div class="label">GOOD SAVE</div>
+        <div id="result-good" class="value">0</div>
+      </div>
+      <div class="result-stat stat-goal">
+        <div class="label">GOAL</div>
+        <div id="result-goal" class="value">0</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="retry-btn" class="primary" type="button">다시하기</button>
+      <button id="home-btn" type="button">홈으로</button>
+    </div>
+    <p class="test-note">※ 테스트 버전 - 이 페이지는 정식 서비스에 연결되어 있지 않고, 점수는 화면에만 표시됩니다.</p>
+  </div>
+</div>
+
+<script type="module" src="js/goalkeeper_game.js"></script>
+</body>
+</html>
