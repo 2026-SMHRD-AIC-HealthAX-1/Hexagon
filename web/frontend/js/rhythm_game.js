@@ -29,7 +29,7 @@
       ./tests/rhythm_parity/run.sh    (노트 판정/점수)
 */
 
-import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { getAuth, requireLogin, syncAuthWithServer } from "./auth.js";
 import {
   initRenderer,
   resizeCanvas,
@@ -48,6 +48,7 @@ import { saveCalibration } from "./gaze/calibrationApi.js";
 import { RhythmGameEngine } from "./rhythm/gameEngine.js";
 import { fetchLaneX, computeLaneX } from "./rhythm/calibration.js";
 import { showGuide, showChoice } from "./guide.js";
+import { fetchGameRanking, renderRankingTable } from "./ranking.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -330,7 +331,7 @@ function togglePause() {
   setPausedState(isPaused);
 }
 
-function showResult(state) {
+async function showResult(state) {
   stopRenderLoop();
   playScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
@@ -342,13 +343,28 @@ function showResult(state) {
   resultGoodEl.textContent = state.good_count;
   resultMissEl.textContent = state.miss_count;
 
+  const rankingContainer = document.getElementById("ranking-content");
+  rankingContainer.innerHTML = `<div class="history-empty">순위를 불러오는 중...</div>`;
+
   // 세션 쿠키가 same-origin 요청에 자동으로 실리므로 user_id를 따로 보낼 필요가 없다.
   // 서버판과 완전히 같은 엔드포인트/형식이라 마이페이지 기록도 동일하게 남는다.
-  fetch("/api/game-result", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ score: state.score, game_type: "rhythm" }),
-  }).catch(() => {});
+  // 저장이 끝난 뒤에 랭킹을 불러와야 이번 판 점수가 TOP 10에 들었을 때 바로 반영된다.
+  try {
+    await fetch("/api/game-result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score: state.score, game_type: "rhythm" }),
+    });
+  } catch (err) {
+    // 저장에 실패해도 결과 화면 자체는 그대로 보여준다(기존 동작 유지).
+  }
+
+  try {
+    const records = await fetchGameRanking("rhythm");
+    renderRankingTable(rankingContainer, records, { currentUserId: getAuth()?.userId });
+  } catch (err) {
+    rankingContainer.innerHTML = `<div class="history-empty">순위를 불러오지 못했습니다.</div>`;
+  }
 }
 
 function goHome() {

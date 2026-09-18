@@ -200,6 +200,9 @@ body {
 }
 
 /* ---- 결과 화면 ---- */
+/* 결과 화면 전용으로 다른 네온 모달(웹캠 동의/가이드 등)과 별개로 글자
+   크기를 기존의 2배로 키운다 - 점수/스탯이 랭킹 표와 나란히 놓이는 만큼
+   화면 전체에서 결과가 확실히 눈에 띄어야 한다는 요청에 따른 것. */
 
 #result-screen {
   background:
@@ -209,16 +212,40 @@ body {
   gap: 16px;
 }
 
-#result-screen h2 {
+#result-screen .neon-eyebrow {
   font-size: 22px;
+}
+
+#result-screen h2 {
+  font-size: 44px;
   margin: 0;
   color: var(--lab-text);
+}
+
+/* 점수/스탯(왼쪽)과 세로로 긴 랭킹 표(오른쪽)를 나란히 두는 2단 레이아웃.
+   좁은 화면에서는 위아래로 쌓는다(아래 미디어쿼리). */
+.result-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 36px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.result-main {
+  flex: 0 0 auto;
+  width: 320px;
+}
+
+.result-ranking {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 #result-screen .score-card .label,
 #result-screen .result-stat .label {
   font-family: Orbitron, "Pretendard", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.22em;
   color: var(--lab-dim);
@@ -226,23 +253,25 @@ body {
 
 #result-screen .score-card .value {
   font-family: Orbitron, "Pretendard", system-ui, sans-serif;
-  font-size: 52px;
+  font-size: 104px;
   font-weight: 900;
   color: #fff;
   text-shadow: 0 0 26px rgba(56, 232, 255, 0.85), 0 0 60px rgba(255, 47, 208, 0.45);
   font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
+/* 글자가 2배로 커진 만큼, 5개를 가로로 욱여넣던 방식 대신 세로로 쌓아
+   왼쪽 칼럼 폭 안에서 여유 있게 보이도록 한다. */
 .result-stats {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
 .result-stat {
-  min-width: 104px;
-  padding: 14px 18px;
+  width: 100%;
+  padding: 20px 24px;
   text-align: center;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
@@ -251,11 +280,11 @@ body {
 
 .result-stat .value {
   font-family: Orbitron, "Pretendard", system-ui, sans-serif;
-  font-size: 26px;
+  font-size: 44px;
   font-weight: 700;
   color: var(--lab-cyan);
   font-variant-numeric: tabular-nums;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .result-stat.stat-perfect .value {
@@ -274,13 +303,120 @@ body {
   color: #ff7a90;
 }
 
-@media (max-width: 500px) {
-  #result-screen .score-card .value {
-    font-size: 40px;
+/* 게임 결과창의 TOP 10 랭킹 - 마이페이지 랭킹 탭(style.css의 .ranking-table)과
+   같은 표 형식이지만, 이 게임의 네온/우주 테마에 맞춰 색만 다시 입힌다. */
+.result-ranking-title {
+  font-family: Orbitron, "Pretendard", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--lab-cyan);
+  text-shadow: 0 0 10px rgba(56, 232, 255, 0.6);
+  margin-bottom: 14px;
+}
+
+.ranking-content .ranking-table {
+  font-size: 24px;
+}
+
+/* td에 색을 직접 지정한다 - 이 페이지는 <!doctype html>이 없어 쿼크 모드로
+   렌더링되는데, 쿼크 모드의 table은 중간 조상(#result-screen 등)을 건너뛰고
+   body의 color를 그대로 물려받는다(표준 모드라면 안 생길 문제). body의
+   기본 글자색은 라이트 테마용 어두운 색이라, 이 네온 배경 위에서 지정 없이
+   두면 점수 칸(td:first-child/.ranking-date-col처럼 색을 따로 안 준 칸)만
+   어두운 글자로 묻혀 버린다. */
+.ranking-content .ranking-table td {
+  color: var(--lab-text);
+}
+
+.ranking-content .ranking-table th,
+.ranking-content .ranking-table td {
+  border-color: rgba(176, 108, 255, 0.35);
+  padding: 14px 10px;
+}
+
+.ranking-content .ranking-table thead th {
+  background: linear-gradient(135deg, rgba(255, 47, 208, 0.55), rgba(176, 108, 255, 0.55));
+  color: #fff;
+}
+
+.ranking-content .ranking-table tbody tr {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ranking-content .ranking-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ranking-content .ranking-table td:first-child {
+  color: var(--lab-text);
+  font-weight: 700;
+}
+
+.ranking-content .ranking-table td.ranking-date-col {
+  color: var(--lab-dim);
+  font-size: 20px;
+}
+
+.ranking-content .ranking-table tr.ranking-empty-row td {
+  color: var(--lab-dim);
+  opacity: 0.6;
+}
+
+/* 로그인한 본인의 순위 행 - 시안 네온 배경으로 강조. tbody를 넣어 짝수 행
+   얼룩무늬 규칙(:nth-child(even))과 명시도를 맞춰야, 본인 기록이 짝수
+   번째 줄이어도 얼룩무늬에 묻히지 않고 항상 강조된다. */
+.ranking-content .ranking-table tbody tr.ranking-row-me {
+  background: rgba(56, 232, 255, 0.16);
+}
+
+.ranking-content .ranking-table tbody tr.ranking-row-me td {
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(56, 232, 255, 0.7);
+}
+
+.ranking-content .history-empty {
+  color: var(--lab-dim);
+  font-size: 26px;
+  padding: 14px 0;
+}
+
+/* 결과 화면 버튼(다시하기/홈으로)도 커진 결과 텍스트에 맞춰 함께 키운다 -
+   다른 네온 모달(웹캠 동의/가이드 등)의 버튼 크기는 건드리지 않도록 범위를 한정. */
+#result-screen .actions button {
+  font-size: 28px;
+  padding: 18px 36px;
+}
+
+/* 왼쪽(점수/스탯)과 오른쪽(랭킹 표)을 나란히 두기엔 좁은 화면에서는
+   위아래로 쌓는다. */
+@media (max-width: 820px) {
+  .result-layout {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .result-stat {
-    min-width: 88px;
-    padding: 12px 14px;
+  .result-main {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 500px) {
+  #result-screen .score-card .value {
+    font-size: 64px;
+  }
+
+  #result-screen h2 {
+    font-size: 30px;
+  }
+
+  .ranking-content .ranking-table {
+    font-size: 18px;
+  }
+
+  .ranking-content .ranking-table td.ranking-date-col {
+    font-size: 15px;
   }
 }

@@ -1,6 +1,7 @@
 import { getAuth, requireLogin, syncAuthWithServer, logout } from "./auth.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
 import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
+import { formatDateTime, fetchGameRanking, renderRankingTable } from "./ranking.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -62,13 +63,6 @@ let currentCategory = HISTORY_CATEGORIES[0]; // 항상 가장 왼쪽 탭이 기�
 let currentView = HISTORY_VIEWS[0];
 let deleteMode = false; // "기록 삭제" 버튼으로 켜짐 - 상위 탭을 옮겨도 유지된다.
 const historyCache = new Map(); // category -> records (지연 로드 + 캐시)
-
-// YYYY-MM-DD / HH:MM (요청된 표시 형식) - 브라우저 로컬 시각 기준.
-function formatDateTime(isoString) {
-  const d = new Date(isoString);
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} / ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 function formatHistoryValue(category, record) {
   if (category === "cataract") return `${(record.prob * 100).toFixed(1)}% · ${record.label}`;
@@ -350,42 +344,15 @@ secondaryTabButtons.forEach((button) => {
 // 빈 행("-")으로 채워 항상 10행을 유지한다.
 
 const RANKING_GAMES = ["gaze", "rhythm"];
-const RANKING_ROWS = 10;
 
 let currentRankingGame = RANKING_GAMES[0]; // 항상 가장 왼쪽 탭이 기본값
 const rankingCache = new Map(); // game_type -> records (지연 로드 + 캐시)
 
 async function fetchRanking(gameType) {
   if (!rankingCache.has(gameType)) {
-    const data = await fetch(`/api/mypage/ranking?game_type=${gameType}`).then((res) => res.json());
-    rankingCache.set(gameType, data.records);
+    rankingCache.set(gameType, await fetchGameRanking(gameType));
   }
   return rankingCache.get(gameType);
-}
-
-function renderRankingTable(container, records) {
-  const rows = [];
-  for (let i = 0; i < RANKING_ROWS; i++) {
-    const record = records[i];
-    rows.push(
-      record
-        ? `<tr><td>${record.user_id}</td><td>${record.score}점</td><td class="ranking-date-col">${formatDateTime(record.played_at)}</td></tr>`
-        : `<tr class="ranking-empty-row"><td>-</td><td>-</td><td>-</td></tr>`,
-    );
-  }
-
-  container.innerHTML = `
-    <table class="ranking-table">
-      <thead>
-        <tr>
-          <th>회원 번호</th>
-          <th>게임 점수</th>
-          <th>게임 플레이 일시</th>
-        </tr>
-      </thead>
-      <tbody>${rows.join("")}</tbody>
-    </table>
-  `;
 }
 
 async function renderRankingContent() {

@@ -138,30 +138,38 @@
 <div id="result-screen" class="hidden">
   <div class="neon-eyebrow">RESULT</div>
   <h2>게임 결과</h2>
-  <div class="score-card">
-    <div class="label">SCORE</div>
-    <div id="result-score" class="value">0</div>
-  </div>
-  <div class="result-stats">
-    <div class="result-stat">
-      <div class="label">MAX COMBO</div>
-      <div id="result-combo" class="value">0</div>
+  <div class="result-layout">
+    <div class="result-main">
+      <div class="score-card">
+        <div class="label">SCORE</div>
+        <div id="result-score" class="value">0</div>
+      </div>
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="label">MAX COMBO</div>
+          <div id="result-combo" class="value">0</div>
+        </div>
+        <div class="result-stat stat-perfect">
+          <div class="label">PERFECT</div>
+          <div id="result-perfect" class="value">0</div>
+        </div>
+        <div class="result-stat stat-great">
+          <div class="label">GREAT</div>
+          <div id="result-great" class="value">0</div>
+        </div>
+        <div class="result-stat stat-good">
+          <div class="label">GOOD</div>
+          <div id="result-good" class="value">0</div>
+        </div>
+        <div class="result-stat stat-miss">
+          <div class="label">MISS</div>
+          <div id="result-miss" class="value">0</div>
+        </div>
+      </div>
     </div>
-    <div class="result-stat stat-perfect">
-      <div class="label">PERFECT</div>
-      <div id="result-perfect" class="value">0</div>
-    </div>
-    <div class="result-stat stat-great">
-      <div class="label">GREAT</div>
-      <div id="result-great" class="value">0</div>
-    </div>
-    <div class="result-stat stat-good">
-      <div class="label">GOOD</div>
-      <div id="result-good" class="value">0</div>
-    </div>
-    <div class="result-stat stat-miss">
-      <div class="label">MISS</div>
-      <div id="result-miss" class="value">0</div>
+    <div class="result-ranking">
+      <div class="result-ranking-title">TOP 10 랭킹</div>
+      <div id="ranking-content" class="ranking-content"></div>
     </div>
   </div>
   <div class="actions">

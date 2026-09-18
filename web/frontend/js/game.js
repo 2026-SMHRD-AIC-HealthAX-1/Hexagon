@@ -22,7 +22,7 @@
   (두더지 사냥도 좌/중/우 3구역 판정이라 리듬게임과 계산이 완전히 같다).
 */
 
-import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { getAuth, requireLogin, syncAuthWithServer } from "./auth.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { computeGaze, GazeSmoother } from "./vision/gaze.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
@@ -30,6 +30,7 @@ import { CalibrationEngine } from "./gaze/calibrationEngine.js";
 import { saveCalibration } from "./gaze/calibrationApi.js";
 import { fetchLaneX, computeLaneX } from "./rhythm/calibration.js";
 import { showGuide, showChoice } from "./guide.js";
+import { fetchGameRanking, renderRankingTable } from "./ranking.js";
 
 await syncAuthWithServer();
 requireLogin();
@@ -1170,7 +1171,7 @@ function runGame() {
 // 화면 전환
 // ─────────────────────────────────────────────────────────────
 
-function showResult() {
+async function showResult() {
   playScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
 
@@ -1179,13 +1180,28 @@ function showResult() {
   resultDecoyEl.textContent = game.decoyMistakes;
   resultComboEl.textContent = game.maxCombo;
 
+  const rankingContainer = document.getElementById("ranking-content");
+  rankingContainer.innerHTML = `<div class="history-empty">순위를 불러오는 중...</div>`;
+
   // 세션 쿠키가 same-origin 요청에 자동으로 실리므로 user_id를 따로 보낼 필요가 없다.
   // 예전 게임과 game_type 을 그대로 "gaze" 로 유지해서 마이페이지 기록이 이어진다.
-  fetch("/api/game-result", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ score: game.score, game_type: "gaze" }),
-  }).catch(() => {});
+  // 저장이 끝난 뒤에 랭킹을 불러와야 이번 판 점수가 TOP 10에 들었을 때 바로 반영된다.
+  try {
+    await fetch("/api/game-result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score: game.score, game_type: "gaze" }),
+    });
+  } catch (err) {
+    // 저장에 실패해도 결과 화면 자체는 그대로 보여준다(기존 동작 유지).
+  }
+
+  try {
+    const records = await fetchGameRanking("gaze");
+    renderRankingTable(rankingContainer, records, { currentUserId: getAuth()?.userId });
+  } catch (err) {
+    rankingContainer.innerHTML = `<div class="history-empty">순위를 불러오지 못했습니다.</div>`;
+  }
 }
 
 function goHome() {
