@@ -30,6 +30,7 @@
 */
 
 import { getAuth, requireLogin, syncAuthWithServer } from "./auth.js";
+import { ensureNickname } from "./nickname.js";
 import {
   initRenderer,
   resizeCanvas,
@@ -52,6 +53,7 @@ import { fetchGameRanking, renderRankingTable } from "./ranking.js";
 
 await syncAuthWithServer();
 requireLogin();
+await ensureNickname();
 
 // ─────────────────────────────────────────────────────────────
 // DOM

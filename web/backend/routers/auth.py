@@ -3,8 +3,9 @@ import secrets
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 
 import db
 
@@ -50,7 +51,27 @@ async def me(request: Request):
         "user_id": user_id,
         "provider": user["provider"],
         "logged_in_at": user["last_login_at"],
+        "nickname": user["nickname"],
     }
+
+
+class NicknameRequest(BaseModel):
+    nickname: str
+
+
+NICKNAME_MAX_LENGTH = 20
+
+
+# 최초 로그인 시 클라이언트(js/nickname.js)가 닉네임 설정 모달을 띄운 뒤 호출하는
+# 엔드포인트 - 중복 여부는 따로 검사하지 않는다(요청 범위 밖).
+@router.post("/api/auth/nickname")
+async def set_nickname(request: NicknameRequest, user_id: int = Depends(get_current_user_id)):
+    nickname = request.nickname.strip()
+    if not nickname or len(nickname) > NICKNAME_MAX_LENGTH:
+        raise HTTPException(status_code=400, detail=f"닉네임은 1~{NICKNAME_MAX_LENGTH}자로 입력해주세요.")
+
+    db.set_nickname(user_id, nickname)
+    return {"ok": True, "nickname": nickname}
 
 
 @router.get("/api/auth/google/login")

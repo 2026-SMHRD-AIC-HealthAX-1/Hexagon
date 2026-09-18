@@ -1,8 +1,10 @@
 import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { ensureNickname } from "./nickname.js";
 import { takePendingPhoto } from "./pendingPhoto.js";
 
 await syncAuthWithServer();
 requireLogin();
+await ensureNickname();
 
 const fileInput = document.getElementById("photo-input");
 const preview = document.getElementById("preview");

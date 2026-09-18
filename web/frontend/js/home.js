@@ -1,5 +1,6 @@
 import { startWorkerFrameCapture } from "./camera.js";
-import { isLoggedIn, logout, syncAuthWithServer } from "./auth.js";
+import { getAuth, isLoggedIn, logout, syncAuthWithServer } from "./auth.js";
+import { ensureNickname } from "./nickname.js";
 import { loadNaverMapsScript, fetchClinics, createClinicItem, renderMap, searchPlace } from "./nearby_clinics.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
@@ -11,6 +12,9 @@ import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
 // 로그인은 서버 리다이렉트로 완료되므로(클라이언트가 그 시점을 알 수 없음) 로그인
 // 상태를 정확히 보여주려면 여기서도 서버 세션과 동기화해야 한다.
 await syncAuthWithServer();
+// 최초 로그인으로 막 들어온 사용자는 닉네임이 없을 수 있다 - 비로그인이거나
+// 이미 닉네임이 있으면 즉시 resolve되므로 이 페이지의 평소 흐름에는 영향이 없다.
+await ensureNickname();
 
 const loginLink = document.getElementById("login-link");
 const authLoggedIn = document.getElementById("auth-logged-in");
@@ -18,6 +22,7 @@ const logoutBtn = document.getElementById("logout-btn");
 const themeToggleBtn = document.getElementById("theme-toggle");
 const themeToggleIcon = document.getElementById("theme-toggle-icon");
 
+const healthCardTitle = document.getElementById("health-card-title");
 const healthLoginPrompt = document.getElementById("health-login-prompt");
 const healthStats = document.getElementById("health-stats");
 const healthGazeScore = document.getElementById("health-gaze-score");
@@ -47,6 +52,9 @@ async function renderAuthArea() {
     authLoggedIn.classList.remove("hidden");
     loginLink.classList.add("hidden");
 
+    const nickname = getAuth()?.nickname;
+    healthCardTitle.textContent = nickname ? `${nickname}님의 최근 눈 건강 요약` : "최근 눈 건강 요약";
+
     healthLoginPrompt.classList.add("hidden");
     healthStats.classList.remove("hidden");
 
@@ -60,6 +68,7 @@ async function renderAuthArea() {
     authLoggedIn.classList.add("hidden");
     loginLink.classList.remove("hidden");
 
+    healthCardTitle.textContent = "최근 눈 건강 요약";
     healthStats.classList.add("hidden");
     healthLoginPrompt.classList.remove("hidden");
     applyEyeStatus(pageRoot, "unknown", eyeStatusText, eyeIconWrap);

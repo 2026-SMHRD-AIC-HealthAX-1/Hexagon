@@ -135,7 +135,11 @@ async def get_mypage_ranking(game_type: str, user_id: int = Depends(get_current_
         raise HTTPException(status_code=400, detail="invalid game_type")
 
     rows = db.get_game_ranking(game_type, limit=10)
-    records = [{"user_id": row["user_id"], "score": row["score"], "played_at": row["played_at"]} for row in rows]
+    # user_id는 "이 행이 나인지" 비교용으로 계속 내려주고, 화면 표시는 nickname으로 한다.
+    records = [
+        {"user_id": row["user_id"], "nickname": row["nickname"], "score": row["score"], "played_at": row["played_at"]}
+        for row in rows
+    ]
     return {"records": records}
 
 

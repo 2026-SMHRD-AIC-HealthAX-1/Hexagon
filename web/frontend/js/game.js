@@ -23,6 +23,7 @@
 */
 
 import { getAuth, requireLogin, syncAuthWithServer } from "./auth.js";
+import { ensureNickname } from "./nickname.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { computeGaze, GazeSmoother } from "./vision/gaze.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
@@ -34,6 +35,7 @@ import { fetchGameRanking, renderRankingTable } from "./ranking.js";
 
 await syncAuthWithServer();
 requireLogin();
+await ensureNickname();
 
 // ─────────────────────────────────────────────────────────────
 // 상수

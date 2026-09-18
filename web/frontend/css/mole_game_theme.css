@@ -100,6 +100,31 @@ body {
   color: #f1e6cf;
 }
 
+/* 닉네임 설정 모달(js/nickname.js)의 텍스트 입력창 - 이 테마의 나무/황금 톤에 맞춤 */
+.modal-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid rgba(255, 207, 77, 0.4);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-light);
+  font-size: 16px;
+  margin: 4px 0 10px;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.modal-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: -4px 0 14px;
+  text-align: left;
+}
+
 .modal-actions {
   display: flex;
   gap: 10px;

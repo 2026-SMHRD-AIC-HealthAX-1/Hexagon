@@ -50,6 +50,32 @@ body {
   color: var(--lab-dim);
 }
 
+/* 닉네임 설정 모달(js/nickname.js)의 텍스트 입력창 - 이 테마의 네온 톤에 맞춤 */
+.neon-modal .modal-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(176, 108, 255, 0.5);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--lab-text);
+  font-size: 16px;
+  margin: 4px 0 10px;
+}
+
+.neon-modal .modal-input:focus {
+  outline: none;
+  border-color: var(--lab-cyan);
+  box-shadow: 0 0 12px rgba(56, 232, 255, 0.4);
+}
+
+.neon-modal .modal-error {
+  color: #ff7a90;
+  font-size: 13px;
+  margin: -4px 0 14px;
+  text-align: left;
+}
+
 .neon-eyebrow {
   font-family: Orbitron, "Pretendard", system-ui, sans-serif;
   font-size: 11px;

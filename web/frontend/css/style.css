@@ -1418,6 +1418,32 @@ input.toggle-switch:disabled {
   justify-content: center;
 }
 
+/* 닉네임 설정 모달(js/nickname.js) 등, 모달 안에 텍스트 입력이 필요할 때 쓰는
+   공용 입력창 - 지금까지 모달은 안내문+버튼뿐이라 이런 입력창 스타일이 없었다. */
+.modal-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  margin: 4px 0 6px;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.modal-error {
+  color: var(--danger-text);
+  font-size: 13px;
+  margin: 0 0 14px;
+  text-align: left;
+}
+
 /* 퀵메뉴 "사진 촬영"의 카메라 미리보기 (js/cameraCapture.js가 만드는 모달).
    좌우 반전은 일부러 하지 않는다 - 미리보기와 실제 저장되는 사진이 달라지면
    사용자가 프레이밍을 맞추기 어렵다. */

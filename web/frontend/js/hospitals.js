@@ -1,8 +1,10 @@
 import { requireLogin, syncAuthWithServer } from "./auth.js";
+import { ensureNickname } from "./nickname.js";
 import { loadNaverMapsScript, fetchClinics, createClinicItem, renderMap, searchPlace } from "./nearby_clinics.js";
 
 await syncAuthWithServer();
 requireLogin();
+await ensureNickname();
 
 const statusBanner = document.getElementById("status-banner");
 const mapEl = document.getElementById("map");

@@ -68,9 +68,23 @@ export async function syncAuthWithServer() {
   if (data.logged_in) {
     localStorage.setItem(
       AUTH_KEY,
-      JSON.stringify({ provider: data.provider, loggedInAt: data.logged_in_at, userId: data.user_id })
+      JSON.stringify({
+        provider: data.provider,
+        loggedInAt: data.logged_in_at,
+        userId: data.user_id,
+        nickname: data.nickname,
+      })
     );
   } else {
     localStorage.removeItem(AUTH_KEY);
   }
+}
+
+// 닉네임 설정 모달(js/nickname.js) 제출 성공 후, 서버를 다시 조회하지 않고
+// 캐시를 바로 갱신한다 - AUTH_KEY 저장 형식을 이 파일 밖으로 새지 않게 하기 위함.
+export function setStoredNickname(nickname) {
+  const auth = getAuth();
+  if (!auth) return;
+  auth.nickname = nickname;
+  localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
 }

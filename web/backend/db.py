@@ -46,7 +46,8 @@ def init_db():
                     last_login_at VARCHAR(64) NOT NULL,
                     google_sub VARCHAR(255) UNIQUE,
                     kakao_id VARCHAR(255) UNIQUE,
-                    email VARCHAR(255)
+                    email VARCHAR(255),
+                    nickname VARCHAR(20)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """)
             cursor.execute(f"""
@@ -146,6 +147,18 @@ def touch_user_login(user_id, provider, email=None):
                     "UPDATE users SET provider = %s, last_login_at = %s WHERE id = %s",
                     (provider, _now_iso(), user_id),
                 )
+            updated = cursor.rowcount > 0
+        conn.commit()
+        return updated
+    finally:
+        conn.close()
+
+
+def set_nickname(user_id, nickname):
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("UPDATE users SET nickname = %s WHERE id = %s", (nickname, user_id))
             updated = cursor.rowcount > 0
         conn.commit()
         return updated
@@ -354,13 +367,16 @@ def delete_analysis_results_by_ids(user_id, ids):
 def get_game_ranking(game_type, limit=10):
     """마이페이지 랭킹 탭 - 해당 게임 종류에서 전체 사용자 중 점수 상위 limit개
     (동점이면 먼저 기록한 순으로 정렬). 개인 기록이 아니라 모든 사용자를 대상으로 하는
-    전체 랭킹이라 user_id로 필터링하지 않는다."""
+    전체 랭킹이라 user_id로 필터링하지 않는다. 화면엔 회원 번호 대신 닉네임을 보여주므로
+    users를 조인해서 nickname도 같이 가져온다."""
     conn = _connect()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT user_id, score, played_at FROM game_records WHERE game_type = %s "
-                "ORDER BY score DESC, played_at ASC LIMIT %s",
+                "SELECT gr.user_id, u.nickname, gr.score, gr.played_at "
+                "FROM game_records gr JOIN users u ON u.id = gr.user_id "
+                "WHERE gr.game_type = %s "
+                "ORDER BY gr.score DESC, gr.played_at ASC LIMIT %s",
                 (game_type, limit),
             )
             return cursor.fetchall()

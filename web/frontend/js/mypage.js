@@ -1,10 +1,12 @@
 import { getAuth, requireLogin, syncAuthWithServer, logout } from "./auth.js";
+import { ensureNickname } from "./nickname.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
 import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
 import { formatDateTime, fetchGameRanking, renderRankingTable } from "./ranking.js";
 
 await syncAuthWithServer();
 requireLogin();
+await ensureNickname();
 
 const NOT_MEASURED = "측정 미완료";
 
