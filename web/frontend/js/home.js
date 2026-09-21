@@ -4,6 +4,7 @@ import { ensureNickname } from "./nickname.js";
 import { loadNaverMapsScript, fetchClinics, createClinicItem, renderMap, searchPlace } from "./nearby_clinics.js";
 import { createFaceLandmarker, detectLandmarks, createTimestampSource } from "./vision/faceLandmarker.js";
 import { BlinkMonitor } from "./vision/blinkMonitor.js";
+import { FaceTracker } from "./vision/faceTracker.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
 import { getStoredTheme, toggleTheme } from "./theme.js";
 import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
@@ -144,6 +145,7 @@ let stopSender = null;
 // 때마다 수 초씩 걸린다.
 let landmarker = null;
 let blinkMonitor = null;
+let faceTracker = null;
 let nextTimestamp = null;
 
 // 로컬(메인 스레드) 폴백 경로 전용 상태 - MediaStreamTrackProcessor 미지원
@@ -243,9 +245,9 @@ function handleCapturedFrame(bitmap) {
   }
   bitmap.close();
 
-  // 얼굴이 안 잡히면 건너뛴다 - 다른 WS 라우터들이
-  // `if not result.face_landmarks: continue` 하던 것과 같은 동작.
-  if (!landmarks) return;
+  // 얼굴이 안 잡혔거나, 잡힌 얼굴이 모니터링 시작 때부터 추적 중이던 사람과
+  // 다른 위치(다른 사람)면 건너뛴다 - vision/faceTracker.js 참고.
+  if (!faceTracker.update(landmarks)) return;
 
   handleBlinkMessage(blinkMonitor.update(landmarks));
 }
@@ -273,7 +275,7 @@ function localVisionLoop(now) {
     return;
   }
 
-  if (!landmarks) return;
+  if (!faceTracker.update(landmarks)) return;
 
   handleBlinkMessage(blinkMonitor.update(landmarks));
 }
@@ -315,6 +317,7 @@ async function startBlinkMonitoring() {
   }
 
   blinkMonitor = new BlinkMonitor();
+  faceTracker = new FaceTracker();
   nextTimestamp = createTimestampSource();
 
   // 탭이 hidden 상태여도 캡처가 이어지도록, 지원 브라우저에서는 워커 기반
