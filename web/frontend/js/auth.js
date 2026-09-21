@@ -73,6 +73,7 @@ export async function syncAuthWithServer() {
         loggedInAt: data.logged_in_at,
         userId: data.user_id,
         nickname: data.nickname,
+        dataConsent: data.data_consent,
       })
     );
   } else {
@@ -86,5 +87,14 @@ export function setStoredNickname(nickname) {
   const auth = getAuth();
   if (!auth) return;
   auth.nickname = nickname;
+  localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+}
+
+// 데이터 수집 동의 모달(js/nickname.js) 제출 성공 후, 위 setStoredNickname()과
+// 같은 이유로 캐시를 바로 갱신한다.
+export function setStoredDataConsent() {
+  const auth = getAuth();
+  if (!auth) return;
+  auth.dataConsent = true;
   localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
 }

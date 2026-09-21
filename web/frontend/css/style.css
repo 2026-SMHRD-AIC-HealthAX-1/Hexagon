@@ -1444,6 +1444,36 @@ input.toggle-switch:disabled {
   text-align: left;
 }
 
+/* 닉네임/동의 모달(js/nickname.js)의 데이터 수집 동의 안내 블록 - 왼쪽 정렬로
+   무엇을 수집하는지 나열하고, 체크박스에 동의해야만 제출 버튼이 통과된다. */
+.modal-consent {
+  text-align: left;
+  margin: 4px 0 14px;
+}
+
+.modal-consent-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+.modal-consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.modal-consent-check input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 /* 퀵메뉴 "사진 촬영"의 카메라 미리보기 (js/cameraCapture.js가 만드는 모달).
    좌우 반전은 일부러 하지 않는다 - 미리보기와 실제 저장되는 사진이 달라지면
    사용자가 프레이밍을 맞추기 어렵다. */

@@ -52,26 +52,47 @@ async def me(request: Request):
         "provider": user["provider"],
         "logged_in_at": user["last_login_at"],
         "nickname": user["nickname"],
+        "data_consent": user["data_consent_at"] is not None,
     }
 
 
 class NicknameRequest(BaseModel):
     nickname: str
+    # 최초 로그인 시 닉네임 설정 모달(js/nickname.js)이 데이터 수집 동의 체크박스도
+    # 같이 받는다 - 반드시 명시적으로 true여야 하고(체크 안 하면 아예 요청조차
+    # 못 보내게 프론트에서 막지만, 서버도 동일하게 강제한다), 기본값을 두지 않는 건
+    # 값을 빠뜨린 요청을 "동의 안 함"과 구분 없이 거부하기 위해서다.
+    consent: bool
 
 
 NICKNAME_MAX_LENGTH = 20
 
 
-# 최초 로그인 시 클라이언트(js/nickname.js)가 닉네임 설정 모달을 띄운 뒤 호출하는
-# 엔드포인트 - 중복 여부는 따로 검사하지 않는다(요청 범위 밖).
+# 최초 로그인 시 클라이언트(js/nickname.js)가 닉네임+동의 설정 모달을 띄운 뒤
+# 호출하는 엔드포인트 - 닉네임 중복 여부는 따로 검사하지 않는다(요청 범위 밖).
+# 데이터 수집(게임 기록/눈 깜빡임 경고/사진 분석 결과) 동의에 체크하지 않으면
+# 닉네임 자체를 저장하지 않는다 - 동의 없이는 서비스를 이용할 수 없다는 요구사항이라,
+# 닉네임 설정과 동의를 한 번에 같이 받아야 그 이후 어떤 화면도 통과시키지 않을 수 있다.
 @router.post("/api/auth/nickname")
 async def set_nickname(request: NicknameRequest, user_id: int = Depends(get_current_user_id)):
     nickname = request.nickname.strip()
     if not nickname or len(nickname) > NICKNAME_MAX_LENGTH:
         raise HTTPException(status_code=400, detail=f"닉네임은 1~{NICKNAME_MAX_LENGTH}자로 입력해주세요.")
+    if not request.consent:
+        raise HTTPException(status_code=400, detail="데이터 수집 및 저장에 동의해야 서비스를 이용할 수 있습니다.")
 
     db.set_nickname(user_id, nickname)
-    return {"ok": True, "nickname": nickname}
+    db.set_data_consent(user_id)
+    return {"ok": True, "nickname": nickname, "data_consent": True}
+
+
+# 닉네임은 이미 있지만(=예전에 가입한 사용자) 아직 동의 기록이 없는 경우를 위한
+# 별도 엔드포인트 - 닉네임 재입력 없이 동의만 받는다. js/nickname.js의
+# ensureNickname()이 두 경우를 구분해서 이 엔드포인트 또는 위 /api/auth/nickname을 부른다.
+@router.post("/api/auth/consent")
+async def set_consent(user_id: int = Depends(get_current_user_id)):
+    db.set_data_consent(user_id)
+    return {"ok": True, "data_consent": True}
 
 
 @router.get("/api/auth/google/login")

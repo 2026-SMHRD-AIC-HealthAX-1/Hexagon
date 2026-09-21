@@ -76,6 +76,13 @@ body {
   text-align: left;
 }
 
+/* 닉네임/동의 모달(js/nickname.js)의 데이터 수집 동의 안내 블록 - 이 테마의
+   네온 톤에 맞춤(.modal-consent-check는 .neon-modal .modal-box의 color: var(--lab-text)
+   상속을 그대로 받아 별도 지정이 필요 없다). */
+.neon-modal .modal-consent-list {
+  color: var(--lab-dim);
+}
+
 .neon-eyebrow {
   font-family: Orbitron, "Pretendard", system-ui, sans-serif;
   font-size: 11px;

@@ -28,6 +28,18 @@ GAME_TYPE_GAZE = "gaze"
 GAME_TYPE_RHYTHM = "rhythm"
 
 
+def _ensure_data_consent_column(cursor):
+    # data_consent_at은 이미 사용자 데이터가 있는 기존 DB에 나중에 추가된 컬럼이라
+    # CREATE TABLE IF NOT EXISTS만으로는 기존 테이블에 반영되지 않는다 - 컬럼이
+    # 없을 때만 ALTER TABLE로 추가한다(멱등, 여러 번 실행해도 안전).
+    cursor.execute(
+        "SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS "
+        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'data_consent_at'"
+    )
+    if cursor.fetchone()["cnt"] == 0:
+        cursor.execute("ALTER TABLE users ADD COLUMN data_consent_at VARCHAR(64)")
+
+
 def init_db():
     # 타입 있는 정식 DB(MySQL)로 전환하면서 시작하는 스키마라, 예전 SQLite
     # 버전의 점진적 ALTER TABLE 마이그레이션 이력(_ensure_google_columns 등)은
@@ -35,6 +47,10 @@ def init_db():
     # 타임스탬프는 실제 DATETIME이 아니라 기존 _now_iso()가 만드는 ISO8601
     # 문자열을 그대로 VARCHAR에 저장한다 - ISO8601은 문자열로도 시간순 정렬이
     # 되므로(ORDER BY played_at DESC 등) 그대로 옮겨도 동작이 달라지지 않는다.
+    #
+    # data_consent_at만은 예외적으로 이 CREATE TABLE 이후 _ensure_data_consent_column()
+    # 가드를 한 번 더 거친다 - 이미 실제 사용자 데이터가 쌓인 로컬 DB에 새 컬럼을
+    # 추가하는 것이라, "DROP TABLE 후 재생성"이 아니라 안전한 ALTER TABLE이 맞다.
     conn = _connect()
     try:
         with conn.cursor() as cursor:
@@ -47,9 +63,11 @@ def init_db():
                     google_sub VARCHAR(255) UNIQUE,
                     kakao_id VARCHAR(255) UNIQUE,
                     email VARCHAR(255),
-                    nickname VARCHAR(20)
+                    nickname VARCHAR(20),
+                    data_consent_at VARCHAR(64)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """)
+            _ensure_data_consent_column(cursor)
             cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS game_records (
                     game_record_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -162,6 +180,23 @@ def set_nickname(user_id, nickname):
             updated = cursor.rowcount > 0
         conn.commit()
         return updated
+    finally:
+        conn.close()
+
+
+# 최초 로그인 시 닉네임 설정 모달(js/nickname.js)이 데이터 수집 동의도 함께 받는다 -
+# 이미 동의한 경우 재동의를 요구하지 않도록, 처음 동의한 시각만 남기고 이후 호출은
+# 덮어쓰지 않는다(멱등). 동의 여부는 이 값이 NULL인지로만 판단한다(db.get_user()의
+# data_consent_at 필드).
+def set_data_consent(user_id):
+    conn = _connect()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "UPDATE users SET data_consent_at = %s WHERE id = %s AND data_consent_at IS NULL",
+                (_now_iso(), user_id),
+            )
+        conn.commit()
     finally:
         conn.close()
 

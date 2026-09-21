@@ -125,6 +125,36 @@ body {
   text-align: left;
 }
 
+/* 닉네임/동의 모달(js/nickname.js)의 데이터 수집 동의 안내 블록 - 이 테마의
+   나무/황금 톤에 맞춤. style.css를 링크하지 않는 독립 페이지라 여기서 따로 정의한다. */
+.modal-consent {
+  text-align: left;
+  margin: 4px 0 14px;
+}
+
+.modal-consent-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #f1e6cf;
+  line-height: 1.6;
+}
+
+.modal-consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.modal-consent-check input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 .modal-actions {
   display: flex;
   gap: 10px;
