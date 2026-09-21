@@ -70,7 +70,6 @@ export async function syncAuthWithServer() {
       AUTH_KEY,
       JSON.stringify({
         provider: data.provider,
-        loggedInAt: data.logged_in_at,
         userId: data.user_id,
         nickname: data.nickname,
         dataConsent: data.data_consent,

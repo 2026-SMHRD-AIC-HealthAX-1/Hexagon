@@ -50,7 +50,6 @@ async def me(request: Request):
         "logged_in": True,
         "user_id": user_id,
         "provider": user["provider"],
-        "logged_in_at": user["last_login_at"],
         "nickname": user["nickname"],
         "data_consent": user["data_consent_at"] is not None,
     }

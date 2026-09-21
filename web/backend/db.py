@@ -58,8 +58,6 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS users (
                     id BIGINT AUTO_INCREMENT PRIMARY KEY,
                     provider VARCHAR(20) NOT NULL CHECK (provider IN ('google', 'kakao')),
-                    created_at VARCHAR(64) NOT NULL,
-                    last_login_at VARCHAR(64) NOT NULL,
                     google_sub VARCHAR(255) UNIQUE,
                     kakao_id VARCHAR(255) UNIQUE,
                     email VARCHAR(255),
@@ -134,15 +132,12 @@ def init_db():
 
 
 def create_user(provider, google_sub=None, email=None, kakao_id=None):
-    now = _now_iso()
-
     conn = _connect()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO users (provider, created_at, last_login_at, google_sub, email, kakao_id) "
-                "VALUES (%s, %s, %s, %s, %s, %s)",
-                (provider, now, now, google_sub, email, kakao_id),
+                "INSERT INTO users (provider, google_sub, email, kakao_id) VALUES (%s, %s, %s, %s)",
+                (provider, google_sub, email, kakao_id),
             )
             user_id = cursor.lastrowid
         conn.commit()
@@ -157,13 +152,13 @@ def touch_user_login(user_id, provider, email=None):
         with conn.cursor() as cursor:
             if email is not None:
                 cursor.execute(
-                    "UPDATE users SET provider = %s, last_login_at = %s, email = %s WHERE id = %s",
-                    (provider, _now_iso(), email, user_id),
+                    "UPDATE users SET provider = %s, email = %s WHERE id = %s",
+                    (provider, email, user_id),
                 )
             else:
                 cursor.execute(
-                    "UPDATE users SET provider = %s, last_login_at = %s WHERE id = %s",
-                    (provider, _now_iso(), user_id),
+                    "UPDATE users SET provider = %s WHERE id = %s",
+                    (provider, user_id),
                 )
             updated = cursor.rowcount > 0
         conn.commit()

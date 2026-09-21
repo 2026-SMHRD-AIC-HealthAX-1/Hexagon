@@ -81,7 +81,6 @@ def _weighted_cataract_status(rows):
 
 @router.get("/api/mypage")
 async def get_mypage(user_id: int = Depends(get_current_user_id)):
-    user = db.get_user(user_id)
     last_gaze_game = db.get_last_game_record(user_id, db.GAME_TYPE_GAZE)
     last_rhythm_game = db.get_last_game_record(user_id, db.GAME_TYPE_RHYTHM)
     last_analysis = db.get_last_analysis_result(user_id)
@@ -94,7 +93,6 @@ async def get_mypage(user_id: int = Depends(get_current_user_id)):
     # cataract_risk/redness는 그 latest 측정 그대로(마이페이지 요약 칸에 쓰는 값)고,
     # eye_status_risk는 눈 건강 요약 배너 전용 가중 평균 값이다 - 서로 다른 목적.
     return {
-        "logged_in_at": user["last_login_at"] if user else None,
         "last_game_gaze": _serialize_game_record(last_gaze_game),
         "last_game_rhythm": _serialize_game_record(last_rhythm_game),
         "cataract_risk": _serialize_cataract_risk(last_analysis),
