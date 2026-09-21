@@ -13,17 +13,14 @@ const NOT_MEASURED = "측정 미완료";
 const pageRoot = document.querySelector(".page");
 const eyeIconWrap = document.getElementById("eye-icon-wrap");
 
-// 백내장/충혈도 측정 기록이 아예 없어 종합 상태가 "측정 전"(unknown)일 때만
-// 눈 아이콘을 클릭 가능하게 만들어 바로 사진 분석으로 유도한다 - home.js와
-// 동일한 동작(applyEyeStatus()가 클래스/속성을 갱신, 클릭 시 상태만 확인).
+// 측정 상태와 무관하게 눈 아이콘을 눌러 바로 사진 분석으로 갈 수 있다 - home.js와
+// 동일한 동작(applyEyeStatus()가 클래스/속성을 항상 붙여준다).
 eyeIconWrap.addEventListener("click", () => {
-  if (pageRoot.dataset.eyeStatus === "unknown") {
-    location.href = "analysis.html";
-  }
+  location.href = "analysis.html";
 });
 
 eyeIconWrap.addEventListener("keydown", (event) => {
-  if ((event.key === "Enter" || event.key === " ") && pageRoot.dataset.eyeStatus === "unknown") {
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     location.href = "analysis.html";
   }

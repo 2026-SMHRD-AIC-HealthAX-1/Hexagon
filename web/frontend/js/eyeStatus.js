@@ -26,25 +26,20 @@ export function classifyEyeStatus(eyeStatusRisk) {
 
 // rootEl에 data-eye-status를 설정하면 style.css의 .page[data-eye-status=...]
 // 규칙이 --eye-color를 내려주고, 그 값을 눈 아이콘/퀵메뉴 FAB이 공유해서 쓴다.
-// iconWrapEl을 넘기면 status가 "unknown"(백내장/충혈도 측정 기록이 아예 없는
-// 경우)일 때만 클릭 가능한 형태로 표시한다 - 실제 analysis.html 이동은 클릭
-// 시점에 이 함수 밖(home.js/mypage.js)에서 처리한다.
+// iconWrapEl을 넘기면 측정 상태(양호/주의/위험/측정 전)와 무관하게 항상 클릭
+// 가능한 형태로 표시한다 - 로그인한 모든 사용자가 언제든 눈 아이콘을 눌러 사진
+// 분석으로 갈 수 있어야 한다는 요구사항이라, 예전처럼 "측정 전"일 때만 열어주지
+// 않는다. 실제 analysis.html 이동은 클릭 시점에 이 함수 밖(home.js/mypage.js)에서
+// 처리한다.
 export function applyEyeStatus(rootEl, status, statusTextEl, iconWrapEl) {
   rootEl.dataset.eyeStatus = status;
   if (statusTextEl) {
     statusTextEl.textContent = `종합 상태 · ${STATUS_LABELS[status] || STATUS_LABELS.unknown}`;
   }
   if (iconWrapEl) {
-    const clickable = status === "unknown";
-    iconWrapEl.classList.toggle("eye-icon-wrap-clickable", clickable);
-    if (clickable) {
-      iconWrapEl.setAttribute("role", "link");
-      iconWrapEl.setAttribute("tabindex", "0");
-      iconWrapEl.setAttribute("title", "눌러서 눈 사진으로 측정하기");
-    } else {
-      iconWrapEl.removeAttribute("role");
-      iconWrapEl.removeAttribute("tabindex");
-      iconWrapEl.removeAttribute("title");
-    }
+    iconWrapEl.classList.add("eye-icon-wrap-clickable");
+    iconWrapEl.setAttribute("role", "link");
+    iconWrapEl.setAttribute("tabindex", "0");
+    iconWrapEl.setAttribute("title", "눌러서 눈 사진으로 측정하기");
   }
 }

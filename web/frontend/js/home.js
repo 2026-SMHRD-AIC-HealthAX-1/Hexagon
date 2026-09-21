@@ -76,18 +76,16 @@ async function renderAuthArea() {
   }
 }
 
-// 백내장/충혈도 측정 기록이 아예 없어 종합 상태가 "측정 전"(unknown)일 때만
-// 눈 아이콘을 클릭 가능하게 만들어 바로 사진 분석으로 유도한다 - applyEyeStatus()가
-// eye-icon-wrap-clickable 클래스/속성을 갱신해주므로, 여기서는 클릭 시점의
-// 실제 상태만 확인해서 이동한다.
+// 측정 상태(양호/주의/위험/측정 전)와 무관하게 로그인한 모든 사용자가 눈
+// 아이콘을 눌러 바로 사진 분석으로 갈 수 있다 - applyEyeStatus()가 이미
+// eye-icon-wrap-clickable 클래스/속성을 항상 붙여주므로, 여기서는 클릭 시
+// 이동만 하면 된다(로그아웃 상태면 이 패널 자체가 숨겨져 있어 클릭할 수 없다).
 eyeIconWrap.addEventListener("click", () => {
-  if (pageRoot.dataset.eyeStatus === "unknown") {
-    location.href = "analysis.html";
-  }
+  location.href = "analysis.html";
 });
 
 eyeIconWrap.addEventListener("keydown", (event) => {
-  if ((event.key === "Enter" || event.key === " ") && pageRoot.dataset.eyeStatus === "unknown") {
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     location.href = "analysis.html";
   }
