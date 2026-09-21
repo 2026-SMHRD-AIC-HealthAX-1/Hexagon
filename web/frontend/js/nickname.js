@@ -30,7 +30,7 @@ function consentBlockHtml() {
   return `
     <div class="modal-consent">
       <ul class="modal-consent-list">
-        <li>미니게임 · 리듬게임 점수 기록</li>
+        <li>두더지 게임 · 리듬 게임 점수 기록</li>
         <li>눈 깜빡임 저하 경고 발생 기록</li>
         <li>사진 분석 결과(백내장 위험도, 안구 충혈도) 수치</li>
       </ul>

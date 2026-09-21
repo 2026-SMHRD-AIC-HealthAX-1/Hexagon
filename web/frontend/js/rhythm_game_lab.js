@@ -108,7 +108,7 @@ function runGame() {
     const state = JSON.parse(event.data);
 
     if (state.type === "error") {
-      alert("캘리브레이션 데이터가 없습니다. 먼저 시선 추적 미니게임에서 캘리브레이션을 진행해주세요.");
+      alert("캘리브레이션 데이터가 없습니다. 먼저 두더지 게임에서 캘리브레이션을 진행해주세요.");
       ws.close();
       goHome();
       return;
