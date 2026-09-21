@@ -70,6 +70,7 @@ const HISTORY_VIEWS = ["list", "trend"];
 let currentCategory = HISTORY_CATEGORIES[0]; // 항상 가장 왼쪽 탭이 기본값
 let currentView = HISTORY_VIEWS[0];
 let deleteMode = false; // "기록 삭제" 버튼으로 켜짐 - 상위 탭을 옮겨도 유지된다.
+let sortOrder = "desc"; // "정렬" 버튼으로 토글 - deleteMode와 마찬가지로 탭을 옮겨도 유지된다.
 const historyCache = new Map(); // category -> records (지연 로드 + 캐시)
 
 function formatHistoryValue(category, record) {
@@ -307,6 +308,10 @@ async function renderHistoryContent() {
   const category = currentCategory;
   const view = currentView;
 
+  // 정렬 버튼은 누적 기록(list) 탭에만 의미가 있다 - 최근 기록 추이는 항상
+  // 시간순 그래프이므로 이 탭에서는 숨긴다.
+  sortToggleBtn.hidden = view !== "list";
+
   container.innerHTML = `<div class="history-empty">불러오는 중...</div>`;
   const records = await fetchHistory(category);
 
@@ -316,7 +321,9 @@ async function renderHistoryContent() {
   if (view === "trend") {
     renderTrendView(container, category, records);
   } else {
-    renderHistoryList(container, category, records);
+    // 백엔드는 항상 최신순(DESC)으로 내려주므로, "오래된순"일 때만 뒤집는다.
+    const sortedRecords = sortOrder === "asc" ? [...records].reverse() : records;
+    renderHistoryList(container, category, sortedRecords);
   }
 }
 
@@ -343,6 +350,19 @@ secondaryTabButtons.forEach((button) => {
     setActiveTab(secondaryTabButtons, button);
     renderHistoryContent();
   });
+});
+
+// ---- 누적 기록 정렬 (최신순 / 오래된순) ----
+//
+// deleteMode와 마찬가지로 카테고리/뷰 탭을 옮겨도 유지되는 전역 상태다.
+// 누적 기록(list) 탭에서만 의미가 있어 최근 기록 추이 탭에서는 버튼을 숨긴다.
+
+const sortToggleBtn = document.getElementById("sort-toggle-btn");
+
+sortToggleBtn.addEventListener("click", () => {
+  sortOrder = sortOrder === "desc" ? "asc" : "desc";
+  sortToggleBtn.textContent = sortOrder === "desc" ? "최신순" : "오래된순";
+  renderHistoryContent();
 });
 
 // ---- 게임 랭킹 TOP 10 ----
