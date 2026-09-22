@@ -1482,6 +1482,61 @@ input.toggle-switch:disabled {
   margin: 4px 0 0;
 }
 
+.checklist {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+}
+
+.checklist li {
+  margin-bottom: 2px;
+}
+
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.checklist label:hover {
+  background: var(--hover-bg);
+}
+
+.checklist input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.dry-eye-result {
+  margin: 10px 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dry-eye-recommend {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dry-eye-recommend a {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 700;
+  color: var(--danger-text);
+  text-decoration: underline;
+}
+
 .scroll-modal-foot {
   padding: 10px 20px;
   border-top: 1px solid var(--line);

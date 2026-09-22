@@ -122,6 +122,19 @@ dryEyeModal.addEventListener("click", (event) => {
   if (event.target === dryEyeModal) closeDryEyeModal();
 });
 
+const DRY_EYE_RECOMMEND_THRESHOLD = 7;
+const dryEyeChecklist = document.getElementById("dry-eye-checklist");
+const dryEyeCountEl = document.getElementById("dry-eye-count");
+const dryEyeRecommendEl = document.getElementById("dry-eye-recommend");
+
+function updateDryEyeResult() {
+  const checked = dryEyeChecklist.querySelectorAll(".dry-eye-symptom:checked").length;
+  dryEyeCountEl.textContent = checked;
+  dryEyeRecommendEl.classList.toggle("hidden", checked < DRY_EYE_RECOMMEND_THRESHOLD);
+}
+
+dryEyeChecklist.addEventListener("change", updateDryEyeResult);
+
 // 다크모드 토글 - 헤더의 예전 "Google 로그인됨" 자리. 로그인 상태일 때만
 // 보이는 #auth-logged-in 안에 있으므로 표시 여부는 renderAuthArea()가 이미
 // 처리하고, 여기서는 아이콘/클릭 동작만 담당한다.
