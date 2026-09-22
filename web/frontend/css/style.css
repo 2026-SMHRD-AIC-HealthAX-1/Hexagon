@@ -1427,14 +1427,14 @@ input.toggle-switch:disabled {
 
 .scroll-modal-head h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .scroll-modal-close {
   border: none;
   background: none;
   color: var(--gray);
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   padding: 4px 8px;
   border-radius: 8px;
@@ -1450,13 +1450,13 @@ input.toggle-switch:disabled {
 .scroll-modal-body {
   padding: 16px 20px 22px;
   overflow-y: auto;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--text);
 }
 
 .scroll-modal-body h3 {
-  font-size: 14px;
+  font-size: 16px;
   margin: 16px 0 8px;
 }
 
@@ -1478,7 +1478,7 @@ input.toggle-switch:disabled {
 
 .scroll-modal-body .note {
   color: var(--gray);
-  font-size: 12px;
+  font-size: 14px;
   margin: 4px 0 0;
 }
 
@@ -1514,7 +1514,7 @@ input.toggle-switch:disabled {
 
 .dry-eye-result {
   margin: 10px 0 14px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }
@@ -1525,7 +1525,7 @@ input.toggle-switch:disabled {
   border-radius: 10px;
   background: var(--danger-bg);
   color: var(--danger-text);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -1540,7 +1540,7 @@ input.toggle-switch:disabled {
 .scroll-modal-foot {
   padding: 10px 20px;
   border-top: 1px solid var(--line);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--gray);
   text-align: center;
   flex-shrink: 0;
