@@ -592,6 +592,23 @@ header.top-bar {
   color: var(--gray);
 }
 
+.care-item-link {
+  cursor: pointer;
+  border-radius: 10px;
+  margin: -6px;
+  padding: 6px;
+}
+
+.care-item-link:hover {
+  background: var(--hover-bg);
+}
+
+.care-arrow {
+  color: var(--blue-dark);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
 .blink-alert {
   margin-top: 4px;
   font-size: 11px;
@@ -1385,6 +1402,93 @@ input.toggle-switch:disabled {
    대상이라 시각적으로도 건드리지 않기 위함. */
 .modal-box.wide-modal {
   max-width: min(440px, calc(100vw - 32px));
+}
+
+/* 안구건조증 체크리스트처럼 내용이 길어 화면 안에 다 들어가지 않는 모달용 -
+   상단에 제목+닫기 버튼을 고정하고 본문만 스크롤되게 한다. */
+.modal-box.scroll-modal {
+  max-width: min(560px, calc(100vw - 32px));
+  max-height: min(640px, calc(100vh - 64px));
+  padding: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.scroll-modal-head h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.scroll-modal-close {
+  border: none;
+  background: none;
+  color: var(--gray);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.scroll-modal-close:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+
+.scroll-modal-body {
+  padding: 16px 20px 22px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.scroll-modal-body h3 {
+  font-size: 14px;
+  margin: 16px 0 8px;
+}
+
+.scroll-modal-body h3:first-child {
+  margin-top: 0;
+}
+
+.scroll-modal-body ol,
+.scroll-modal-body ul {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  color: var(--gray);
+}
+
+.scroll-modal-body ol > li,
+.scroll-modal-body ul > li {
+  margin-bottom: 4px;
+}
+
+.scroll-modal-body .note {
+  color: var(--gray);
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+.scroll-modal-foot {
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--gray);
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .modal-box h2 {

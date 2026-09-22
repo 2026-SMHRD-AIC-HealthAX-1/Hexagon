@@ -129,6 +129,15 @@
           </div>
           <input type="checkbox" id="eyedrop-toggle" class="toggle-switch">
         </div>
+
+        <div class="care-item care-item-link" id="dry-eye-checklist-btn" role="button" tabindex="0">
+          <div class="care-icon">📋</div>
+          <div class="care-info">
+            <div class="care-name">안구건조증 자가진단</div>
+            <div class="care-description">체크리스트와 자가관리 방법 보기</div>
+          </div>
+          <div class="care-arrow">›</div>
+        </div>
       </div>
     </section>
   </div>
@@ -207,6 +216,82 @@
     <div class="modal-actions">
       <button id="blink-guide-confirm" class="primary" type="button">확인</button>
     </div>
+  </div>
+</div>
+
+<div id="dry-eye-modal" class="modal hidden">
+  <div class="modal-box scroll-modal">
+    <div class="scroll-modal-head">
+      <h2>안구건조증 자가진단 체크리스트</h2>
+      <button id="dry-eye-close" class="scroll-modal-close" type="button" aria-label="닫기">✕</button>
+    </div>
+    <div class="scroll-modal-body">
+      <h3>안구건조증의 주요 증상</h3>
+      <ol>
+        <li>눈에 모래알이 들어간 듯 이물감이 있다.</li>
+        <li>눈꺼풀이 무겁고 머리까지 아픈 것 같다.</li>
+        <li>눈이 뻑뻑하다.</li>
+        <li>눈 앞에 막이 낀 듯하다.</li>
+        <li>눈이 쉽게 피곤해서 책을 오래 못 본다.</li>
+        <li>바람이 불면 눈물이 더 쏟아진다.</li>
+        <li>이유 없이 자주 충혈된다.</li>
+        <li>안과에서 결막염 치료를 받았지만 신통치 않았다.</li>
+        <li>잘 쓰던 콘택트 렌즈의 문제가 자꾸 생긴다.</li>
+        <li>자고 나면 눈꺼풀이 들러붙어 잘 떠지지 않는다.</li>
+        <li>눈부심이 있으면서 눈이 자꾸 감긴다.</li>
+        <li>눈이 쉽게 피로하다.</li>
+        <li>눈이 쏟아지는(빠지는) 느낌이 든다.</li>
+        <li>건조한 곳이나 오염이 심한 곳에서 가끔 눈이 화끈거린다.</li>
+        <li>감정적으로 스트레스를 받았을 때 울기가 힘들다.</li>
+        <li>실 같은 분비물이 자꾸 생긴다.</li>
+        <li>눈꺼풀이 무겁다.</li>
+        <li>지속적인 시각 집중이 필요한 독서, 컴퓨터 작업이 견디기 어려워진다.</li>
+        <li>(건조증이 심하면) 빛에 비정상적으로 예민해지고 극심한 통증을 호소하거나 시력이 감소된다.</li>
+      </ol>
+      <p class="note">다음 증상 중 본인에게 해당사항이 있으면 안구건조증을 의심할 수 있습니다.</p>
+
+      <h3>자가관리 방법</h3>
+      <ol>
+        <li>환경적 요인 조절하기
+          <ul>
+            <li>가습기 등으로 실내 공기를 적절하게 유지</li>
+            <li>바람이 많은 지역에서는 안경 착용 권장</li>
+            <li>담배 연기와 공기 오염을 피하기</li>
+          </ul>
+        </li>
+        <li>디지털기기 사용조절
+          <ul>
+            <li>장시간의 디지털기기, 특히 스마트폰 사용을 줄이기</li>
+            <li>30분마다 눈을 쉬고, 눈을 자주 깜빡여 눈의 수분을 유지</li>
+          </ul>
+        </li>
+        <li>건강한 생활습관 유지
+          <ul>
+            <li>하루에 8~10잔의 물 섭취</li>
+            <li>하루에 약 7~8시간의 수면</li>
+            <li>특정 약물이 안구건조증의 원인이 될 수 있으므로 의사와 상의</li>
+          </ul>
+        </li>
+        <li>식사조절
+          <ul>
+            <li>비타민 A: 당근, 고구마에서 풍부, 눈의 수분 유지에 도움</li>
+            <li>비타민 C: 귤, 딸기에 풍부, 눈 건강에 중요</li>
+            <li>비타민 E: 아보카도, 아몬드에서 풍부, 세포 건강 유지</li>
+            <li>비타민 D: 연어, 참치, 우유에 풍부, 눈물막 안정에 도움</li>
+            <li>오메가-3 지방산: 연어, 참치에 풍부, 눈물 기능 강화</li>
+            <li>과도한 탄수화물 섭취 줄이기</li>
+          </ul>
+        </li>
+        <li>인공눈물 사용 및 눈꺼풀 관리
+          <ul>
+            <li>필요한 경우 인공눈물 사용</li>
+            <li>눈꺼풀의 마이봄샘에서 기름을 방출시키기 위해 따뜻한 찜질하기</li>
+          </ul>
+        </li>
+        <li>지속적인 눈 건강관리를 위한 정기적인 안과 검진 권장</li>
+      </ol>
+    </div>
+    <div class="scroll-modal-foot">출처 : 질병관리청 국가건강정보포털</div>
   </div>
 </div>
 

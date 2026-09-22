@@ -98,6 +98,30 @@ logoutBtn.addEventListener("click", async () => {
   renderAuthArea();
 });
 
+const dryEyeChecklistBtn = document.getElementById("dry-eye-checklist-btn");
+const dryEyeModal = document.getElementById("dry-eye-modal");
+const dryEyeCloseBtn = document.getElementById("dry-eye-close");
+
+function openDryEyeModal() {
+  dryEyeModal.classList.remove("hidden");
+}
+
+function closeDryEyeModal() {
+  dryEyeModal.classList.add("hidden");
+}
+
+dryEyeChecklistBtn.addEventListener("click", openDryEyeModal);
+dryEyeChecklistBtn.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openDryEyeModal();
+  }
+});
+dryEyeCloseBtn.addEventListener("click", closeDryEyeModal);
+dryEyeModal.addEventListener("click", (event) => {
+  if (event.target === dryEyeModal) closeDryEyeModal();
+});
+
 // 다크모드 토글 - 헤더의 예전 "Google 로그인됨" 자리. 로그인 상태일 때만
 // 보이는 #auth-logged-in 안에 있으므로 표시 여부는 renderAuthArea()가 이미
 // 처리하고, 여기서는 아이콘/클릭 동작만 담당한다.
