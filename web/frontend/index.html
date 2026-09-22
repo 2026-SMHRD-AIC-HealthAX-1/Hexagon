@@ -5,7 +5,7 @@
 
 <div class="page page-wide">
   <header class="top-bar">
-    <a class="logo" href="index.html"><span class="logo-eye"></span>Eye God</a>
+    <a class="logo" href="index.html"><img class="logo-img" src="images/eyegod_logo_stacked.svg" alt="Eye God"></a>
     <form id="header-search-form" class="header-search">
       <input id="header-search-input" type="text" placeholder="지역명을 검색하세요 (예: 서울특별시 강남구)">
       <button type="submit" aria-label="검색">⌕</button>
@@ -190,6 +190,23 @@
       </svg>
     </button>
     <input type="file" id="quick-photo-input" accept="image/*" class="hidden">
+  </div>
+</div>
+
+<div id="blink-guide-modal" class="modal hidden">
+  <div class="modal-box wide-modal">
+    <h2>눈 깜빡임 모니터링 안내</h2>
+    <p>
+      모니터링을 시작하면 이 시점에 처음 검출된 사용자의 얼굴을 기준으로<br>
+      추적하여 눈 깜빡임을 측정합니다.<br>
+      모니터링 중 자리를 비우면 다른 사람이 대신 추적될 수 있으니<br>
+      자리를 비웠다가 다시 돌아오실 경우<br>
+      모니터링 재실행을 권장합니다.<br>
+      촬영되는 영상은 서버로 전송되지 않고 브라우저 안에서만 처리됩니다.
+    </p>
+    <div class="modal-actions">
+      <button id="blink-guide-confirm" class="primary" type="button">확인</button>
+    </div>
   </div>
 </div>
 

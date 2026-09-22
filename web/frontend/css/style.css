@@ -169,24 +169,10 @@ header.top-bar {
   color: var(--blue-dark);
 }
 
-.logo-eye {
-  width: 30px;
-  height: 19px;
-  border-radius: 50%;
-  background: var(--blue);
-  position: relative;
-  flex-shrink: 0;
-}
-
-.logo-eye::after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #fff;
-  left: 11px;
-  top: 5px;
+.logo-img {
+  height: 1.6em;
+  width: auto;
+  display: block;
 }
 
 .site-footer {
@@ -1803,6 +1789,9 @@ button.primary:hover {
 .page-wide .header-search input { font-size: 15px; }
 .page-wide .header-search button { font-size: 16px; }
 .page-wide .logo { font-size: 24px; }
+/* 홈 화면 로고를 2배로 확대 - 검색창/로그인 버튼과 한 줄에 같이 있으므로
+   위치(좌측 정렬)는 그대로 두고 크기만 키운다. */
+.page-wide .logo-img { height: 3.2em; }
 .page-wide .auth-btn { font-size: 15px; }
 .page-wide .health-card .card-title { font-size: 19px; }
 .page-wide .health-card .detail-link { font-size: 15px; }
@@ -1847,6 +1836,17 @@ button.primary:hover {
 .page-mypage .logo,
 .page-map .logo,
 .page-analysis .logo { font-size: 24px; }
+/* 홈 화면 외 페이지는 로고를 2배로 확대하고 화면 중앙 상단에 배치한다 -
+   이 세 페이지의 header.top-bar에는 로고 하나만 들어있으므로 가운데
+   정렬해도 다른 요소와 부딪히지 않는다. */
+.page-mypage header.top-bar,
+.page-map header.top-bar,
+.page-analysis header.top-bar { justify-content: center; }
+.page-mypage .logo-img,
+.page-map .logo-img,
+.page-analysis .logo-img { height: 3.2em; }
+/* 로그인 화면은 원래부터 로고가 중앙 정렬(인라인 style)돼 있으므로 크기만 2배로. */
+.page-login .logo-img { height: 3.2em; }
 .page-mypage .login-desc,
 .page-map .login-desc,
 .page-analysis .login-desc { font-size: 16px; }

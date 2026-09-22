@@ -8,6 +8,7 @@ import { FaceTracker } from "./vision/faceTracker.js";
 import { classifyEyeStatus, applyEyeStatus } from "./eyeStatus.js";
 import { getStoredTheme, toggleTheme } from "./theme.js";
 import { initQuickPhotoMenu } from "./quickPhotoMenu.js";
+import { showGuide } from "./guide.js";
 
 // index.html은 requireLogin()으로 리다이렉트하지 않는 유일한 페이지이지만, 구글
 // 로그인은 서버 리다이렉트로 완료되므로(클라이언트가 그 시점을 알 수 없음) 로그인
@@ -128,6 +129,13 @@ const statusLabel = document.getElementById("blink-status-text");
 const countEl = document.getElementById("blink-count");
 const recentCountEl = document.getElementById("blink-recent-count");
 const blinkAlertEl = document.getElementById("blink-alert");
+
+const blinkGuideModal = document.getElementById("blink-guide-modal");
+const blinkGuideConfirmBtn = document.getElementById("blink-guide-confirm");
+// 가이드는 웹캠 동의(getUserMedia 권한 팝업) 직후, 실제 얼굴 추적/깜빡임 측정이
+// 시작되기 전에 한 번 보여준다 - 페이지 세션 동안 토글을 껐다 켰다 반복해도
+// 다시 뜨지 않게 최초 1회만 노출한다(게임 가이드 모달들과 같은 방식).
+let blinkGuideShown = false;
 
 const video = document.createElement("video");
 video.muted = true;
@@ -305,6 +313,11 @@ async function startBlinkMonitoring() {
 
   video.srcObject = stream;
   await video.play();
+
+  if (!blinkGuideShown) {
+    await showGuide(blinkGuideModal, blinkGuideConfirmBtn);
+    blinkGuideShown = true;
+  }
 
   if (!(await ensureLandmarker())) {
     toggle.checked = false;
