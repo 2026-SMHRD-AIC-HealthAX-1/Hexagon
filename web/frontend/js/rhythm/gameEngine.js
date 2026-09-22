@@ -12,7 +12,7 @@
     performance.now()(밀리초)로 처음부터 끝까지 ms 로 계산한다. 동작은 같다.
 */
 
-export const GAME_DURATION_SEC = 30;
+export const GAME_DURATION_SEC = 10;
 
 export const LANES = ["left", "center", "right"];
 

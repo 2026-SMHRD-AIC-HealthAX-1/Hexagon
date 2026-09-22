@@ -9,7 +9,7 @@ from gaze_region_classifier import (
     create_region_points,
 )
 
-GAME_DURATION_SEC = 30
+GAME_DURATION_SEC = 10
 
 LANES = ("left", "center", "right")
 

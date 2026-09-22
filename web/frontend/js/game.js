@@ -49,7 +49,7 @@ const GRID_ROWS = 3;
 // 커진 만큼 예전 두더지 테스트 버전보다 여백을 더 뒀다).
 const HEADER_MARGIN_PX = 155;
 
-const GAME_DURATION_MS = 45000;
+const GAME_DURATION_MS = 10000;
 const MOLE_ACTIVE_MS = 1300;
 const MOLE_RISE_MS = 150;
 const MOLE_FALL_MS = 220;
